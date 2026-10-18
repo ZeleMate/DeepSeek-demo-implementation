@@ -70,6 +70,18 @@ _Avoid_: honeytoken, dummy key
 The model under attack in red-team runs; always a local Ollama model, never one reached through OpenRouter.
 _Avoid_: target model
 
+**Taint**:
+A per-turn flag set once the agent has read untrusted content; while it is set, outbound calls need approval.
+_Avoid_: contamination, dirty flag
+
+**Pin**:
+The recorded hash of an MCP tool's name, description, schema and server instructions, kept in a committed lockfile; a changed tool is refused until it is re-approved.
+_Avoid_: lock, signature
+
+**Untrusted data**:
+Tool output that the injection filter has fenced off as data, never instructions, before the model sees it.
+_Avoid_: quarantined content, sanitised output
+
 **Security job**:
 A defensive task the hardened harness performs on the user's own material, such as the secrets false-positive filter.
 _Avoid_: workload, use case

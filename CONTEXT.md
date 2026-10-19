@@ -19,11 +19,11 @@ A service definition plus the plugin that provides it and the plugins that use i
 _Avoid_: interface, port
 
 **Bundle**:
-An installable package of plugins plus a profile patch; this repo is one bundle.
+An installable package that declares a `dsh.bundle.patch` layer selecting and configuring plugins; this repo ships one bundle per profile.
 _Avoid_: distribution, plugin pack
 
 **Profile**:
-A named dsh composition: ordered bundles plus YAML patch layers that decide which plugins load with which config.
+A named dsh composition: ordered bundle layers, then the user-owned `cordis.patch.yml` in `$DSH_HOME`, deciding which plugins load with which config.
 _Avoid_: preset, environment
 
 ### Running

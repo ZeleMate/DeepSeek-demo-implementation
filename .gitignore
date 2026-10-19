@@ -1,0 +1,8 @@
+# Secrets: never commit
+.env
+.env.*
+!.env.example
+
+# Local tooling
+node_modules/
+.DS_Store

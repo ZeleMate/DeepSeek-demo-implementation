@@ -1,5 +1,5 @@
 ---
-status: accepted; job-profile routing superseded by ADR 0006
+status: accepted; job-profile routing superseded by ADR 0006; cost tracking corrected 2026-10-19 (#35)
 ---
 
 # Models are fixed per dsh profile; the red-team profile can't reach any remote model
@@ -21,6 +21,6 @@ Routing lives in **dsh profiles**, not in a router plugin. Each profile names it
 
 - No dynamic small→large escalation in v1. That would need a router plugin and is left for later.
 - OpenRouter provider quality is set at account level, avoiding fp4/int4 endpoints, with an OpenRouter preset as the fallback mechanism, because dsh blocks per-request provider routing.
-- **Budgets:** an OpenRouter key credit limit of $15/month with a monthly reset, and an OpenAI project budget of $5/month. Spend is tracked on the providers' dashboards, because dsh's price table is out of date.
+- **Budgets:** an OpenRouter key credit limit of $15/month with a monthly reset, and an OpenAI project budget of $5/month. Spend is tracked on the providers' dashboards, because dsh does no cost accounting at all: `llm-pi-ai` zeroes pi-ai's cost fields, and nothing in dsh reads a price table. Per-run cost is looked up after the run from OpenRouter's generation endpoint (`GET /api/v1/generation?id=…`) by the `responseId` the session log records ([#35](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/35)). dsh's per-session title call also runs on the main route without being logged, so both profiles turn it off.
 
 Decided in [Model lineup and routing policy](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/16).

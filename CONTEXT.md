@@ -44,6 +44,10 @@ _Avoid_: transcript, history, conversation
 A typed answer (predicate, choice or score with calibrated probabilities) from a decisions model, as opposed to generated text.
 _Avoid_: classification, judgement
 
+**Launcher**:
+The committed per-profile script that reads API keys from the macOS Keychain, sets dsh's bootstrap variables and starts dsh; the only way keys reach a dsh process.
+_Avoid_: wrapper, start script
+
 **Job profile**:
 The dsh profile that runs security jobs with remote models (OpenRouter, Decisions API).
 _Avoid_: production profile, main profile

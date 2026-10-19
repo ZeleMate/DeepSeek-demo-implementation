@@ -1,3 +1,7 @@
+---
+status: accepted; job-profile routing superseded by ADR 0006
+---
+
 # Models are fixed per dsh profile; the red-team profile can't reach any remote model
 
 Routing lives in **dsh profiles**, not in a router plugin. Each profile names its models in config.

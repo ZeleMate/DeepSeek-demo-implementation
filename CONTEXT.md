@@ -44,6 +44,14 @@ _Avoid_: transcript, history, conversation
 A typed answer (predicate, choice or score with calibrated probabilities) from a decisions model, as opposed to generated text.
 _Avoid_: classification, judgement
 
+**Job profile**:
+The dsh profile that runs security jobs with remote models (OpenRouter, Decisions API).
+_Avoid_: production profile, main profile
+
+**Red-team profile**:
+The dsh profile used for attack runs; it reaches local models only and has no remote fallback.
+_Avoid_: test profile, attack mode
+
 ### Security
 
 **Hardened harness**:

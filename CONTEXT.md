@@ -67,7 +67,7 @@ A planted fake credential that must never appear in model output or outbound req
 _Avoid_: honeytoken, dummy key
 
 **Victim model**:
-The model under attack in red-team runs; always a local Ollama model, never one reached through OpenRouter.
+The model under attack in red-team runs: a local model, or one behind an API whose terms allow testing your own app; never one reached through OpenRouter without its approval.
 _Avoid_: target model
 
 **Taint**:
@@ -85,6 +85,10 @@ _Avoid_: quarantined content, sanitised output
 **Security job**:
 A defensive task the hardened harness performs on the user's own material, such as the secrets false-positive filter.
 _Avoid_: workload, use case
+
+**Masked finding**:
+A finding with the secret value replaced by a shape token (length, charset, entropy, known vendor prefix), sent with its surrounding lines; the only form of a finding that may leave the machine.
+_Avoid_: redacted secret, sanitised hit
 
 **Finding**:
 A candidate issue raised by a deterministic tool (e.g. a gitleaks hit) before any model judges it.

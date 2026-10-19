@@ -2,7 +2,7 @@
 
 The harness's purpose is security, in two layers. First, a **hardened harness**: our dsh profile with five simple defences (network egress allowlist, injection filter on tool results, MCP pinning guard, canary secret, and dsh's session log as the audit trail), scored by **attack success rate** before and after against a fixed attack set. Second, **security jobs** that run on it against the user's own material. The first job is a secrets false-positive filter (gitleaks finds candidates, the Decisions API judges them, the user confirms); a security reviewer for the user's own PRs comes second.
 
-Offensive agents (pentest, exploitation, CTF solving) and any third-party target are excluded. Red-team runs attack only our own harness, local labs bound to `127.0.0.1`, and a local Ollama **victim model**.
+Offensive agents (pentest, exploitation, CTF solving) and any third-party target are excluded. Red-team runs attack only our own harness, local labs bound to `127.0.0.1`, and a **victim model** that runs locally (Ollama, within this Mac's limits) or sits behind an API whose terms allow testing your own app. OpenRouter is not one of them without its approval.
 
 ## Why
 
@@ -17,3 +17,5 @@ Offensive agents (pentest, exploitation, CTF solving) and any third-party target
 - Asking OpenRouter's safety team for approval stays a later option, not a dependency.
 
 Decided in [What security problem does the harness solve?](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/22).
+
+_Amended 2026-10-19:_ the Mac (M5, 16 GB) can't run 7–14B local models alongside the harness. The usable local model size will be **measured**, with ≤4B assumed until then, and red-team-friendly APIs are being researched.

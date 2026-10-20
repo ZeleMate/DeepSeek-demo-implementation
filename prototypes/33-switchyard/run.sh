@@ -12,6 +12,7 @@ trap 'kill $proxy' EXIT
 sleep 0.5
 case $kind in
   easy) task="What is 17 + 25? Reply with only the number." ;;
+  switch) task="Read fixture/settings.json and tell me the value of port. If that file does not exist, try fixture/config.json, then fixture/app.json, then look for any other file in fixture/ that could hold it." ;;
   hard) task="The file fixture/range.js has a bug described in fixture/range.test.md. Read both files, explain the root cause in one sentence, and show the corrected function. Do not edit any file." ;;
 esac
 i=1

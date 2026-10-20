@@ -52,6 +52,10 @@ _Avoid_: wrapper, start script
 The dsh profile that runs security jobs with remote models (OpenRouter, Decisions API).
 _Avoid_: production profile, main profile
 
+**Interactive profile**:
+The dsh profile you use by hand, with the job profile's models and defences plus web search and fetch; the only profile that reaches the open web.
+_Avoid_: dev profile, chat mode
+
 **Red-team profile**:
 The dsh profile used for attack runs; it reaches local models only and has no remote fallback.
 _Avoid_: test profile, attack mode
@@ -70,8 +74,12 @@ _Avoid_: guardrail, protection
 The fixed collection of attacks (DVMCP challenges, our malicious MCP server, local Promptfoo red-team probes) that the hardened harness is scored against.
 _Avoid_: test suite, red-team suite
 
+**Attack attempt**:
+One run of one attack from the attack set; each attack is attempted several times because the victim model is nondeterministic.
+_Avoid_: trial, sample
+
 **Attack success rate**:
-The share of attacks in the attack set that achieve their goal; measured before and after each defence.
+The share of attack attempts that achieve their goal, judged by deterministic checks only; measured before and after each defence.
 _Avoid_: ASR (in prose), pass rate
 
 **Canary secret**:

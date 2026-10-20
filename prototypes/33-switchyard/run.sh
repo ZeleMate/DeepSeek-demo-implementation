@@ -19,7 +19,7 @@ while [ $i -le $n ]; do
   before=$(wc -l < out/calls.jsonl 2>/dev/null || echo 0)
   npx dsh headless --patch ./patch.yml "$task" > "out/$kind-$i.stdout" 2> "out/$kind-$i.stderr" || echo "dsh exited $?"
   echo "=== $kind #$i: steps (model that answered, tool calls, cost)"
-  tail -n +"$((before + 1))" out/calls.jsonl | node -e 'let s=0;for(const l of require("fs").readFileSync(0,"utf8").trim().split("\n").filter(Boolean)){const r=JSON.parse(l);s+=r.cost;console.log(" ",r.status,r.model,"finish="+r.finish,"tools="+r.toolCalls,"cached="+(r.cachedTokens??0),"$"+(r.cost??0).toFixed(5),r.error??"")}console.log("  run cost $"+s.toFixed(4))'
+  tail -n +"$((before + 1))" out/calls.jsonl | node -e 'let s=0;for(const l of require("fs").readFileSync(0,"utf8").trim().split("\n").filter(Boolean)){const r=JSON.parse(l);s+=r.cost;console.log(" ",r.status,r.model,"strategy="+(r.strategy??"-"),"finish="+r.finish,"tools="+r.toolCalls,"cached="+(r.cachedTokens??0),"$"+(r.cost??0).toFixed(5),r.error??"")}console.log("  run cost $"+s.toFixed(4))'
   echo "  answer: $(tail -c 300 "out/$kind-$i.stdout" | tr '\n' ' ')"
   i=$((i + 1))
 done

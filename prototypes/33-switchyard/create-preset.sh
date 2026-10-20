@@ -7,7 +7,7 @@ export OPENROUTER_API_KEY
 curl -sS https://openrouter.ai/api/v1/presets/dsh-switchyard/chat/completions \
   -H "Authorization: Bearer $OPENROUTER_API_KEY" -H "Content-Type: application/json" \
   -d '{"model":"nvidia/switchyard",
-       "models":["deepseek/deepseek-v4.1-flash","openai/gpt-6.1-sol","anthropic/claude-opus-5.5"],
+       "models":["deepseek/deepseek-v4.1-flash","anthropic/claude-opus-5.5"],
        "plugins":[{"id":"switchyard-router","algorithm":"composite"}],
        "messages":[{"role":"user","content":"x"}]}' | head -c 600; echo
 echo "--- stored preset:"

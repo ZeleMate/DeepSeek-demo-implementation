@@ -17,20 +17,21 @@ http.createServer((req, res) => {
     let body = Buffer.concat(chunks)
     let requested
     try { const j = JSON.parse(body.toString()); requested = j.model; j.usage = { include: true }; body = Buffer.from(JSON.stringify(j)) } catch {}
-    const headers = { ...req.headers, host: 'openrouter.ai', 'content-length': String(body.length) }
+    const headers = { ...req.headers, host: 'openrouter.ai', 'content-length': String(body.length), 'x-openrouter-metadata': 'enabled' }
     const up = https.request({ host: 'openrouter.ai', path: req.url, method: req.method, headers }, r => {
       res.writeHead(r.statusCode, r.headers)
       let text = ''
       r.on('data', c => { text += c; res.write(c) })
       r.on('end', () => {
         res.end()
-        let id, model, usage, finish, toolCalls = 0, error
+        let id, model, usage, finish, toolCalls = 0, error, router
         const objs = text.includes('data:') ? text.split('\n').filter(l => l.startsWith('data:') && !l.includes('[DONE]')).map(l => { try { return JSON.parse(l.slice(5)) } catch { return null } }).filter(Boolean) : [(() => { try { return JSON.parse(text) } catch { return {} } })()]
         for (const o of objs) {
           id ??= o.id; model = o.model ?? model; usage = o.usage ?? usage; error ??= o.error?.message
+          const step = o.openrouter_metadata?.pipeline?.find?.(p => p.name === 'switchyard-router'); if (step) router = step.data
           for (const ch of o.choices ?? []) { finish = ch.finish_reason ?? finish; toolCalls += (ch.delta?.tool_calls ?? ch.message?.tool_calls ?? []).filter(t => t.id).length }
         }
-        appendFileSync(LOG, JSON.stringify({ t: new Date().toISOString(), status: r.statusCode, requested, id, model, finish, toolCalls, promptTokens: usage?.prompt_tokens, completionTokens: usage?.completion_tokens, cachedTokens: usage?.prompt_tokens_details?.cached_tokens, cost: usage?.cost ?? 0, error }) + '\n')
+        appendFileSync(LOG, JSON.stringify({ t: new Date().toISOString(), status: r.statusCode, requested, id, model, finish, toolCalls, promptTokens: usage?.prompt_tokens, completionTokens: usage?.completion_tokens, cachedTokens: usage?.prompt_tokens_details?.cached_tokens, cost: usage?.cost ?? 0, error, strategy: router?.strategy, resolvedTo: router?.resolved_to, judgeMs: router?.judge_ms }) + '\n')
       })
     })
     up.on('error', e => { res.writeHead(502); res.end(String(e)) })

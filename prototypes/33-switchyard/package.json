@@ -1,0 +1,9 @@
+{
+  "name": "prototype-33-switchyard",
+  "private": true,
+  "description": "PROTOTYPE, throwaway: does a Switchyard preset escalate correctly through dsh? Issue #33.",
+  "type": "module",
+  "devDependencies": {
+    "@deepseek-ai/dsh": "0.2.1-rc.2"
+  }
+}

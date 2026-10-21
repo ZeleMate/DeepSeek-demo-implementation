@@ -1,0 +1,3 @@
+# Default gitleaks rules. Dismissed findings go in .gitleaksignore by fingerprint (ADR 0004).
+[extend]
+useDefault = true

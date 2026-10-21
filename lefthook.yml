@@ -1,0 +1,48 @@
+# Git hooks. Install the tools with `brew bundle`, then run `lefthook install` once.
+# CI runs the same checks (.github/workflows/ci.yml), so --no-verify only delays a failure.
+# Local overrides go in lefthook-local.yml (gitignored).
+
+pre-commit:
+  parallel: true
+  commands:
+    secrets:
+      run: gitleaks git --staged --redact --no-banner
+    forbidden-paths:
+      run: scripts/checks/forbidden-paths.sh {staged_files}
+    forbidden-patterns:
+      run: scripts/checks/forbidden-patterns.sh {staged_files}
+    conflict-markers:
+      run: "! grep -nE '^(<<<<<<<|>>>>>>>)( |$)' {staged_files}"
+    large-files:
+      # 1 MB; eval fixtures and datasets don't belong in git (ADR 0011 keeps only summaries).
+      run: "! find {staged_files} -type f -size +1024k | grep ."
+    markdown:
+      glob: "*.md"
+      run: markdownlint-cli2 {staged_files}
+    workflows:
+      glob: ".github/**/*.{yml,yaml}"
+      run: actionlint && zizmor --no-progress --offline .github/
+    shell:
+      glob: "{bin/*,scripts/**/*.sh}"
+      run: shellcheck {staged_files}
+
+commit-msg:
+  commands:
+    conventional:
+      run: |
+        head -1 {1} | grep -qE '^(Merge |Revert )|^(feat|fix|docs|chore|ci|test|refactor|perf|build|style|research|prototype)(\([a-z0-9-]+\))?!?: .+' \
+          || { echo "commit message must start with type(scope): ... (e.g. 'docs: ADR 0013')"; exit 1; }
+
+pre-push:
+  commands:
+    no-push-to-main:
+      run: |
+        while read -r _ _ remote_ref _; do
+          if [ "$remote_ref" = "refs/heads/main" ]; then
+            echo "push to main refused: open a PR instead"; exit 1
+          fi
+        done
+      use_stdin: true
+    secrets:
+      # Every commit not yet on the remote, not just the staged diff.
+      run: gitleaks git --redact --no-banner --log-opts="HEAD --not --remotes"

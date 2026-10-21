@@ -1,8 +1,22 @@
-# Secrets: never commit
+# Secrets: never commit (ADR 0007: keys live in the Keychain, not in files)
 .env
 .env.*
 !.env.example
+*.pem
+*.key
+.credentials.yaml
+
+# dsh state: session logs and profiles live in $DSH_HOME, outside the repo
+dsh-home/
+*.jsonl.zstd
+cordis.patch.yml
+
+# Prototype run output (session logs, raw requests)
+prototypes/*/out/
 
 # Local tooling
 node_modules/
 .DS_Store
+.claude/worktrees/
+.claude/settings.local.json
+lefthook-local.yml

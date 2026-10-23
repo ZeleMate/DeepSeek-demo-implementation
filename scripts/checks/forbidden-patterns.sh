@@ -21,9 +21,13 @@ check() {
   fi
 }
 
-# Any one-off runner (npx, bunx, pnpm dlx, npm exec) that names the package fetches npm's latest tag.
-check '(^|[^a-z])(npx|bunx|pnpm[[:space:]]+dlx|npm[[:space:]]+exec)[[:space:]].*@deepseek-ai/dsh' "npm's latest tag is a prerelease; use pnpm exec dsh (ADR 0001)"
+q="[\"']?" # optional quote before an assignment
+
+# A one-off runner (npx, bunx, yarn dlx, pnpm dlx, npm exec/x, flags allowed) that names the
+# package in the same command fetches npm's latest tag. The match stops at ; | & and #.
+check "(^|[^a-z0-9_-])(npx|bunx|yarn[[:space:]]+dlx|pnpm([[:space:]]+-[^[:space:]]+)*[[:space:]]+dlx|npm([[:space:]]+-[^[:space:]]+)*[[:space:]]+(exec|x))[[:space:]][^;|&#]*@deepseek-ai/dsh" "npm's latest tag is a prerelease; use pnpm exec dsh (ADR 0001)"
 check '--from-default-profile' 'deletes the existing profile (ADR 0001)'
-# A secret-named assignment anywhere among env's arguments (after other assignments or flags with values).
-check '(^|[^a-z_])env([[:space:]]+[^[:space:]|;&]+)*[[:space:]]+"?[a-z0-9_]*(key|token|secret|password)[a-z0-9_]*=' 'keys passed as arguments show up in ps; export them inside the launcher (ADR 0007)'
+# A secret-named assignment among env's own arguments: flags (with values) and other
+# assignments may come first; the first other word is the command, and the match stops there.
+check "(^|[^a-z0-9_.-])env([[:space:]]+(-[a-z]+([[:space:]]+[^-=[:space:]][^=[:space:]]*)?|--[a-z-]+(=[^[:space:]]*)?|${q}[a-z_][a-z0-9_]*=[^[:space:]]*))*[[:space:]]+${q}[a-z0-9_]*(key|token|secret|password)[a-z0-9_]*=" 'keys passed as arguments show up in ps; export them inside the launcher (ADR 0007)'
 exit "$status"

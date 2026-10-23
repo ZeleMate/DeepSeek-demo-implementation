@@ -1,7 +1,9 @@
 # Git hooks. Install the tools with `brew bundle`, then run `lefthook install` once.
 # CI runs the same checks (.github/workflows/ci.yml), so --no-verify only delays a failure;
-# no-push-to-main is enforced by the "Protect main" ruleset instead.
+# refusing pushes to main is also enforced by the "Protect main" ruleset.
 # Local overrides go in lefthook-local.yml (gitignored).
+
+min_version: 2.2.0 # list-form glob (tested on 2.2.2)
 
 pre-commit:
   parallel: true
@@ -35,7 +37,7 @@ commit-msg:
 
 pre-push:
   commands:
-    push-checks:
-      # Refuses pushes to main; scans the commits each pushed ref adds, whichever branch it is.
+    no-main-and-secrets:
+      # One script because git's stdin (the refs being pushed) can only be read once.
       run: scripts/checks/pre-push.sh
       use_stdin: true

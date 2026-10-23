@@ -6,7 +6,7 @@ set -euo pipefail
 status=0
 for f in "$@"; do
   case "$f" in
-    .env.example) ;;
+    .env.example | */.env.example) ;;
     .env | .env.* | */.env | */.env.*)
       echo "forbidden: $f (keys live in the Keychain, ADR 0007)"; status=1 ;;
     *.pem | *.key | *.p12 | *.credentials.yaml)

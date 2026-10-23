@@ -1,5 +1,6 @@
 # Git hooks. Install the tools with `brew bundle`, then run `lefthook install` once.
-# CI runs the same checks (.github/workflows/ci.yml), so --no-verify only delays a failure.
+# CI runs the same checks (.github/workflows/ci.yml), so --no-verify only delays a failure;
+# no-push-to-main is enforced by the "Protect main" ruleset instead.
 # Local overrides go in lefthook-local.yml (gitignored).
 
 pre-commit:
@@ -11,16 +12,14 @@ pre-commit:
       run: scripts/checks/forbidden-paths.sh {staged_files}
     forbidden-patterns:
       run: scripts/checks/forbidden-patterns.sh {staged_files}
-    conflict-markers:
-      run: "! grep -nE '^(<<<<<<<|>>>>>>>)( |$)' {staged_files}"
-    large-files:
-      # 1 MB; eval fixtures and datasets don't belong in git (ADR 0011 keeps only summaries).
-      run: "! find {staged_files} -type f -size +1024k | grep ."
+    file-hygiene:
+      run: scripts/checks/file-hygiene.sh {staged_files}
     markdown:
       glob: "*.md"
       run: markdownlint-cli2 {staged_files}
     workflows:
       glob: ".github/**/*.{yml,yaml}"
+      # Offline here (no token needed); CI runs zizmor online with a pinned version.
       run: actionlint && zizmor --no-progress --offline .github/
     shell:
       glob: "{bin/*,scripts/**/*.sh}"
@@ -29,9 +28,7 @@ pre-commit:
 commit-msg:
   commands:
     conventional:
-      run: |
-        head -1 {1} | grep -qE '^(Merge |Revert )|^(feat|fix|docs|chore|ci|test|refactor|perf|build|style|research|prototype)(\([a-z0-9-]+\))?!?: .+' \
-          || { echo "commit message must start with type(scope): ... (e.g. 'docs: ADR 0013')"; exit 1; }
+      run: scripts/checks/commit-message.sh {1}
 
 pre-push:
   commands:

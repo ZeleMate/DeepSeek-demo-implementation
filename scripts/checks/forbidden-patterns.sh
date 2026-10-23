@@ -16,12 +16,12 @@ done
 status=0
 check() {
   local pattern=$1 reason=$2
-  if grep -nE -- "$pattern" "${files[@]}"; then
+  if grep -inE -- "$pattern" "${files[@]}"; then
     echo "^ forbidden: $reason"; status=1
   fi
 }
 
-check 'npx +@deepseek-ai/dsh' "npm's latest tag is a prerelease; use pnpm exec dsh (ADR 0001)"
+check 'npx( +-[a-z-]+)* +@deepseek-ai/dsh' "npm's latest tag is a prerelease; use pnpm exec dsh (ADR 0001)"
 check '--from-default-profile' 'deletes the existing profile (ADR 0001)'
-check '(^|[^A-Za-z_])env +[A-Z_]*(KEY|TOKEN|SECRET)=' 'keys passed as arguments show up in ps; export them inside the launcher (ADR 0007)'
+check '(^|[^a-z_])env( +-[a-z-]+)* +[a-z0-9_]*(key|token|secret|password)[a-z0-9_]*=' 'keys passed as arguments show up in ps; export them inside the launcher (ADR 0007)'
 exit "$status"

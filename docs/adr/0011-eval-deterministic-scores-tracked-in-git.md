@@ -35,7 +35,7 @@ Promptfoo measures two v1 scores.
 - A 3B grader is too noisy to be the score. Deterministic checks give a number that is comparable across versions.
 - Temperature 0 would hide the variance real runs have, and 3 attempts on a local 4B model cost nothing.
 - F1 measures the judge and the masking. The agent loop around them adds only noise and cost.
-- The repo has no CI, and CI can't run the local victim model cheaply. Committed summaries make "every version gets a Promptfoo number" visible in git history anyway.
+- CI checks only repo hygiene (secrets, lint, workflow rules), and it can't run the local victim model cheaply. Committed summaries make "every version gets a Promptfoo number" visible in git history anyway.
 
 ## Consequences
 
@@ -43,3 +43,5 @@ Promptfoo measures two v1 scores.
 - The F1 run calls the Decisions API on about 500 masked findings, which costs cents per run within the $5 OpenAI project limit.
 
 Decided in [Eval strategy](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/14). Research: research/redteam-setup.md.
+
+_Amended 2026-10-23:_ hygiene CI was added ([#77](https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/77)); eval scores still have no automatic gate.

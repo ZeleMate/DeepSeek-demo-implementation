@@ -1,0 +1,10 @@
+# Docs are written one paragraph per line, so line length is not checked.
+config:
+  default: true
+  MD013: false
+  # Tables use `|---|` delimiter rows; pipe spacing is not checked.
+  MD060: false
+ignores:
+  - "node_modules/**"
+  - "prototypes/**"
+  - ".claude/**"

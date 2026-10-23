@@ -7,7 +7,8 @@ status=0
 for f in "$@"; do
   case "$f" in
     .env.example | */.env.example) ;;
-    .env | .env.* | */.env | */.env.*)
+    # Keep in step with the .env lines in .gitignore.
+    .env | .env[._-]* | .envrc | */.env | */.env[._-]* | */.envrc)
       echo "forbidden: $f (keys live in the Keychain, ADR 0007)"; status=1 ;;
     *.pem | *.key | *.p12 | *.credentials.yaml)
       echo "forbidden: $f (credential file)"; status=1 ;;

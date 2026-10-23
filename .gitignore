@@ -1,6 +1,5 @@
 # Secrets: never commit (ADR 0007: keys live in the Keychain, not in files)
-.env
-.env.*
+.env*
 !.env.example
 *.pem
 *.key

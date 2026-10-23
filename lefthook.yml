@@ -18,7 +18,10 @@ pre-commit:
       glob: "*.md"
       run: markdownlint-cli2 {staged_files}
     workflows:
-      glob: ".github/**/*.{yml,yaml}"
+      # "**/" needs at least one folder, so the top-level .github/dependabot.yml is listed separately.
+      glob:
+        - ".github/*.{yml,yaml}"
+        - ".github/**/*.{yml,yaml}"
       # Offline here (no token needed); CI runs zizmor online with a pinned version.
       run: actionlint && zizmor --no-progress --offline .github/
     shell:
@@ -32,14 +35,7 @@ commit-msg:
 
 pre-push:
   commands:
-    no-push-to-main:
-      run: |
-        while read -r _ _ remote_ref _; do
-          if [ "$remote_ref" = "refs/heads/main" ]; then
-            echo "push to main refused: open a PR instead"; exit 1
-          fi
-        done
+    push-checks:
+      # Refuses pushes to main; scans the commits each pushed ref adds, whichever branch it is.
+      run: scripts/checks/pre-push.sh
       use_stdin: true
-    secrets:
-      # Every commit not yet on the remote, not just the staged diff.
-      run: gitleaks git --redact --no-banner --log-opts="HEAD --not --remotes"

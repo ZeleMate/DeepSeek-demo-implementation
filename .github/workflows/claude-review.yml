@@ -13,6 +13,6 @@ jobs:
       pull-requests: write
       issues: read
     # Pinned to a commit: this job receives CLAUDE_CODE_OAUTH_TOKEN, so a moved @main must not change what runs.
-    uses: ZeleMate/.github/.github/workflows/claude-review.yml@c36bae3f5397c18f1d553ff25bbb56fda896b2a2 # ZeleMate/.github#1 head (testing)
+    uses: ZeleMate/.github/.github/workflows/claude-review.yml@6090baefd3acbc7f0de0d7cbbf5254ad6ad6901a # main, 2026-10-23 (ZeleMate/.github#1)
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}

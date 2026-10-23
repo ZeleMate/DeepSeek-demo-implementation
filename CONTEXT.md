@@ -66,8 +66,36 @@ _Avoid_: test profile, attack mode
 Our dsh profile with the defence plugins enabled; the thing red-team runs attack and the thing security jobs run on.
 _Avoid_: secure mode, safe harness
 
+**Control plane**:
+The part of the hardened harness that decides whether an action proposal may run, enforces that policy decision, and records it with its effect; the model takes no part in it.
+_Avoid_: guardrails, governance layer
+
+**Action proposal**:
+A tool call from the model, treated as a request to act and never as permission to.
+_Avoid_: action, intent
+
+**Policy decision**:
+The control plane's one allow, deny or ask answer for an action proposal, reached deterministically from the proposal, its context and the policy version. Always "policy decision", never plain "decision", which is a decisions model's answer.
+_Avoid_: verdict, permission check
+
+**Risk tier**:
+The consequence class of an action proposal, from T0 (observe) through T1 (draft), T2 (reversible) and T3 (needs approval) to T4 (denied); set by the bundle's policy, never by the tool or the model, and raised but never lowered by context such as taint.
+_Avoid_: risk level, autonomy level
+
+**Executor**:
+What performs an allowed action, holding only the authority that action needs.
+_Avoid_: broker, runner
+
+**Effect**:
+The change an executed action actually made, recorded as verified, failed or unknown; a dispatched action with no verified effect is never reported as done.
+_Avoid_: result, outcome
+
+**Ledger**:
+The tamper-evident, hash-chained record of a run's action proposals, policy decisions and effects, kept apart from anything the model sees.
+_Avoid_: audit log, audit trail, transcript
+
 **Defence**:
-A plugin that blocks or filters at a tool-pipeline hook (egress allowlist, injection filter, MCP pinning guard, canary check).
+A detector or rule whose result feeds a policy decision (egress allowlist, read allowlist, taint, injection filter, MCP pinning guard, canary check); each is scored by its effect on attack success rate.
 _Avoid_: guardrail, protection
 
 **Attack set**:

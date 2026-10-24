@@ -18,6 +18,14 @@ importers:
         specifier: 0.2.1-rc.2
         version: 0.2.1-rc.2(3e91f9a35967dbe9e0b747cd6f11659f)
 
+  bundles/job:
+    dependencies:
+      '@zelemate/dsh-hello':
+        specifier: workspace:*
+        version: link:../../plugins/hello
+
+  plugins/hello: {}
+
 packages:
 
   '@agentclientprotocol/sdk@1.4.0':

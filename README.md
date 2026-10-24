@@ -16,4 +16,16 @@ pnpm install --frozen-lockfile  # dsh pinned exactly, pi-ai patched (pnpm-worksp
 
 Run dsh only as `pnpm exec dsh`, never `npx @deepseek-ai/dsh`: npm's `latest` tag points at whatever prerelease came out last (ADR 0001).
 
+## Running the job profile
+
+```bash
+security add-generic-password -U -a "$USER" -s dsh-demo.OPENROUTER_API_KEY -w   # prompts for the key
+bin/dsh-job "what is 17+25?"
+```
+
+[bin/dsh-job](bin/dsh-job) is the only way keys reach dsh. It reads them from the login Keychain, exports them only into the dsh process, and starts dsh in a dedicated workspace, never inside a repo. On first run it creates the `job` profile (dsh's headless template plus [bundles/job](bundles/job)). It keeps everything under `~/.dsh-demo` (set `DSH_DEMO_ROOT` to move it):
+
+- `home/` is `DSH_HOME`: profiles and session logs. Its `cordis.patch.yml` must stay exactly `[]`, because that file outranks every profile; the launcher creates it and refuses to start if it changes.
+- `workspace/job/` is where dsh runs.
+
 API keys are Keychain items, never files; see [.env.example](.env.example) and ADR 0007. CI ([ci.yml](.github/workflows/ci.yml)) runs the same checks as the hooks.

@@ -48,7 +48,21 @@ if [ ! -e "$profile/package.json" ]; then
   "dsh": { "profile": { "bundles": ["@deepseek-ai/dsh-base", "@deepseek-ai/dsh-headless"] } }
 }
 EOF
-  "$dsh" plugin --profile job add "$repo/bundles/job" >/dev/null
+fi
+
+# Without our bundle the profile is plain headless: DeepSeek's API as the default model, search
+# and fetch on. So a first run that wrote the manifest but failed to add the bundle is retried
+# here, and the launcher refuses to start if the bundle is still missing (ADR 0003).
+has_bundle() {
+  node -e '
+    const bundles = require(process.argv[1]).dsh?.profile?.bundles ?? []
+    process.exit(bundles.includes("@zelemate/dsh-bundle-job") ? 0 : 1)
+  ' "$profile/package.json" 2>/dev/null
+}
+has_bundle || "$dsh" plugin --profile job add "$repo/bundles/job" >/dev/null || true
+if ! has_bundle; then
+  echo "dsh-job: the job profile in $profile is missing bundles/job; refusing to start" >&2
+  exit 1
 fi
 
 # Keys are exported here, never passed as arguments, which anyone can see in `ps`. Only the

@@ -67,10 +67,12 @@ fi
 
 # Keys are exported here, never passed as arguments, which anyone can see in `ps`. Only the
 # keys a job-profile route uses are read. A missing item leaves the variable unset, and dsh
-# fails the request with MISSING_CREDENTIAL.
+# fails the request with MISSING_CREDENTIAL. DSH_DEMO_NO_KEYS=1 skips the Keychain entirely
+# (the upgrade check runs keyless).
 # shellcheck disable=SC2043 # one key until the Decisions API route arrives (M5)
 for name in OPENROUTER_API_KEY; do
   unset "$name"
+  [ "${DSH_DEMO_NO_KEYS:-}" = 1 ] && continue
   if value=$(security find-generic-password -a "$USER" -s "dsh-demo.$name" -w 2>/dev/null); then
     export "$name=$value"
   fi

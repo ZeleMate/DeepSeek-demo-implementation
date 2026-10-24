@@ -14,7 +14,7 @@ lefthook install                # pre-commit, commit-msg and pre-push hooks (lef
 pnpm install --frozen-lockfile  # dsh pinned exactly, pi-ai patched (pnpm-workspace.yaml)
 ```
 
-Run dsh only as `pnpm exec dsh`, never `npx @deepseek-ai/dsh`: npm's `latest` tag points at whatever prerelease came out last (ADR 0001).
+Run dsh only as `pnpm exec dsh`, never `npx @deepseek-ai/dsh`: npm's `latest` tag points at whatever prerelease came out last (ADR 0001). Every dsh upgrade PR must pass `pnpm check:upgrade`, which needs Ollama running with `qwen3.5:2b` and calls no remote model.
 
 ## Running the job profile
 

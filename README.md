@@ -9,8 +9,11 @@ A personal, learning-first agent harness built as a bundle of our own plugins on
 ## Setup
 
 ```bash
-brew bundle          # lefthook, gitleaks, actionlint, zizmor, shellcheck, markdownlint-cli2
-lefthook install     # pre-commit, commit-msg and pre-push hooks (lefthook.yml)
+brew bundle                     # pnpm, lefthook, gitleaks, actionlint, zizmor, shellcheck, markdownlint-cli2
+lefthook install                # pre-commit, commit-msg and pre-push hooks (lefthook.yml)
+pnpm install --frozen-lockfile  # dsh pinned exactly, pi-ai patched (pnpm-workspace.yaml)
 ```
+
+Run dsh only as `pnpm exec dsh`, never `npx @deepseek-ai/dsh`: npm's `latest` tag points at whatever prerelease came out last (ADR 0001).
 
 API keys are Keychain items, never files; see [.env.example](.env.example) and ADR 0007. CI ([ci.yml](.github/workflows/ci.yml)) runs the same checks as the hooks.

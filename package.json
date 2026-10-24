@@ -1,0 +1,15 @@
+{
+  "name": "@zelemate/dsh-demo",
+  "private": true,
+  "description": "Our dsh plugins and bundles (ADR 0001)",
+  "packageManager": "pnpm@11.28.5",
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "scripts": {
+    "dsh": "dsh"
+  },
+  "devDependencies": {
+    "@deepseek-ai/dsh": "0.2.1-rc.2"
+  }
+}

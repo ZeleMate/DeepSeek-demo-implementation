@@ -34,6 +34,6 @@ The repo is tagged at the end of each milestone (`v0.1` … `v0.6`, then `v1.0`)
 - **Build every defence, then measure.** Rejected: there would be no per-defence deltas.
 - **Swap Jev in for the Decisions API now**, since it is cheaper. Rejected: the bake-off lets the eval choose instead of a guess.
 
-_Amended 2026-10-23 by ADR 0013:_ M3 builds the ledger instead of a plain audit plugin, and M4 builds the control plane's policy decision instead of a standalone policy plugin. M5 and M6 deliver defences that feed that policy decision. The order is unchanged.
+_Amended 2026-10-23 by ADR 0013 ([#90](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/90)):_ M3 builds the ledger instead of a plain audit plugin, and M4 builds the control plane's policy decision instead of a standalone policy plugin. M5 and M6 deliver defences that feed that policy decision. The order is unchanged.
 
 Decided in [Build order and milestones](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/50).

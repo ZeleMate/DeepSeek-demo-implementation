@@ -72,14 +72,14 @@ _Avoid_: guardrails, governance layer
 
 **Action proposal**:
 A tool call from the model, treated as a request to act and never as permission to.
-_Avoid_: action, intent
+_Avoid_: intent
 
 **Policy decision**:
 The control plane's one allow, deny or ask answer for an action proposal, reached deterministically from the proposal, its context and the policy version. Always "policy decision", never plain "decision", which is a decisions model's answer.
 _Avoid_: verdict, permission check
 
 **Risk tier**:
-The consequence class of an action proposal, from T0 (observe) through T1 (draft), T2 (reversible) and T3 (needs approval) to T4 (denied); set by the bundle's policy, never by the tool or the model, and raised but never lowered by context such as taint.
+The consequence class of an action proposal, from T0 (observe) through T1 (draft), T2 (reversible) and T3 (approve) to T4 (critical, denied); set by the bundle's policy, never by the tool or the model, and raised but never lowered by context such as taint.
 _Avoid_: risk level, autonomy level
 
 **Executor**:

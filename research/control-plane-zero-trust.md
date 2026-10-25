@@ -59,4 +59,5 @@ Zero-trust rules from the cheat sheet that go beyond the article:
 - `ApprovalOutcome` is `'allowed-once' | 'rejected' | 'cancelled' | 'unavailable'`. Grants apply only to the requested action; there is no "always allow".
 - `approval/asked` records `toolName`, optional `callId` and `reason`. It records no argument digest, expiry or policy version.
 - Session policy is `ask` (answerer chain, `unavailable` with none) or `never` (every ask rejected).
-- Every Cordis plugin runs with full harness privileges, so a PDP inside the dsh process shares the agent's trust domain (ADR 0012).
+- Every Cordis plugin runs with full harness privileges, so a PDP inside the dsh process shares the agent's trust domain.
+- Not yet checked: whether a tool call's arguments are frozen before `tools/pre-execute` runs. `dsh-llm` deep-freezes messages (`lib/types/message.js`), but nothing found ties that to the arguments a listener sees. ADR 0013 does not rely on it.

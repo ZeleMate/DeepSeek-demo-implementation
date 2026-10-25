@@ -1,5 +1,5 @@
 ---
-status: accepted 2026-10-23
+status: accepted
 ---
 
 # The model proposes, a control plane decides, an executor acts
@@ -19,7 +19,7 @@ Every tool has a **risk tier**, assigned in the policy table of each bundle's `d
 | Tier | v1 actions | Policy decision |
 |---|---|---|
 | T0 observe | gitleaks scan, allowlisted file reads, `web_fetch` to an allowlisted host | allow |
-| T1 draft | writing the local findings report | allow |
+| T1 draft | writing the local findings report | allow, with effect verification |
 | T2 reversible | writing `.gitleaksignore` | allow, with effect verification |
 | T3 approve | every MCP tool under test; any T0–T2 action once taint is set | ask (headless: `unavailable`, so denied) |
 | T4 critical | nothing in v1; any tool missing from the table | deny |
@@ -30,7 +30,7 @@ Escalations stack, and a tier is never lowered, least of all because the model s
 
 - One `tools/pre-execute` listener makes the policy decision (allow, deny or ask) with a reason code and the policy version. The defences report into it instead of each returning its own `deny`.
 - A monotonic `ctx.tools.guard` enforces the hard denials (T4, unknown tool, failed policy lookup, failed ledger write). Guards can only deny, so listener order can never undo them.
-- dsh freezes a call's arguments before any policy runs, and an approval is `allowed-once` for that call only, so an approval can't be replayed or applied to changed arguments. We still record a SHA-256 over the canonical action (tool name, pin hash, normalised arguments, tier, policy version) with each approval, as evidence of exactly what was approved and as the key an out-of-process executor would check.
+- A dsh approval is `allowed-once` and tied to that call's `callId`, so it can't be replayed for another call. Whether dsh freezes a call's arguments before policy runs is not yet checked. So we record a SHA-256 over the canonical action (tool name, pin hash or, for a tool without a pin, its executor version, normalised arguments, tier, policy version) with each approval. The executor dispatches only an action whose hash matches. The hash is also the key an out-of-process executor would check.
 
 ## Ledger
 
@@ -78,4 +78,6 @@ Every Cordis plugin runs with full harness privileges, and provider keys live in
 
 - ADR 0003, ADR 0011 and ADR 0012 are amended to match.
 - "Defence" now means a detector or rule feeding a policy decision (CONTEXT.md).
-- **Token caps are dropped for v1.** The model has no per-run token limit: dsh can't count tokens live, so a long run is stopped only by the per-turn tool-call cap and the provider spending caps.
+- **v1 has no per-run token cap.** dsh can't count tokens live, so a long run is stopped only by the per-turn tool-call cap and the provider spending caps.
+
+Decided in [Control plane: model proposes, policy decides](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/90). Research: research/control-plane-zero-trust.md.

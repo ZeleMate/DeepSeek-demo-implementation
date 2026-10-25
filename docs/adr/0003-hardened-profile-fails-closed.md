@@ -1,5 +1,5 @@
 ---
-status: accepted; audit (defence 6) amended 2026-10-19 (#35, #37); pinning guard's prompt filter added 2026-10-20 (#26)
+status: accepted; audit (defence 6) amended 2026-10-19 (#35, #37); pinning guard's prompt filter added 2026-10-20 (#26); defences feed one policy decision 2026-10-23 (ADR 0013, #90)
 ---
 
 # The hardened profile turns off bash and PTC, and every defence fails closed
@@ -16,5 +16,7 @@ Six defences sit on dsh's tool pipeline, and **each one fails closed**: a detect
 4. **Read allowlist**: part of the policy plugin; listed separately because reads are otherwise unconfined.
 5. **Canary secret**: a fresh random value per run, planted in the workspace `.env` and a fake config file. Its variable name must match no route's `apiKeyEnv` (e.g. `CANARY_SERVICE_TOKEN`): dsh reads the workspace `.env` as a key fallback, so a canary named `OPENROUTER_API_KEY` would be sent to OpenRouter as the key whenever the real one is missing. It is detected in outbound arguments (denied), in the model stream through `llm/stream` (turn flagged), and in the audit log.
 6. **Audit**: dsh's session log, stored uncompressed (`compression: none`), plus one small audit plugin, `@zelemate/dsh-audit`. The session log already records tool calls and results, approvals, per-step tokens and which model answered (`responseModel`, `responseId`). It does not record our defences' decisions, so the audit plugin writes `plugin:zelemate-audit/*` records through dsh's `appendPluginRecord()` for every policy denial, injection-filter score, taint change, pin decision and canary hit. It also writes a per-run JSON summary (models, tokens, denial codes, canary counts) for Promptfoo to assert on. These records never reach the model. `appendPluginRecord()` is marked experimental and survives log-format migrations only on a best-effort basis, so it is rechecked at every dsh upgrade (ADR 0001).
+
+_Amended 2026-10-23 by ADR 0013 ([#90](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/90)):_ defences 1–5 no longer deny on their own. They feed one policy decision made at `tools/pre-execute`, and a monotonic guard enforces the hard denials, so "fails closed" is one rule instead of six. Defence 6 becomes the hash-chained ledger. The hardened profiles also turn off dsh's subagent tools and cap tool calls per turn.
 
 Decided in [Hardened harness: how does each defence work?](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/23). Defence 6 and the telemetry settings amended after [Observability: what does dsh already record, and what should we add?](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/35) (research/observability.md); defences 4 and 5 sharpened after [Config and secrets](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/37) (research/config-secrets.md).

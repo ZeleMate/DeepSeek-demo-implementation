@@ -139,7 +139,8 @@ jobs:
           path: .claude-plugins/mattpocock-skills
           persist-credentials: false
       # Comments only: the skill's smell findings are judgement calls, so this never fails on findings.
-      - uses: anthropics/claude-code-action@925afb53776cf1a2b738c6bdbed37b4d4000ef13 # v1.0.262
+      - id: review
+        uses: anthropics/claude-code-action@925afb53776cf1a2b738c6bdbed37b4d4000ef13 # v1.0.262
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ github.token }}
@@ -161,6 +162,12 @@ jobs:
             --model claude-sonnet-5-5
             --plugin-dir .claude-plugins/mattpocock-skills
             --allowedTools "Skill,Agent,Task,Read,Glob,Grep,Write(/tmp/**),Bash(git diff:*),Bash(git log:*),Bash(git rev-parse:*),Bash(git show:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(gh pr comment:*)"
+      # The action hides Claude's output; on failure, print the run's final message (an API error, say).
+      - name: Show why the review failed
+        if: failure() && steps.review.outputs.execution_file != ''
+        env:
+          EXECUTION_FILE: ${{ steps.review.outputs.execution_file }}
+        run: jq -r '.[] | select(.type == "result") | .result // empty' "$EXECUTION_FILE"
 
   claude-security:
     name: security review (Claude)
@@ -208,6 +215,12 @@ jobs:
             --model claude-sonnet-5-5
             --allowedTools "Read,Glob,Grep,Write(/tmp/**),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(gh pr comment:*)"
             --json-schema '{"type":"object","required":["findings"],"properties":{"findings":{"type":"array","items":{"type":"object","required":["file","severity","description"],"properties":{"file":{"type":"string"},"line":{"type":"integer"},"severity":{"type":"string","enum":["high","medium","low"]},"category":{"type":"string"},"description":{"type":"string"}}}}}}'
+      # The action hides Claude's output; on failure, print the run's final message (an API error, say).
+      - name: Show why the review failed
+        if: failure() && steps.review.outputs.execution_file != ''
+        env:
+          EXECUTION_FILE: ${{ steps.review.outputs.execution_file }}
+        run: jq -r '.[] | select(.type == "result") | .result // empty' "$EXECUTION_FILE"
       # A missing result means the review didn't finish, so fail rather than pass silently.
       - name: Fail on findings or an incomplete review
         env:

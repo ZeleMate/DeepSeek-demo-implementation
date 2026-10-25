@@ -20,9 +20,11 @@ Every tool has a **risk tier**, assigned in the policy table of each bundle's `d
 |---|---|---|
 | T0 observe | gitleaks scan, allowlisted file reads, `web_fetch` to an allowlisted host | allow |
 | T1 draft | writing the local findings report | allow, with effect verification |
-| T2 reversible | writing `.gitleaksignore` | allow, with effect verification |
-| T3 approve | every MCP tool under test; any T0–T2 action once taint is set | ask (headless: `unavailable`, so denied) |
-| T4 critical | nothing in v1; any tool missing from the table | deny |
+| T2 reversible | writing `.gitleaksignore`; an MCP tool under test whose pin matches the lockfile and whose arguments pass the egress allowlist | allow; `.gitleaksignore` with effect verification |
+| T3 approve | an MCP tool not yet in the lockfile; any T0–T2 action once taint is set | ask (headless: `unavailable`, so denied) |
+| T4 critical | an MCP tool whose pin changed; any tool missing from the table | deny |
+
+The MCP rows follow ADR 0003's pinning guard: a pinned tool runs, a new tool needs approval on first use, and a changed tool is refused until it is re-approved into the lockfile. So headless red-team and job runs can still call the pinned MCP servers under test, and the pinning guard's attack cases measure the guard rather than a blanket denial.
 
 Escalations stack, and a tier is never lowered, least of all because the model sounds confident.
 
@@ -60,7 +62,7 @@ The policy decision denies any tool call past a per-turn cap, with reason `budge
 
 ## Control-plane tests
 
-A deterministic suite with no model in it runs in CI (`ci.yml`) on every PR and must pass in full: an unknown tool is denied; taint raises T0–T2 to T3; a headless T3 is denied; the hash recorded with an approval equals the hash of what was dispatched; a failed ledger write denies the call; the chain verifies and breaks when any record is edited; a `.gitleaksignore` write whose read-back fails is recorded `effect.failed`. Attack success rate stays Promptfoo's number (ADR 0011). A PR that touches the policy table and these tests together is reviewed with that in mind, because weakening a test in the same change is a known attack.
+A deterministic suite with no model in it runs in CI (`ci.yml`) on every PR and must pass in full: an unknown tool is denied; an MCP tool with a changed pin is denied; taint raises T0–T2 to T3; a headless T3 is denied; the hash recorded with an approval equals the hash of what was dispatched; a failed ledger write denies the call; the chain verifies and breaks when any record is edited; a `.gitleaksignore` write whose read-back fails is recorded `effect.failed`. Attack success rate stays Promptfoo's number (ADR 0011). A PR that touches the policy table and these tests together is reviewed with that in mind, because weakening a test in the same change is a known attack.
 
 ## Trust boundary
 

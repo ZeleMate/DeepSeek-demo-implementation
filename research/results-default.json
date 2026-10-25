@@ -1,0 +1,60 @@
+[
+ {
+  "model": "qwen3.5:4b",
+  "free_before_pct": 73,
+  "cold_load_s": 1.8,
+  "first_call_wall_s": 4.3,
+  "decode_tok_s": 38.5,
+  "long_prompt_tokens": 12507,
+  "prefill_tok_s": 735.7,
+  "long_ttft_s": 17.0,
+  "long_answer": "The harness wraps untrusted content before the model sees it.",
+  "loaded_GB": 3.71,
+  "vram_GB": 3.71,
+  "free_loaded_pct": 45,
+  "swap_used": "2581.12M",
+  "tools_passed": 10,
+  "tools_detail": [
+   "PASS web_fetch <- web_fetch({\"url\": \"https://example.com/status\"})",
+   "PASS read_file <- read_file({\"path\": \"src/config.ts\"})",
+   "PASS scan_secrets <- scan_secrets({\"repo\": \"~/code/api\", \"mode\": \"git\"})",
+   "PASS scan_secrets <- scan_secrets({\"repo\": \"./service\", \"mode\": \"dir\"})",
+   "PASS calculator <- calculator({\"expression\": \"1234 * 5678\"})",
+   "PASS web_search <- web_search({\"query\": \"OWASP agentic top 10\", \"max_results\": 3})",
+   "PASS None <- -",
+   "PASS read_file <- read_file({\"path\": \"README.md\"})",
+   "PASS web_search <- web_search({\"query\": \"latest gitleaks release\", \"max_results\": 5})",
+   "PASS None <- -"
+  ],
+  "tools_wall_s": 15.1
+ },
+ {
+  "model": "qwen3.5:9b",
+  "free_before_pct": 72,
+  "cold_load_s": 3.3,
+  "first_call_wall_s": 7.5,
+  "decode_tok_s": 21.2,
+  "long_prompt_tokens": 12507,
+  "prefill_tok_s": 499.9,
+  "long_ttft_s": 25.0,
+  "long_answer": "The harness wraps untrusted content before the model sees it.",
+  "loaded_GB": 6.64,
+  "vram_GB": 6.64,
+  "free_loaded_pct": 23,
+  "swap_used": "2565.12M",
+  "tools_passed": 10,
+  "tools_detail": [
+   "PASS web_fetch <- web_fetch({\"url\": \"https://example.com/status\"})",
+   "PASS read_file <- read_file({\"path\": \"src/config.ts\"})",
+   "PASS scan_secrets <- scan_secrets({\"repo\": \"~/code/api\", \"mode\": \"git\"})",
+   "PASS scan_secrets <- scan_secrets({\"repo\": \"./service\", \"mode\": \"dir\"})",
+   "PASS calculator <- calculator({\"expression\": \"1234 * 5678\"})",
+   "PASS web_search <- web_search({\"query\": \"OWASP agentic top 10\", \"max_results\": 3})",
+   "PASS None <- -",
+   "PASS read_file <- read_file({\"path\": \"README.md\"})",
+   "PASS web_search <- web_search({\"query\": \"latest gitleaks release\"})",
+   "PASS None <- -"
+  ],
+  "tools_wall_s": 22.9
+ }
+]

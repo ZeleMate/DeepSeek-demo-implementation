@@ -1,0 +1,82 @@
+#!/bin/sh
+# Starts dsh's job profile; the only way API keys reach a dsh process (ADR 0007).
+# Usage: bin/dsh-job [app args...], e.g. bin/dsh-job "what is 17+25?" or bin/dsh-job --dump-config
+set -eu
+
+repo=$(cd "$(dirname "$0")/.." && pwd)
+root=${DSH_DEMO_ROOT:-$HOME/.dsh-demo}
+DSH_HOME=$root/home
+workspace=$root/workspace/job
+# Called by path, not through `pnpm exec`, which would run dsh in the repo instead of the workspace.
+dsh=$repo/node_modules/.bin/dsh
+
+if [ ! -x "$dsh" ]; then
+  echo "dsh-job: run 'pnpm install --frozen-lockfile' in $repo first" >&2
+  exit 1
+fi
+
+mkdir -p "$DSH_HOME" "$workspace"
+
+# The home patch outranks every profile, so it stays exactly [] (ADR 0007).
+home_patch=$DSH_HOME/cordis.patch.yml
+[ -e "$home_patch" ] || printf '[]\n' >"$home_patch"
+if [ "$(cat "$home_patch")" != "[]" ]; then
+  echo "dsh-job: $home_patch must be exactly [] (ADR 0007)" >&2
+  exit 1
+fi
+
+# dsh reads ./.env as a key fallback and ./AGENTS.md as instructions, so it never starts
+# inside a repo. A scanned repo reaches a job as a tool argument (ADR 0007, ADR 0009).
+cd "$workspace"
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "dsh-job: $workspace is inside a git repo; the job workspace must not be one" >&2
+  exit 1
+fi
+
+export DSH_HOME DSH_TELEMETRY_DISABLED=1
+
+# First run: the job profile is dsh-base, then dsh-headless, then our bundle (#53). The manifest
+# is written here instead of using dsh's template flag, which deletes an existing profile (ADR 0001).
+profile=$DSH_HOME/profiles/job
+if [ ! -e "$profile/package.json" ]; then
+  mkdir -p "$profile"
+  cat >"$profile/package.json" <<'EOF'
+{
+  "name": "dsh-profile-job",
+  "private": true,
+  "dependencies": {},
+  "dsh": { "profile": { "bundles": ["@deepseek-ai/dsh-base", "@deepseek-ai/dsh-headless"] } }
+}
+EOF
+fi
+
+# Without our bundle the profile is plain headless: DeepSeek's API as the default model, search
+# and fetch on. So a first run that wrote the manifest but failed to add the bundle is retried
+# here, and the launcher refuses to start if the bundle is still missing (ADR 0003).
+has_bundle() {
+  node -e '
+    const bundles = require(process.argv[1]).dsh?.profile?.bundles ?? []
+    process.exit(bundles.includes("@zelemate/dsh-bundle-job") ? 0 : 1)
+  ' "$profile/package.json" 2>/dev/null
+}
+has_bundle || "$dsh" plugin --profile job add "$repo/bundles/job" >/dev/null || true
+if ! has_bundle; then
+  echo "dsh-job: the job profile in $profile is missing bundles/job; refusing to start" >&2
+  exit 1
+fi
+
+# Keys are exported here, never passed as arguments, which anyone can see in `ps`. Only the
+# keys a job-profile route uses are read. A missing item leaves the variable unset, and dsh
+# fails the request with MISSING_CREDENTIAL. DSH_DEMO_NO_KEYS=1 skips the Keychain entirely
+# (the upgrade check runs keyless).
+# shellcheck disable=SC2043 # one key until the Decisions API route arrives (M5)
+for name in OPENROUTER_API_KEY; do
+  unset "$name"
+  [ "${DSH_DEMO_NO_KEYS:-}" = 1 ] && continue
+  if value=$(security find-generic-password -a "$USER" -s "dsh-demo.$name" -w 2>/dev/null); then
+    export "$name=$value"
+  fi
+done
+unset value
+
+exec "$dsh" --profile job "$@"

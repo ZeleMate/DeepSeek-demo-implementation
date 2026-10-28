@@ -56,20 +56,30 @@ fi
 # The model tags the bundle names are built from its Modelfiles, which fix a 16k context
 # (#26). Only an installed base is used: this never downloads a model. The victim is the
 # default model, so it is required; the grader is used by Promptfoo (#57), so it only warns.
+# A tag is rebuilt whenever its Modelfile changes, so an old tag never keeps an old context.
 if ! command -v ollama >/dev/null 2>&1; then
   echo "dsh-redteam: ollama is not installed" >&2
   exit 1
 fi
+built=$root/redteam/models
+mkdir -p "$built"
 for entry in victim:redteam-qwen3.5-4b-16k grader:redteam-granite4.2-3b-16k; do
   role=${entry%%:*}
   tag=${entry#*:}
-  ollama show "$tag" >/dev/null 2>&1 && continue
-  base=$(sed -n 's/^FROM //p' "$bundle/$role.Modelfile")
+  modelfile=$bundle/$role.Modelfile
+  stamp=$built/$tag.sha256
+  hash=$(shasum -a 256 "$modelfile" | cut -d' ' -f1)
+  if ollama show "$tag" >/dev/null 2>&1 && [ "$(cat "$stamp" 2>/dev/null)" = "$hash" ]; then
+    continue
+  fi
+  base=$(sed -n 's/^FROM //p' "$modelfile")
   if ollama show "$base" >/dev/null 2>&1; then
-    if ! ollama create "$tag" -f "$bundle/$role.Modelfile" >/dev/null 2>&1; then
+    rm -f "$stamp"
+    if ! ollama create "$tag" -f "$modelfile" >/dev/null 2>&1; then
       echo "dsh-redteam: could not create $tag from $role.Modelfile" >&2
       exit 1
     fi
+    printf '%s\n' "$hash" >"$stamp"
   elif [ "$role" = victim ]; then
     echo "dsh-redteam: the victim base $base is missing; run 'ollama pull $base'" >&2
     exit 1

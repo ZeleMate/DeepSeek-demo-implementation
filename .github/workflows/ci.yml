@@ -579,6 +579,13 @@ jobs:
           else
             base64 -d <<<"$LEFT" > left.json
           fi
+          # A fix that failed before Collect findings leaves no findings, and a mangled trailer no
+          # array. Either way, say so and fail rather than print nothing.
+          if ! jq -e 'type == "array"' left.json >/dev/null 2>&1; then
+            jq -n '[{file: ".github/workflows/ci.yml", severity: "medium",
+              description: "The Claude fix left no readable findings.",
+              reason: "the fix failed before collecting them, or the leftovers were unreadable"}]' > left.json
+          fi
           # One line per finding: a newline in a description could start a workflow command. The
           # text came from model output over the PR, so it's labelled as data for whoever reads it.
           jq -r '.[] | (if .severity == "low" then "notice" else "error" end) as $level

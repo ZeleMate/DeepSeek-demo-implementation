@@ -1,0 +1,5 @@
+# The red-team victim (ADR 0005). Ollama's default context is 4,096 below 24 GB of VRAM,
+# which silently truncates dsh's prompt, so the tag fixes a 16k context (#26).
+# bin/dsh-redteam creates it as redteam-qwen3.5-4b-16k.
+FROM qwen3.5:4b
+PARAMETER num_ctx 16384

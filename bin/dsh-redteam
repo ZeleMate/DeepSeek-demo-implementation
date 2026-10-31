@@ -1,0 +1,125 @@
+#!/bin/sh
+# Starts dsh's red-team profile on local Ollama, with its own DSH_HOME and no provider keys (ADR 0007).
+# Usage: bin/dsh-redteam [app args...], e.g. bin/dsh-redteam "what is 17+25?" or bin/dsh-redteam --dump-config
+set -eu
+
+root=${DSH_DEMO_ROOT:-$HOME/.dsh-demo}
+
+# The script re-runs itself with an empty environment plus a fixed allowlist, so no provider
+# key exported in the calling shell can reach dsh or anything it starts.
+if [ "${DSH_REDTEAM_CLEAN_ENV:-}" != 1 ]; then
+  exec env -i \
+    HOME="$HOME" USER="${USER:-}" PATH="$PATH" LANG="${LANG:-en_US.UTF-8}" \
+    TERM="${TERM:-dumb}" TMPDIR="${TMPDIR:-/tmp}" \
+    DSH_DEMO_ROOT="$root" DSH_REDTEAM_CLEAN_ENV=1 \
+    "$0" "$@"
+fi
+
+repo=$(cd "$(dirname "$0")/.." && pwd)
+# Its own home, so nothing the job profile stores (sessions, settings, credentials) is in reach.
+DSH_HOME=$root/redteam/home
+workspace=$root/workspace/redteam
+bundle=$repo/bundles/redteam
+# Called by path, not through `pnpm exec`, which would run dsh in the repo instead of the workspace.
+dsh=$repo/node_modules/.bin/dsh
+
+if [ ! -x "$dsh" ]; then
+  echo "dsh-redteam: run 'pnpm install --frozen-lockfile' in $repo first" >&2
+  exit 1
+fi
+
+mkdir -p "$DSH_HOME" "$workspace"
+
+# The home patch outranks every profile, so it stays exactly [] (ADR 0007).
+home_patch=$DSH_HOME/cordis.patch.yml
+[ -e "$home_patch" ] || printf '[]\n' >"$home_patch"
+if [ "$(cat "$home_patch")" != "[]" ]; then
+  echo "dsh-redteam: $home_patch must be exactly [] (ADR 0007)" >&2
+  exit 1
+fi
+
+# dsh falls back to these files for keys. The red-team profile has no keys, so none may exist.
+for file in "$DSH_HOME/.env" "$DSH_HOME/.credentials.yaml" "$workspace/.env"; do
+  if [ -e "$file" ]; then
+    echo "dsh-redteam: $file exists; the red-team profile must have no key source (ADR 0007)" >&2
+    exit 1
+  fi
+done
+
+# dsh reads ./AGENTS.md as instructions, so it never starts inside a repo (ADR 0009).
+cd "$workspace"
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "dsh-redteam: $workspace is inside a git repo; the red-team workspace must not be one" >&2
+  exit 1
+fi
+
+# The model tags the bundle names are built from its Modelfiles, which fix a 16k context
+# (#26). Only an installed base is used: this never downloads a model. The victim is the
+# default model, so it is required; the grader is used by Promptfoo (#57), so it only warns.
+# A tag is rebuilt whenever its Modelfile changes, so an old tag never keeps an old context.
+if ! command -v ollama >/dev/null 2>&1; then
+  echo "dsh-redteam: ollama is not installed" >&2
+  exit 1
+fi
+built=$root/redteam/models
+mkdir -p "$built"
+for entry in victim:redteam-qwen3.5-4b-16k grader:redteam-granite4.2-3b-16k; do
+  role=${entry%%:*}
+  tag=${entry#*:}
+  modelfile=$bundle/$role.Modelfile
+  stamp=$built/$tag.sha256
+  hash=$(shasum -a 256 "$modelfile" | cut -d' ' -f1)
+  if ollama show "$tag" >/dev/null 2>&1 && [ "$(cat "$stamp" 2>/dev/null)" = "$hash" ]; then
+    continue
+  fi
+  base=$(sed -n 's/^FROM //p' "$modelfile")
+  if ollama show "$base" >/dev/null 2>&1; then
+    rm -f "$stamp"
+    if ! ollama create "$tag" -f "$modelfile" >/dev/null 2>&1; then
+      echo "dsh-redteam: could not create $tag from $role.Modelfile" >&2
+      exit 1
+    fi
+    printf '%s\n' "$hash" >"$stamp"
+  elif [ "$role" = victim ]; then
+    echo "dsh-redteam: the victim base $base is missing; run 'ollama pull $base'" >&2
+    exit 1
+  else
+    echo "dsh-redteam: warning: the $role base $base is missing; run 'ollama pull $base'" >&2
+  fi
+done
+
+# Ollama needs no key, but pi-ai's OpenAI-compatible transport requires one. This dummy is
+# the only key the red-team profile has, and it is not a secret (ADR 0007).
+export DSH_HOME DSH_TELEMETRY_DISABLED=1 OLLAMA_DUMMY_KEY=ollama
+
+# First run: the red-team profile is dsh-base, then dsh-headless, then our bundle. The manifest
+# is written here instead of using dsh's template flag, which deletes an existing profile (ADR 0001).
+profile=$DSH_HOME/profiles/redteam
+if [ ! -e "$profile/package.json" ]; then
+  mkdir -p "$profile"
+  cat >"$profile/package.json" <<'EOF'
+{
+  "name": "dsh-profile-redteam",
+  "private": true,
+  "dependencies": {},
+  "dsh": { "profile": { "bundles": ["@deepseek-ai/dsh-base", "@deepseek-ai/dsh-headless"] } }
+}
+EOF
+fi
+
+# Without our bundle the profile is plain headless: DeepSeek's API as the default model, search
+# and fetch on. So a first run that wrote the manifest but failed to add the bundle is retried
+# here, and the launcher refuses to start if the bundle is still missing (ADR 0003).
+has_bundle() {
+  node -e '
+    const bundles = require(process.argv[1]).dsh?.profile?.bundles ?? []
+    process.exit(bundles.includes("@zelemate/dsh-bundle-redteam") ? 0 : 1)
+  ' "$profile/package.json" 2>/dev/null
+}
+has_bundle || "$dsh" plugin --profile redteam add "$bundle" >/dev/null || true
+if ! has_bundle; then
+  echo "dsh-redteam: the red-team profile in $profile is missing bundles/redteam; refusing to start" >&2
+  exit 1
+fi
+
+exec "$dsh" --profile redteam "$@"

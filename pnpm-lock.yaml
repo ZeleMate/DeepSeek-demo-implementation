@@ -24,6 +24,8 @@ importers:
         specifier: workspace:*
         version: link:../../plugins/hello
 
+  bundles/redteam: {}
+
   plugins/hello: {}
 
 packages:

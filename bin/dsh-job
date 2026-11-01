@@ -34,6 +34,8 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 fi
 
 export DSH_HOME DSH_TELEMETRY_DISABLED=1
+# A DeepSeek key or endpoint in your shell never reaches dsh: no job-profile route uses one.
+unset DEEPSEEK_API_KEY DEEPSEEK_BASE_URL DSH_TELEMETRY_OTLP_URL
 
 # First run: the job profile is dsh-base, then dsh-headless, then our bundle (#53). The manifest
 # is written here instead of using dsh's template flag, which deletes an existing profile (ADR 0001).

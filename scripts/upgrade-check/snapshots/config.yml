@@ -18,8 +18,11 @@
 # == @deepseek-ai/dsh-base
 - id: llm
   name: '@deepseek-ai/dsh-llm'
+# == @deepseek-ai/dsh-base, patched by @zelemate/dsh-bundle-job
 - id: deepseek-llm-api-extensions
   name: '@deepseek-ai/dsh-deepseek-llm-api-extensions'
+  disabled: true
+# == @deepseek-ai/dsh-base
 - id: session
   name: '@deepseek-ai/dsh-session'
 # == @deepseek-ai/dsh-base, patched by @zelemate/dsh-bundle-job
@@ -56,9 +59,10 @@
   name: '@deepseek-ai/dsh-user-questions'
 - id: agent
   name: '@deepseek-ai/dsh-agent'
+# == @deepseek-ai/dsh-base, patched by @zelemate/dsh-bundle-job
 - id: plugin-package-inventory-deepseek
   name: '@deepseek-ai/dsh-plugin-package-inventory-deepseek'
-# == @deepseek-ai/dsh-base, patched by @zelemate/dsh-bundle-job
+  disabled: true
 - id: agent-default-model
   name: '@deepseek-ai/dsh-agent-default-model'
   config:
@@ -208,9 +212,11 @@
         approval: never
 - id: shell-env
   name: '@deepseek-ai/dsh-shell-env'
+# == @deepseek-ai/dsh-base, patched by @zelemate/dsh-bundle-job
 - id: tool-bash
   name: '@deepseek-ai/dsh-tool-bash'
-  disabled: !!js process.platform === 'win32'
+  disabled: true
+# == @deepseek-ai/dsh-base
 - id: tool-pwsh
   name: '@deepseek-ai/dsh-tool-pwsh'
   disabled: !!js process.platform !== 'win32'
@@ -324,14 +330,19 @@
   config:
     provider: fork
     toolName: subagent_fork
+# == @deepseek-ai/dsh-base, patched by @zelemate/dsh-bundle-job
 - id: ptc-runtime
   name: '@deepseek-ai/dsh-ptc-runtime-node'
+  disabled: true
 - id: workflow-ptc
   name: '@deepseek-ai/dsh-workflow-ptc'
   config:
     provider: spawn
+  disabled: true
 - id: tool-workflow
   name: '@deepseek-ai/dsh-tool-workflow'
+  disabled: true
+# == @deepseek-ai/dsh-base
 - id: timeout-policy
   name: '@deepseek-ai/dsh-tool-call-timeout-policy'
 - id: spill-local
@@ -409,10 +420,13 @@
     agents: []
 - id: fs-sandbox
   name: '@deepseek-ai/dsh-fs-sandbox'
+# == @deepseek-ai/dsh-base, patched by @zelemate/dsh-bundle-job
 - id: llm-deepseek
   name: '@deepseek-ai/dsh-llm-deepseek-api-key'
+  disabled: true
 - id: llm-deepseek-account
   name: '@deepseek-ai/dsh-llm-deepseek-account'
+  disabled: true
 # == @deepseek-ai/dsh-headless
 - id: headless-startup
   name: '@deepseek-ai/dsh-headless/startup'

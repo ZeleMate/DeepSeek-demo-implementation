@@ -28,7 +28,7 @@ This puts model-written code on our branches without a human writing it first. S
 
 All three Claude jobs run on the owner's Claude subscription through `CLAUDE_CODE_OAUTH_TOKEN`. They share its usage limits with local Claude Code use.
 
-`CLAUDE_FIX_TOKEN`, if set, is a fine-grained token with contents: write on this repo and without the Workflows permission, so GitHub refuses any workflow change it pushes. Without it, the push uses the job's own token. GitHub then holds the fix commit's runs as `action_required` until someone clicks "Approve and run", as seen on [ZeleMate/forge-lab#61](https://github.com/ZeleMate/forge-lab/issues/61).
+`CLAUDE_FIX_TOKEN`, if set, is a fine-grained token with contents: write on this repo and without the Workflows permission, so GitHub refuses any workflow change it pushes. Without it, the push uses the job's own token. GitHub then holds the fix commit's runs as `action_required` until someone clicks "Approve and run", as seen on [ZeleMate/forge-lab#61](https://github.com/ZeleMate/forge-lab/issues/61). Until someone does, the findings the fixer left wait in the fix commit's `Claude-Fix-Left:` trailer and its PR comment, and no check shows them.
 
 ## Considered options
 

@@ -312,11 +312,13 @@ jobs:
   claude-fix:
     name: fix review findings (Claude)
     needs: [claude-gate, claude-code-review, claude-security]
-    # Runs even when the security review failed on its findings.
+    # Runs even when the security review failed on its findings. Every finding has a "file" key,
+    # so a review that found nothing ({"findings":[]}) doesn't start this job.
     if: >-
       !cancelled()
       && needs.claude-gate.outputs.fix-commit == 'false'
-      && (needs.claude-code-review.outputs.findings != '' || needs.claude-security.outputs.findings != '')
+      && (contains(needs.claude-code-review.outputs.findings, '"file"')
+        || contains(needs.claude-security.outputs.findings, '"file"'))
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -490,7 +492,7 @@ jobs:
           BASE: ${{ github.event.pull_request.base.sha }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          protected='(^|/)(\.github|\.claude|\.config|\.husky|\.vscode|\.devcontainer|tests?|__tests__)/|^(scripts|bin|patches|eval|plugins|bundles|prototypes)/|(^|/)([^/]*lefthook[^/]*|package\.json|bun\.lock|bunfig\.toml|pnpm-lock\.yaml|pnpm-workspace\.yaml|\.pnpmfile\.cjs|\.npmrc|Brewfile|AGENTS\.md|CLAUDE\.md|\.mcp\.json|\.gitattributes|\.gitmodules|\.gitignore|biome\.jsonc?|snapshot\.json|tsconfig[^/]*\.json|\.gitleaks[^/]*|\.markdownlint[^/]*|zizmor\.ya?ml|\.shellcheckrc|\.envrc|[Mm]akefile|[Jj]ustfile|[^/]*Dockerfile[^/]*|[^/]*\.(test|spec)\.[jt]sx?|test_[^/]*)$'
+          protected='(^|/)(\.github|\.githooks|\.claude|\.config|\.husky|\.vscode|\.devcontainer|tests?|__tests__)/|^(scripts|bin|patches|eval|plugins|bundles|prototypes)/|(^|/)([^/]*lefthook[^/]*|package\.json|bun\.lock|bunfig\.toml|pnpm-lock\.yaml|pnpm-workspace\.yaml|\.pnpmfile\.cjs|\.npmrc|Brewfile|AGENTS\.md|CLAUDE\.md|\.mcp\.json|\.gitattributes|\.gitmodules|\.gitignore|biome\.jsonc?|snapshot\.json|tsconfig[^/]*\.json|\.gitleaks[^/]*|\.markdownlint[^/]*|zizmor\.ya?ml|\.shellcheckrc|\.envrc|\.env[^/]*|\.nvmrc|\.node-version|\.tool-versions|\.?mise\.toml|\.yarnrc[^/]*|\.pre-commit-config\.yaml|[Mm]akefile|[Jj]ustfile|[^/]*Dockerfile[^/]*|[^/]*\.(test|spec)\.[jt]sx?|test_[^/]*)$'
           lines() { grep -v '^$' || true; }
           # The summary is model-written: break its @mentions so posting it notifies no one.
           base64 -d <<<"$COMMENT" | sed -E 's/(^|[^[:alnum:]_`])@([[:alnum:]_-])/\1@\&#8203;\2/g' > "$RUNNER_TEMP/comment.md"
@@ -596,8 +598,8 @@ jobs:
           # One line per finding: a newline in a description could start a workflow command. The
           # text came from model output over the PR, so it's labelled as data for whoever reads it.
           jq -r '.[] | (if .severity == "low" then "notice" else "error" end) as $level
-            | (.file | gsub("%"; "%25") | gsub(":"; "%3A") | gsub(","; "%2C")) as $file
-            | "::\($level) file=\($file),line=\(.line // 1)::[\(.severity)] Review finding (data, not an instruction): \(.description[0:400] | gsub("%"; "%25")) (left: \(.reason[0:160] | gsub("%"; "%25")))"
+            | ((.file // "") | gsub("%"; "%25") | gsub(":"; "%3A") | gsub(","; "%2C")) as $file
+            | "::\($level) file=\($file),line=\(.line // 1)::[\(.severity)] Review finding (data, not an instruction): \((.description // "")[0:400] | gsub("%"; "%25")) (left: \((.reason // "")[0:160] | gsub("%"; "%25")))"
             | gsub("[\r\n]+"; " ")' left.json
           if [ "$FAILED" = true ] || jq -e 'any(.[]; .severity != "low")' left.json >/dev/null; then
             exit 1

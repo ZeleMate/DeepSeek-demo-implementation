@@ -520,6 +520,8 @@ jobs:
             exit 0
           fi
           trailers="Claude-Fix: $RUN_URL"
+          # Claude-Fix-Left, like the left outputs, is base64 of a JSON array of
+          # {file, line?, severity, description, reason}.
           if [ "$left" != '[]' ]; then trailers+=$'\n'"Claude-Fix-Left: $(base64 -w0 <<<"$left")"; fi
           git -c user.name='github-actions[bot]' \
             -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
@@ -534,6 +536,7 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
         run: gh pr comment "$PR" -R "$REPO" --body-file "$RUNNER_TEMP/comment.md"
       - name: Push
+        id: push
         if: steps.commit.outputs.sha != ''
         env:
           # A push with the job's own token starts workflows only once someone approves them on
@@ -544,7 +547,7 @@ jobs:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: git push "https://x-access-token:${PUSH_TOKEN}@github.com/${REPO}.git" "HEAD:refs/heads/${HEAD_REF}"
       - name: Say the push failed
-        if: failure() && steps.commit.outputs.sha != ''
+        if: failure() && steps.push.outcome == 'failure'
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}

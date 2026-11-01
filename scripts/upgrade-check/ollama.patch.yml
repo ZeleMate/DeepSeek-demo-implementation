@@ -1,6 +1,7 @@
 # Upgrade-check overlay: points the job profile's default model at local Ollama, so the
 # smoke turn costs nothing and no remote model is reachable (no remote route, no key).
-# check.sh builds the model tag from smoke.Modelfile.
+# check.sh builds the model tag from smoke.Modelfile, under the name agent-default-model
+# selects. The route's model id must be the same tag, or dsh refuses the default model.
 - id: llm-pi-ai
   config:
     providers:

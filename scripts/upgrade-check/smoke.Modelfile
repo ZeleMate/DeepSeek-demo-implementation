@@ -1,5 +1,5 @@
 # The smoke turn's model. Ollama's default context is 4,096 below 24 GB of VRAM, which
 # dsh's prompt plus one tool result overflows, so the tag fixes a 16k context (#26).
-# check.sh recreates it as upgrade-check-qwen3.5-2b-16k on every run.
+# check.sh recreates it on every run, under the model name ollama.patch.yml selects.
 FROM qwen3.5:2b
 PARAMETER num_ctx 16384

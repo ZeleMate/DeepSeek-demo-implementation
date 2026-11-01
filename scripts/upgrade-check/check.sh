@@ -63,8 +63,8 @@ snapshot config-schema.json --dump-config-schema
 
 # Checks dsh's plumbing, not the model: a 2B model's answer is too noisy to gate an upgrade on.
 step "Headless smoke turn on local Ollama"
-# Must match the model id in ollama.patch.yml.
-smoke_tag=upgrade-check-qwen3.5-2b-16k
+# The overlay's default model is the tag built from smoke.Modelfile.
+smoke_tag=$(sed -n 's/^ *model: //p' "$here/ollama.patch.yml")
 smoke_base=$(sed -n 's/^FROM //p' "$here/smoke.Modelfile")
 if ! curl -sf http://127.0.0.1:11434/api/tags >/dev/null; then
   fail "Ollama is not running on 127.0.0.1:11434"

@@ -300,7 +300,8 @@ jobs:
           fi
           n=$(jq '.findings | length' <<<"$RESULT")
           if [ "$n" -gt 0 ]; then
-            jq -r '.findings[] | "::error file=\(.file),line=\(.line // 1)::[\(.severity)] \(.description)" | gsub("[\r\n]+"; " ")' <<<"$RESULT"
+            jq -r '.findings[] | (.file | gsub("%"; "%25") | gsub(":"; "%3A") | gsub(","; "%2C")) as $file
+              | "::error file=\($file),line=\(.line // 1)::[\(.severity)] \(.description)" | gsub("[\r\n]+"; " ")' <<<"$RESULT"
             exit 1
           fi
           echo "No findings."

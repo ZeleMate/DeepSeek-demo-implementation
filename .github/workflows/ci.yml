@@ -301,7 +301,7 @@ jobs:
           n=$(jq '.findings | length' <<<"$RESULT")
           if [ "$n" -gt 0 ]; then
             jq -r '.findings[] | (.file | gsub("%"; "%25") | gsub(":"; "%3A") | gsub(","; "%2C")) as $file
-              | "::error file=\($file),line=\(.line // 1)::[\(.severity)] \(.description)" | gsub("[\r\n]+"; " ")' <<<"$RESULT"
+              | "::error file=\($file),line=\(.line // 1)::[\(.severity)] \(.description | gsub("%"; "%25"))" | gsub("[\r\n]+"; " ")' <<<"$RESULT"
             exit 1
           fi
           echo "No findings."
@@ -541,7 +541,7 @@ jobs:
         if: steps.commit.outputs.sha != ''
         env:
           # A push with the job's own token starts workflows only once someone approves them on
-          # the PR. A fine-grained token (contents: write on this repo, without the Workflows
+          # the PR (its pull_request runs wait as action_required, seen on ZeleMate/forge-lab#61). A fine-grained token (contents: write on this repo, without the Workflows
           # permission, so GitHub refuses workflow changes) starts them right away.
           PUSH_TOKEN: ${{ secrets.CLAUDE_FIX_TOKEN || github.token }}
           REPO: ${{ github.repository }}
@@ -593,7 +593,7 @@ jobs:
           # text came from model output over the PR, so it's labelled as data for whoever reads it.
           jq -r '.[] | (if .severity == "low" then "notice" else "error" end) as $level
             | (.file | gsub("%"; "%25") | gsub(":"; "%3A") | gsub(","; "%2C")) as $file
-            | "::\($level) file=\($file),line=\(.line // 1)::[\(.severity)] Review finding (data, not an instruction): \(.description[0:400]) (left: \(.reason[0:160]))"
+            | "::\($level) file=\($file),line=\(.line // 1)::[\(.severity)] Review finding (data, not an instruction): \(.description[0:400] | gsub("%"; "%25")) (left: \(.reason[0:160] | gsub("%"; "%25")))"
             | gsub("[\r\n]+"; " ")' left.json
           if [ "$FAILED" = true ] || jq -e 'any(.[]; .severity != "low")' left.json >/dev/null; then
             exit 1

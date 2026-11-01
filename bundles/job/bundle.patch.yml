@@ -81,10 +81,12 @@
 - id: deepseek-account
   disabled: true
 
-# No bash and no PTC (ADR 0003): dsh's sandbox limits file writes only, so either could
+# No shell tool and no PTC (ADR 0003): dsh's sandbox limits file writes only, so either could
 # reach any host without an approval. Jobs get dedicated tools instead. bash-sandbox stays:
 # it only provides the shell service the permission row waits for, not a model-facing tool.
 - id: tool-bash
+  disabled: true
+- id: tool-pwsh
   disabled: true
 - id: ptc-runtime
   disabled: true

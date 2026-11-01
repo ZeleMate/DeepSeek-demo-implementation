@@ -216,10 +216,10 @@
 - id: tool-bash
   name: '@deepseek-ai/dsh-tool-bash'
   disabled: true
-# == @deepseek-ai/dsh-base
 - id: tool-pwsh
   name: '@deepseek-ai/dsh-tool-pwsh'
-  disabled: !!js process.platform !== 'win32'
+  disabled: true
+# == @deepseek-ai/dsh-base
 - id: tool-jobs
   name: '@deepseek-ai/dsh-tool-jobs'
 - id: fs-observation-policy

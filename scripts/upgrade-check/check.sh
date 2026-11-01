@@ -65,13 +65,14 @@ snapshot config-schema.json --dump-config-schema
 step "Headless smoke turn on local Ollama"
 # Must match the model id in ollama.patch.yml.
 smoke_tag=upgrade-check-qwen3.5-2b-16k
+smoke_base=$(sed -n 's/^FROM //p' "$here/smoke.Modelfile")
 if ! curl -sf http://127.0.0.1:11434/api/tags >/dev/null; then
   fail "Ollama is not running on 127.0.0.1:11434"
 elif ! command -v ollama >/dev/null 2>&1; then
   fail "the ollama CLI is not on PATH"
-elif ! ollama show qwen3.5:2b >/dev/null 2>&1; then
+elif ! ollama show "$smoke_base" >/dev/null 2>&1; then
   # Checked first so `ollama create` never downloads the base.
-  fail "qwen3.5:2b is missing; run 'ollama pull qwen3.5:2b'"
+  fail "$smoke_base is missing; run 'ollama pull $smoke_base'"
 elif ! ollama create "$smoke_tag" -f "$here/smoke.Modelfile" >/dev/null 2>&1; then
   # Recreated every run, so a changed Modelfile always takes effect.
   fail "could not create the smoke model from smoke.Modelfile"

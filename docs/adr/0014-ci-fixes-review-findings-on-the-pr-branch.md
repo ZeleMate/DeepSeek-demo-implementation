@@ -18,7 +18,7 @@ This puts model-written code on our branches without a human writing it first. S
 
 ## Limits on the fixer
 
-- **No git and no shell.** A prep step hands Claude the diff and commit log as files. The reviews may run only their exact `gh` commands.
+- **No git and no shell.** A prep step hands Claude the diff and commit log as files. The reviews may run only read-only `gh pr view` and `gh issue view`, plus one exact `gh pr comment`.
 - **File tools stay in the checkout.** Reading `/proc`, `/sys`, `~/.claude` and `~/.config` is denied, which keeps `CLAUDE_CODE_OAUTH_TOKEN` out of reach. Writes to `.git/` are denied, and a hash of git's hooks and settings taken before and after Claude runs is the second line of defence.
 - **Protected files never take a fix.** These are files that run code on a developer's machine, decide what CI checks, or steer an agent. That means workflows, hook and package config, `scripts/`, `bin/` (ADR 0007), `patches/`, `eval/` (ADR 0011), tests, `AGENTS.md`, `CLAUDE.md` and `.claude/`. A finding there goes to the PR's owner.
 - **Inputs are data.** The prompt tells Claude to treat the findings, the diff and the repo's files as data, never as instructions. Annotation text from the model is kept to one line, and its `@mentions` are broken before the fixer's summary is posted.
@@ -28,7 +28,7 @@ This puts model-written code on our branches without a human writing it first. S
 
 All three Claude jobs run on the owner's Claude subscription through `CLAUDE_CODE_OAUTH_TOKEN`. They share its usage limits with local Claude Code use.
 
-`CLAUDE_FIX_TOKEN`, if set, is a fine-grained token with contents: write on this repo and without the Workflows permission, so GitHub refuses any workflow change it pushes. Without it, the push uses the job's own token. GitHub then holds the fix commit's runs as `action_required` until someone clicks "Approve and run", as seen on ZeleMate/forge-lab#61.
+`CLAUDE_FIX_TOKEN`, if set, is a fine-grained token with contents: write on this repo and without the Workflows permission, so GitHub refuses any workflow change it pushes. Without it, the push uses the job's own token. GitHub then holds the fix commit's runs as `action_required` until someone clicks "Approve and run", as seen on [ZeleMate/forge-lab#61](https://github.com/ZeleMate/forge-lab/issues/61).
 
 ## Considered options
 
@@ -43,4 +43,4 @@ All three Claude jobs run on the owner's Claude subscription through `CLAUDE_COD
 - Each push starts a new round of reviews, and each round can raise new judgement calls. So the loop doesn't always settle on its own, and the PR's owner decides when a PR is done.
 - PR diffs go to Anthropic's API. They are our own code, and gitleaks runs on every PR, so no secret value goes with them (ADR 0004).
 
-Decided in [ZeleMate/DeepSeek-demo-implementation#94](https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/94), after trials on ZeleMate/forge-lab#59, #60 and #61.
+Decided in [ZeleMate/DeepSeek-demo-implementation#94](https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/94), after trials on [ZeleMate/forge-lab#59](https://github.com/ZeleMate/forge-lab/issues/59), [#60](https://github.com/ZeleMate/forge-lab/issues/60) and [#61](https://github.com/ZeleMate/forge-lab/issues/61).

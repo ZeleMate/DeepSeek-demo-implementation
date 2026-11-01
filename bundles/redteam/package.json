@@ -1,0 +1,15 @@
+{
+  "name": "@zelemate/dsh-bundle-redteam",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The red-team profile's layer: local Ollama models only, no remote route (ADR 0005, 0007, 0012)",
+  "type": "module",
+  "engines": {
+    "dsh": "0.2.1-rc.2"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./bundle.patch.yml"
+    }
+  }
+}

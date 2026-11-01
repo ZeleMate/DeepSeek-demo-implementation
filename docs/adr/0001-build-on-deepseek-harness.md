@@ -1,5 +1,5 @@
 ---
-status: accepted; pinning and upgrade policy amended 2026-10-19 (#36)
+status: accepted; pinning and upgrade policy amended 2026-10-19 (#36); overrides' home and security overrides added 2026-11-01 (#96)
 ---
 
 # Build on DeepSeek Harness as a bundle of our own plugins
@@ -8,7 +8,7 @@ We build on [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 
 
 dsh is pinned to exactly `dsh-v0.2.1-rc.2`, as an exact npm devDependency with a committed lockfile (installs use `--frozen-lockfile`), and run with `pnpm exec dsh`. Every plugin pins its dsh peer and dev dependencies exactly, and every bundle declares an exact `engines.dsh`, which dsh enforces at install and profile start. We follow **release candidates only, one rc at a time**, each in its own PR, after reading every `docs/upgrade-guide/<from-version>/` folder in between.
 
-**We carry dsh's pi-ai patch ourselves.** dsh patches an O(n²) streaming bug in pi-ai 1.1.0 inside its own repo, but the published `dsh-llm-pi-ai` asks for `pi-ai ^1.1.0`, so an npm install gets 1.3.0 unpatched. Our root `package.json` pins pi-ai 1.1.0 with pnpm `overrides` and re-applies the patch with `patchedDependencies`.
+**We carry dsh's pi-ai patch ourselves.** dsh patches an O(n²) streaming bug in pi-ai 1.1.0 inside its own repo, but the published `dsh-llm-pi-ai` asks for `pi-ai ^1.1.0`, so an npm install gets 1.3.0 unpatched. Our `pnpm-workspace.yaml` pins pi-ai 1.1.0 with pnpm `overrides` and re-applies the patch with `patchedDependencies`. The same `overrides` also lift dependencies that dsh pins exactly past a security alert. Each of those matches only the vulnerable range and is dropped on the dsh upgrade that ships the fix.
 
 Each upgrade PR must pass a $0 check before it merges: frozen install (fails if the patch no longer applies), typecheck and tests, a diff of `--dump-config` and `--dump-config-schema` snapshots, one headless `--json` smoke turn on local Ollama, resuming a session from the previous version, and a small slice of the attack set. Back up `$DSH_HOME` first, because upgraded session logs can't be read by an older dsh.
 

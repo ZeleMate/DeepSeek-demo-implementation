@@ -161,7 +161,7 @@ Deterministic code that scores a submitted answer against its answer key. It sco
 _Avoid_: grader, judge, scorer
 
 **Harness**:
-The text a model is told, held as files: an instructions section, skills and tool descriptions. It changes what the model is told, never what it is allowed to do, which the profile decides.
+The text a model is told, held as files: an instructions section, skills and tool descriptions. It changes what the model is told, never what it is allowed to do, which the profile decides. It is unrelated to the **Hardened harness**, which is a profile.
 _Avoid_: prompt, config, profile
 
 **Base harness**:

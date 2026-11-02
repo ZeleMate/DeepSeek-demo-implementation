@@ -511,11 +511,23 @@ jobs:
           keep=$(comm -12 <(echo "$changed") <(echo "$allowed") | lines)
           dropped=$(comm -23 <(echo "$changed") <(echo "$allowed") | lines)
           if [ -n "$keep" ]; then xargs -d '\n' git add -- <<<"$keep"; fi
+          # A dropped edit leaves the findings on that file with their own severity, so a low one on a
+          # protected file stays low. An edit to a file no finding names is left as medium.
           if [ -n "$dropped" ]; then
             printf '\n\nDropped changes to files this PR doesn'"'"'t change, or protected ones: %s.\n' "$(paste -sd, - <<<"$dropped" | sed 's/,/, /g')" >> "$RUNNER_TEMP/comment.md"
-            jq --arg files "$dropped" '. + [$files | split("\n")[] | {file: ., severity: "medium",
-              description: "the fixer changed this file, which the PR does not change or which is protected, so its change was dropped",
-              reason: "outside what the fixer may change"}]' "$RUNNER_TEMP/left.json" > "$RUNNER_TEMP/left.tmp"
+            base64 -d <<<"$FINDINGS" | jq -c 'arrays' > "$RUNNER_TEMP/findings.json" 2>/dev/null || true
+            [ -s "$RUNNER_TEMP/findings.json" ] || echo '[]' > "$RUNNER_TEMP/findings.json"
+            jq --arg files "$dropped" --slurpfile findings "$RUNNER_TEMP/findings.json" '
+              reduce ($files | split("\n")[]) as $f (.;
+                [$findings[0][] | select((.file | ltrimstr("./")) == $f)] as $tried
+                | if $tried == [] then
+                    . + [{file: $f, severity: "medium",
+                      description: "the fixer changed this file, which no finding names and which the PR does not change or which is protected, so its change was dropped",
+                      reason: "outside what the fixer may change"}]
+                  else
+                    map(select((.file | ltrimstr("./")) != $f or (.description | IN($tried[].description) | not)))
+                    + [$tried[] | . + {reason: "the fixer edited this file, which the PR does not change or which is protected, so its change was dropped"}]
+                  end)' "$RUNNER_TEMP/left.json" > "$RUNNER_TEMP/left.tmp"
             mv "$RUNNER_TEMP/left.tmp" "$RUNNER_TEMP/left.json"
           fi
           left=$(jq -c . "$RUNNER_TEMP/left.json")

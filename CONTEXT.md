@@ -157,5 +157,5 @@ A fixture task's expected answer, read only by the checker and never shown to th
 _Avoid_: ground truth, gold, label
 
 **Checker**:
-Deterministic code that scores a submitted answer against its answer key. Distinct from a check, which is a red-team rule (ADR 0011), and from a grader or judge, which is a model.
+Deterministic code that scores a submitted answer against its answer key. It scores an answer to a fixture task, not an attack attempt, so it is distinct from the deterministic checks that judge attack success (ADR 0011), and from a grader or judge, which is a model.
 _Avoid_: grader, judge, scorer

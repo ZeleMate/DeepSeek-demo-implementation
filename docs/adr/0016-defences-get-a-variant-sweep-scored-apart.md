@@ -18,7 +18,7 @@ Each defence is scored once against the fixed attack set (ADR 0011). A defence c
 **How variants are scored.**
 
 - A variant inherits its parent attack's goal and defence. It is judged the same way: deterministic checks only, 3 attempts, the grader reported alongside (ADR 0011).
-- The **variant set** is append-only and is scored apart from the attack set, which stays frozen at its first about 20 attacks.
+- The **variant set** is append-only and is scored apart from the attack set, which stays frozen at its first 20 or so attacks.
 - `eval/results/<version>.json` gains a per-defence **variant rate**, the attack success rate measured on the variant set, plus the variant count it was scored on. It is never mixed into the core attack success rate.
 - The committed variant set reruns with every later results file, so a regression shows up without a new sweep.
 

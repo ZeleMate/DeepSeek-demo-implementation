@@ -67,6 +67,30 @@
 - id: web-fetch-http
   disabled: true
 
+# No async tools (ADR 0003, ADR 0013, #121). In dsh rc.2 a background job's output and a
+# subagent's answer reach the model later, as a user message in a new turn: no tool hook
+# sees a subagent's answer, and per-turn taint is gone by then. Bash and PTC go with them.
+- id: jobs
+  disabled: true
+- id: tool-jobs
+  disabled: true
+- id: tool-bash
+  disabled: true
+- id: tool-pwsh
+  disabled: true
+- id: tool-subagent
+  disabled: true
+- id: tool-subagent-fork
+  disabled: true
+- id: tool-subagent-control
+  disabled: true
+- id: tool-subagent-list-agents
+  disabled: true
+- id: workflow-ptc
+  disabled: true
+- id: tool-workflow
+  disabled: true
+
 # Only our own plugins load (ADR 0012). The plugin market isn't in base or headless.
 - id: plugin-manager
   disabled: true

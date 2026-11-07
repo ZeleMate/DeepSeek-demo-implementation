@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: accepted; async tools named and taint kept per session 2026-11-07 (#121)
 ---
 
 # The model proposes, a control plane decides, an executor acts
@@ -27,6 +27,8 @@ Every tool has a **risk tier**, assigned in the policy table of each bundle's `d
 The MCP rows follow ADR 0003's pinning guard: a pinned tool runs, a new tool needs approval on first use, and a changed tool is refused until it is re-approved into the lockfile. So headless red-team and job runs can still call the pinned MCP servers under test, and the pinning guard's attack cases measure the guard rather than a blanket denial.
 
 Escalations stack, and a tier is never lowered, least of all because the model sounds confident.
+
+Taint is a per-session flag, and no turn boundary clears it in v1. Content can reach the model in a later turn than the one that read it, as a subagent's answer does in dsh rc.2 ([#121](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/121)). If subagents return, a child's taint passes to its parent.
 
 ## Enforcement on dsh's hooks
 
@@ -56,13 +58,15 @@ An action is done only when its **effect** is verified. Appends to `.gitleaksign
 
 `run.started` and every `policy.decided` name the user (macOS account), profile, session id, agent id and executor (tool name plus version or pin hash). The hardened profiles turn off dsh's subagent tools, so v1 has no delegation: a child agent would otherwise act on its parent's authority without a policy decision of its own (OWASP ASI03, ASI07, ASI08). Subagents come back with a rule that a child's policy can only narrow its parent's.
 
+In dsh rc.2 every delegation is async: the child's answer reaches the parent as a user message in a new turn, which no tool hook sees ([#121](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/121)). So the bundles name each row they turn off (ADR 0003). The guard also denies `job_output`, `job_list`, `job_kill`, `bash`, `pwsh`, `subagent`, `subagent_fork`, `send_message`, `interrupt_agent`, `list_agents`, `workflow` and `run_code` with reason `async-disabled`. The table's T4 row already denies any tool missing from it, so this is a second lock: a bundle or upgrade that loads one of those rows again is still refused at call time.
+
 ## Limits
 
 The policy decision denies any tool call past a per-turn cap, with reason `budget`. Token spend stays capped by the providers (ADR 0006, ADR 0007), because dsh only learns a run's cost afterwards from OpenRouter's generation endpoint (ADR 0005).
 
 ## Control-plane tests
 
-A deterministic suite with no model in it runs in CI (`ci.yml`) on every PR and must pass in full: an unknown tool is denied; an MCP tool with a changed pin is denied; taint raises T0–T2 to T3; a headless T3 is denied; the hash recorded with an approval equals the hash of what was dispatched; a failed ledger write denies the call; the chain verifies and breaks when any record is edited; a `.gitleaksignore` write whose read-back fails is recorded `effect.failed`. Attack success rate stays Promptfoo's number (ADR 0011). A PR that touches the policy table and these tests together is reviewed with that in mind, because weakening a test in the same change is a known attack.
+A deterministic suite with no model in it runs in CI (`ci.yml`) on every PR and must pass in full: an unknown tool is denied; an MCP tool with a changed pin is denied; taint raises T0–T2 to T3; taint set in one turn is still set in the next; each `async-disabled` tool is denied even when its row is loaded; a headless T3 is denied; the hash recorded with an approval equals the hash of what was dispatched; a failed ledger write denies the call; the chain verifies and breaks when any record is edited; a `.gitleaksignore` write whose read-back fails is recorded `effect.failed`. Attack success rate stays Promptfoo's number (ADR 0011). A PR that touches the policy table and these tests together is reviewed with that in mind, because weakening a test in the same change is a known attack.
 
 ## Trust boundary
 

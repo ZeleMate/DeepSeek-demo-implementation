@@ -64,9 +64,10 @@
   config:
     provider: openrouter
     model: deepseek/deepseek-v4.1-flash
-# == @deepseek-ai/dsh-base
 - id: jobs
   name: '@deepseek-ai/dsh-jobs-local'
+  disabled: true
+# == @deepseek-ai/dsh-base
 - id: llm-retry
   name: '@deepseek-ai/dsh-llm-retry'
 - id: config-editor
@@ -208,14 +209,17 @@
         approval: never
 - id: shell-env
   name: '@deepseek-ai/dsh-shell-env'
+# == @deepseek-ai/dsh-base, patched by @zelemate/dsh-bundle-job
 - id: tool-bash
   name: '@deepseek-ai/dsh-tool-bash'
-  disabled: !!js process.platform === 'win32'
+  disabled: true
 - id: tool-pwsh
   name: '@deepseek-ai/dsh-tool-pwsh'
-  disabled: !!js process.platform !== 'win32'
+  disabled: true
 - id: tool-jobs
   name: '@deepseek-ai/dsh-tool-jobs'
+  disabled: true
+# == @deepseek-ai/dsh-base
 - id: fs-observation-policy
   name: '@deepseek-ai/dsh-fs-observation-policy'
 - id: tool-fs
@@ -310,28 +314,38 @@
   name: '@deepseek-ai/dsh-subagent-fork-in-process'
   config:
     providerName: fork
+# == @deepseek-ai/dsh-base, patched by @zelemate/dsh-bundle-job
 - id: tool-subagent-control
   name: '@deepseek-ai/dsh-tool-subagent-control'
+  disabled: true
 - id: tool-subagent-list-agents
   name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
+  disabled: true
 - id: tool-subagent
   name: '@deepseek-ai/dsh-tool-subagent'
   config:
     provider: spawn
     toolName: subagent
+  disabled: true
 - id: tool-subagent-fork
   name: '@deepseek-ai/dsh-tool-subagent'
   config:
     provider: fork
     toolName: subagent_fork
+  disabled: true
+# == @deepseek-ai/dsh-base
 - id: ptc-runtime
   name: '@deepseek-ai/dsh-ptc-runtime-node'
+# == @deepseek-ai/dsh-base, patched by @zelemate/dsh-bundle-job
 - id: workflow-ptc
   name: '@deepseek-ai/dsh-workflow-ptc'
   config:
     provider: spawn
+  disabled: true
 - id: tool-workflow
   name: '@deepseek-ai/dsh-tool-workflow'
+  disabled: true
+# == @deepseek-ai/dsh-base
 - id: timeout-policy
   name: '@deepseek-ai/dsh-tool-call-timeout-policy'
 - id: spill-local

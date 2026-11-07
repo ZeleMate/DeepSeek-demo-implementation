@@ -1,10 +1,14 @@
+---
+status: accepted
+---
+
 # Upstream bugs are disclosed privately and kept out of git until fixed
 
-Red-team runs attack our own harness, and the harness is dsh plus its bundled code (including our patched pi-ai). So an attack attempt can succeed because of a real bug in someone else's code, not a gap in our defences. We call that an **upstream bug**.
+Red-team runs attack our own harness, and the harness is dsh plus its bundled code (including our patched pi-ai) and the pinned third-party MCP servers under test. So an attack attempt can succeed because of a real bug in someone else's code, not a gap in our defences. We call that an **upstream bug**.
 
-**What counts.** An attack attempt is an upstream bug only if it reproduces without the model (a scripted tool call or plugin, no model choice involved) and breaks behaviour dsh documents: the read-only sandbox allows a write, `ctx.tools.guard` is bypassed, a hook is skipped, a disabled tool runs. These never count: a gap in our defences, model behaviour such as a jailbroken victim model, the M2 baseline hits, and anything in DVMCP or our test MCP server, which are vulnerable on purpose.
+**What counts.** An attack attempt is an upstream bug only if it reproduces without the model (a scripted tool call or plugin, no model choice involved) and breaks behaviour dsh documents: the read-only sandbox allows a write, `ctx.tools.guard` is bypassed, a hook is skipped, a disabled tool runs. These never count: a gap in our defences, model behaviour such as a jailbroken victim model, the baseline hits of the red-team baseline milestone (M2, ADR 0012), and anything in DVMCP or our test MCP server, which are vulnerable on purpose.
 
-**Where we report.** dsh has no `SECURITY.md` and GitHub private vulnerability reporting is off. We open a public dsh issue with no details that asks for a private channel or for private reporting to be turned on. With no answer in 14 days, we email the maintainers directly. Details go only through the private channel.
+**Where we report.** For a bug in a pinned third-party MCP server, we follow the same steps with that project's own security policy or issue tracker. dsh has no `SECURITY.md` and GitHub private vulnerability reporting is off. We open a public dsh issue with no details that asks for a private channel or for private reporting to be turned on. With no answer in 14 days, we email the maintainers directly. Details go only through the private channel.
 
 **What stays out of git.**
 

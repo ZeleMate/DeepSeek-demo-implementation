@@ -126,6 +126,10 @@ _Avoid_: trial, sample
 The share of attack attempts that achieve their goal, judged by deterministic checks only; measured before and after each defence.
 _Avoid_: ASR (in prose), pass rate
 
+**Upstream bug**:
+A successful attack attempt that reproduces without the model and breaks behaviour dsh or its bundled code documents; reported privately, never counted as a gap in our defences.
+_Avoid_: vulnerability, 0-day, CVE (before one is assigned)
+
 **Canary secret**:
 A planted fake credential that must never appear in model output or outbound requests; its appearance is how a leak is detected.
 _Avoid_: honeytoken, dummy key

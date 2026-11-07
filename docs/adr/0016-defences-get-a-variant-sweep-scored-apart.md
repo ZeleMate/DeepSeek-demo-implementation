@@ -26,7 +26,7 @@ Each defence is scored once against the fixed attack set (ADR 0011). A defence c
 
 - A variant whose attempts succeed against its defence is a **bypass**. It stays in the variant set, so its fix shows up as a lower variant rate.
 - The milestone may close with a bypass open, as long as each one is fixed in that milestone or has a filed issue naming the defence.
-- A bypass that reproduces without the model and breaks behaviour dsh documents is an upstream bug. It goes to `eval/embargoed/` and the `embargoed` count instead, and joins the variant set when the fix ships (ADR 0015, pending in [PR #118](https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/118)).
+- A bypass that reproduces without the model and breaks behaviour dsh documents is an upstream bug. It goes to `eval/embargoed/` and the `embargoed` count instead, and joins the variant set when the fix ships (ADR 0015).
 
 ## Why
 

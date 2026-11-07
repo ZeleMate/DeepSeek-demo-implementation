@@ -17,6 +17,9 @@ dsh-home/
 session.lock
 cordis.patch.yml
 
+# Unfixed upstream bugs stay off git until disclosure (ADR 0015)
+eval/embargoed/
+
 # Prototype run output (session logs, raw requests)
 prototypes/*/out/
 
@@ -26,3 +29,7 @@ node_modules/
 .claude/worktrees/
 .claude/settings.local.json
 lefthook-local.yml
+
+# Local research output, kept off git
+reports/
+research_notes/

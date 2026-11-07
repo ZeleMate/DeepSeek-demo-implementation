@@ -108,6 +108,29 @@ jobs:
           advanced-security: false
           version: 1.31.1
 
+  # Semgrep CE and OSV-Scanner, from the repo template (ADR 0016). Also runs weekly on its own.
+  security:
+    name: security
+    uses: $/.github/workflows/security.yml
+    permissions:
+      contents: read
+
+  # One check that sums up the non-Claude jobs, as the template's ruleset expects. The Claude
+  # jobs stay out: claude-leftovers fails on purpose to hand findings back to the PR's owner.
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs: [secrets, repo-rules, pr-title, markdown, workflows, security]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "results: $RESULTS"
+          case "$RESULTS" in *failure*|*cancelled*) exit 1 ;; esac
+
   # Claude's fix commit starts this workflow again. On that commit only the security review runs:
   # no code review and no new fix, so Claude doesn't keep fixing its own fixes.
   claude-gate:

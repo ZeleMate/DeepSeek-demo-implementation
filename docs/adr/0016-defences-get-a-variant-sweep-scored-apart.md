@@ -42,7 +42,7 @@ Each defence is scored once against the fixed attack set (ADR 0011). A defence c
 - **Survivors join the attack set.** Rejected: the set would keep growing, and rates across versions would stop being comparable.
 - **A sweep on every defence PR.** Rejected: it mutates attacks against a defence that is still changing.
 - **One sweep after M7.** Rejected: it loses per-defence attribution.
-- **Local model generation for every variant** (Promptfoo's `jailbreak` or `crescendo`). Rejected: local generation quality is low, and small models may refuse.
+- **Local-model generation of every variant** (Promptfoo's `jailbreak` or `crescendo`). Rejected: local generation quality is low, and small models may refuse.
 - **The full cross product of mutators.** Rejected: it multiplies the run by about five for little extra coverage.
 - **No milestone closes while a bypass is open.** Rejected: a nondeterministic victim could block a milestone forever.
 

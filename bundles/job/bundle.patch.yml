@@ -70,6 +70,8 @@
 # No async tools (ADR 0003, ADR 0013, #121). In dsh rc.2 a background job's output and a
 # subagent's answer reach the model later, as a user message in a new turn: no tool hook
 # sees a subagent's answer, and per-turn taint is gone by then. Bash and PTC go with them.
+# Goal rounds re-send a model-written objective the same way, so a goal set under
+# injection would come back every round.
 - id: jobs
   disabled: true
 - id: tool-jobs
@@ -89,6 +91,14 @@
 - id: workflow-ptc
   disabled: true
 - id: tool-workflow
+  disabled: true
+- id: goal
+  disabled: true
+- id: goal-round-driver
+  disabled: true
+- id: command-goal
+  disabled: true
+- id: tool-goal
   disabled: true
 
 # Only our own plugins load (ADR 0012). The plugin market isn't in base or headless.

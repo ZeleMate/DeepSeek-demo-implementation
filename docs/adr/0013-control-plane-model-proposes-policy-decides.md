@@ -1,5 +1,5 @@
 ---
-status: accepted; async tools named and taint kept per session 2026-11-07 (#121)
+status: accepted; async tools named 2026-11-07 (#121); guard deny and per-session taint land with #66
 ---
 
 # The model proposes, a control plane decides, an executor acts
@@ -58,7 +58,7 @@ An action is done only when its **effect** is verified. Appends to `.gitleaksign
 
 `run.started` and every `policy.decided` name the user (macOS account), profile, session id, agent id and executor (tool name plus version or pin hash). The hardened profiles turn off dsh's subagent tools, so v1 has no delegation: a child agent would otherwise act on its parent's authority without a policy decision of its own (OWASP ASI03, ASI07, ASI08). Subagents come back with a rule that a child's policy can only narrow its parent's.
 
-In dsh rc.2 every delegation is async: the child's answer reaches the parent as a user message in a new turn, which no tool hook sees ([#121](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/121)). So the bundles name each row they turn off (ADR 0003). The guard also denies `job_output`, `job_list`, `job_kill`, `bash`, `pwsh`, `subagent`, `subagent_fork`, `send_message`, `interrupt_agent`, `list_agents`, `workflow` and `run_code` with reason `async-disabled`. The table's T4 row already denies any tool missing from it, so this is a second lock: a bundle or upgrade that loads one of those rows again is still refused at call time.
+In dsh rc.2 every delegation is async: the child's answer reaches the parent as a user message in a new turn, which no tool hook sees ([#121](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/121)). So the bundles name each row they turn off (ADR 0003). When the policy plugin lands ([#66](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/66)), its guard will also deny `job_output`, `job_list`, `job_kill`, `bash`, `pwsh`, `subagent`, `subagent_fork`, `send_message`, `interrupt_agent`, `list_agents`, `workflow` and `run_code` with reason `async-disabled`. The table's T4 row will already deny any tool missing from it, so this is a second lock: a bundle or upgrade that loads one of those rows again is still refused at call time.
 
 ## Limits
 

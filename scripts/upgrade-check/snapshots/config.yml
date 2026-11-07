@@ -242,12 +242,17 @@
   name: '@deepseek-ai/dsh-commands'
 - id: command-feedback
   name: '@deepseek-ai/dsh-command-feedback'
+# == @deepseek-ai/dsh-base, patched by @zelemate/dsh-bundle-job
 - id: goal
   name: '@deepseek-ai/dsh-goal'
+  disabled: true
 - id: goal-round-driver
   name: '@deepseek-ai/dsh-goal-round-driver'
+  disabled: true
 - id: command-goal
   name: '@deepseek-ai/dsh-command-goal'
+  disabled: true
+# == @deepseek-ai/dsh-base
 - id: plan-mode
   name: '@deepseek-ai/dsh-plan-mode'
   config:
@@ -368,8 +373,11 @@
   name: '@deepseek-ai/dsh-tool-todo'
   config:
     allowParallelInProgress: true
+# == @deepseek-ai/dsh-base, patched by @zelemate/dsh-bundle-job
 - id: tool-goal
   name: '@deepseek-ai/dsh-tool-goal'
+  disabled: true
+# == @deepseek-ai/dsh-base
 - id: repeat-tool-reminder
   name: '@deepseek-ai/dsh-repeat-tool-reminder'
   config:

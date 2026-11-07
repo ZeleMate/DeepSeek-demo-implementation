@@ -17,6 +17,9 @@ dsh-home/
 session.lock
 cordis.patch.yml
 
+# Unfixed upstream bugs stay off git until disclosure (ADR 0015)
+eval/embargoed/
+
 # Prototype run output (session logs, raw requests)
 prototypes/*/out/
 

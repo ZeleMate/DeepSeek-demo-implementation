@@ -21,7 +21,7 @@ Red-team runs attack our own harness, and the harness is dsh plus its bundled co
 
 **Moving the pin.** The PR that moves dsh to the fixed release promotes the embargoed attack into the attack set and commits its results (ADR 0011). That PR may skip release candidates (ADR 0001).
 
-**Our own repo.** It is private and has one user, so it has no `SECURITY.md` yet. Making it public requires adding `SECURITY.md` and turning on private vulnerability reporting first.
+**Our own repo.** [`SECURITY.md`](../../SECURITY.md) asks for vulnerabilities in this repo, and upstream bugs found here, through GitHub private vulnerability reporting, never public issues. Private vulnerability reporting must be on before the repo goes public.
 
 ## Why
 

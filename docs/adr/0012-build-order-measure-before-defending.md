@@ -36,4 +36,6 @@ The repo is tagged at the end of each milestone (`v0.1` … `v0.6`, then `v1.0`)
 
 _Amended 2026-10-23 by ADR 0013 ([#90](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/90)):_ M3 builds the ledger instead of a plain audit plugin, and M4 builds the control plane's policy decision instead of a standalone policy plugin. M5 and M6 deliver defences that feed that policy decision. The order is unchanged.
 
+_Amended 2026-11-07 by ADR 0016 ([#116](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/116)):_ each defence milestone (M4 to M7) ends with a variant sweep of the attacks its defence blocks, after its before/after score is committed. Its results file also carries the variant rate.
+
 Decided in [Build order and milestones](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/50).

@@ -47,3 +47,5 @@ Decided in [Eval strategy](https://github.com/ZeleMate/DeepSeek-demo-implementat
 _Amended 2026-10-23:_ hygiene CI was added ([#77](https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/77)); eval scores still have no automatic gate.
 
 _Amended 2026-10-23 by ADR 0013 ([#90](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/90)):_ CI also gets a model-free gate on every PR, the deterministic control-plane tests (policy decision, approval hash, ledger chain, effect verification), which must all pass. The two Promptfoo scores above are unchanged: still committed per version, still with no automatic gate.
+
+_Amended 2026-11-07 by ADR 0016 ([#116](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/116)):_ the attack set above stays frozen. Each defence milestone adds variants of the attacks its defence blocks, made by local mutators and a local paraphrase model and committed under `eval/variants/`. They are judged like core attacks and reported as a separate per-defence variant rate with its variant count, never mixed into the attack success rate.

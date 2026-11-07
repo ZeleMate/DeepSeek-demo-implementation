@@ -27,3 +27,5 @@ Each upgrade PR must pass a $0 check before it merges: frozen install (fails if 
 - API keys live in the macOS Keychain and reach dsh through a launcher (ADR 0007); they are never committed. The dsh home folder (sessions, credentials) lives outside the repo.
 
 Decided in [Which dsh plugins do we use, and which do we write?](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/10). Pinning and upgrade policy amended after [Pinning and upgrading dsh: how do we follow its prereleases?](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/36) (research/dsh-pinning.md).
+
+_Amended 2026-11-07 by ADR 0015 ([#115](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/115)):_ one exception to "one rc at a time". The PR that moves to a release fixing an upstream bug may skip release candidates. It still reads every upgrade guide in between and passes the $0 upgrade check.

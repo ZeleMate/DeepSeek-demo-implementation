@@ -18,7 +18,7 @@ Each defence is scored once against the fixed attack set (ADR 0011). A defence c
 **How variants are scored.**
 
 - A variant inherits its parent attack's goal and defence. It is judged the same way: deterministic checks only, 3 attempts, the grader reported alongside (ADR 0011).
-- The **variant set** is append-only and is scored apart from the attack set, which stays frozen at its first 20 or so attacks.
+- The **variant set** is append-only and is scored apart from the attack set, which stays frozen at the attacks it was first built with (about 20).
 - `eval/results/<version>.json` gains a per-defence **variant rate**, the attack success rate measured on the variant set, plus the variant count it was scored on. It is never mixed into the core attack success rate.
 - The committed variant set reruns with every later results file, so a regression shows up without a new sweep.
 
@@ -26,7 +26,7 @@ Each defence is scored once against the fixed attack set (ADR 0011). A defence c
 
 - A variant whose attempts succeed against its defence is a **bypass**. It stays in the variant set, so its fix shows up as a lower variant rate.
 - The milestone may close with a bypass open, as long as each one is fixed in that milestone or has a filed issue naming the defence.
-- A bypass that reproduces without the model and breaks behaviour dsh documents is an upstream bug. It goes to `eval/embargoed/` and the `embargoed` count instead, and joins the variant set when the fix ships (ADR 0015).
+- A bypass that reproduces without the model and breaks behaviour dsh documents is an upstream bug. It goes to `eval/embargoed/` and the `embargoed` count instead, and joins the variant set when the fix ships (ADR 0015, pending in [PR #118](https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/118)).
 
 ## Why
 

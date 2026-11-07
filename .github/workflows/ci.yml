@@ -195,16 +195,23 @@ jobs:
             | jq -r --argjson t "$trusted" 'if (.author_association | IN($t[])) then
                 "# PR #\(.number): \(.title)\n\n\(.body // "")" else "# PR #\(.number): text omitted (untrusted author)" end' \
             > .review/pr.md
+          # A bare #N, not owner/repo#N or a#N, or a full URL to one of this repo's issues.
           { cat .review/pr.md; cat .review/pr-log.txt; } \
-            | grep -oE "(#|$REPO/issues/)[0-9]+" | grep -oE '[0-9]+$' | sort -un | grep -vx "$PR" | head -n 10 > .review/issue-numbers.txt || true
+            | grep -oE "(^|[^[:alnum:]/])#[0-9]+|$REPO/issues/[0-9]+" | grep -oE '[0-9]+$' \
+            | sort -un | grep -vx "$PR" | head -n 10 > .review/issue-numbers.txt || true
+          # Skipped text leaves a one-line note, so the review knows a spec is missing.
           : > .review/issues.md
           while read -r n; do
-            issue=$(gh api "repos/$REPO/issues/$n" 2>/dev/null) || continue
+            if ! issue=$(gh api "repos/$REPO/issues/$n" 2>/dev/null); then
+              echo "#$n skipped: could not fetch it" >> .review/issues.md; continue
+            fi
             jq -r --argjson t "$trusted" 'if (.author_association | IN($t[])) then
-                "# Issue #\(.number): \(.title)\n\n\(.body // "")\n" else empty end' <<<"$issue" >> .review/issues.md
+                "# Issue #\(.number): \(.title)\n\n\(.body // "")\n" else "#\(.number) skipped: author not trusted\n" end' <<<"$issue" >> .review/issues.md
             gh api --paginate "repos/$REPO/issues/$n/comments" \
-              | jq -r --argjson t "$trusted" '.[] | select(.author_association | IN($t[]))
-                  | "## Comment by \(.user.login)\n\n\(.body // "")\n"' >> .review/issues.md || true
+              | jq -rs --argjson t "$trusted" --arg n "$n" 'add // [] | (.[] | select(.author_association | IN($t[]))
+                  | "## Comment on #\($n) by \(.user.login)\n\n\(.body // "")\n"),
+                  (map(select(.author_association | IN($t[]) | not)) | length | select(. > 0)
+                  | "#\($n): \(.) comment(s) skipped: author not trusted\n")' >> .review/issues.md || true
           done < .review/issue-numbers.txt
       # Never fails on findings: the skill's smell findings are judgement calls. claude-fix acts on them.
       - id: review

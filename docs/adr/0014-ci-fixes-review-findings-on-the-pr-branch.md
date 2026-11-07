@@ -1,5 +1,5 @@
 ---
-status: accepted; reviews read only trusted authors' text 2026-11-07 (#120)
+status: accepted; reviews read only trusted authors' text 2026-11-07 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/120)
 ---
 
 # CI fixes the Claude review findings and pushes them to the PR branch

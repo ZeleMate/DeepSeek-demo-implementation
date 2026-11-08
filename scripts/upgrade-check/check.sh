@@ -10,7 +10,7 @@ here=$repo/scripts/upgrade-check
 snapshots=$here/snapshots
 job=$repo/bin/dsh-job
 update=false
-[ "${1:-}" = --update ] && update=true
+[[ "${1:-}" = --update ]] && update=true
 
 # A throwaway DSH_DEMO_ROOT: a fresh profile, no Keychain reads, nothing left behind.
 root=$(mktemp -d)
@@ -29,7 +29,7 @@ step "Frozen install (fails if the pi-ai patch no longer applies)"
 step "pi-ai: exactly one version, installed patched"
 pi_ai=$(cd "$repo/node_modules/.pnpm" && find . -maxdepth 1 -name '@earendil-works+pi-ai@*' | sed 's#^\./##')
 echo "$pi_ai"
-if [ "$(printf '%s\n' "$pi_ai" | grep -c .)" -ne 1 ] || [[ $pi_ai != *_patch_hash=* ]]; then
+if [[ "$(printf '%s\n' "$pi_ai" | grep -c .)" -ne 1 ]] || [[ $pi_ai != *_patch_hash=* ]]; then
   fail "pi-ai is not a single patched copy"
 fi
 
@@ -84,7 +84,7 @@ step "Resume a session from the previous dsh version"
 echo "skipped: no previous dsh version yet"
 
 echo
-if [ "${#failed[@]}" -eq 0 ]; then
+if [[ "${#failed[@]}" -eq 0 ]]; then
   echo "upgrade check passed"
 else
   printf 'upgrade check failed:\n'

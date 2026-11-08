@@ -7,7 +7,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, development]
 
 permissions: {}
 
@@ -32,7 +32,7 @@ jobs:
           persist-credentials: false
       - name: Install gitleaks (checksum-verified)
         run: |
-          curl -sSfL -o gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl --proto '=https' --proto-redir '=https' -sSfL -o gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
           echo "${GITLEAKS_SHA256}  gitleaks.tgz" | sha256sum -c -
           tar -xzf gitleaks.tgz gitleaks && rm gitleaks.tgz
       - name: Scan every commit
@@ -98,7 +98,7 @@ jobs:
           persist-credentials: false
       - name: Install actionlint (checksum-verified)
         run: |
-          curl -sSfL -o actionlint.tgz "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          curl --proto '=https' --proto-redir '=https' -sSfL -o actionlint.tgz "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
           echo "${ACTIONLINT_SHA256}  actionlint.tgz" | sha256sum -c -
           tar -xzf actionlint.tgz actionlint && rm actionlint.tgz
       - run: ./actionlint -color
@@ -108,45 +108,35 @@ jobs:
           advanced-security: false
           version: 1.31.1
 
-  claude-security:
-    name: security review (Claude)
-    # Same-repo PRs only: the action isn't hardened against prompt injection from untrusted diffs.
-    # Dependabot PRs can't read Actions secrets.
-    if: >-
-      github.event_name == 'pull_request'
-      && github.event.pull_request.head.repo.full_name == github.repository
-      && github.actor != 'dependabot[bot]'
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+  # Semgrep CE and OSV-Scanner, from the repo template (ADR 0016). Also runs weekly on its own.
+  security:
+    name: security
+    uses: ./.github/workflows/security.yml
     permissions:
       contents: read
-      pull-requests: write # comments findings on the PR
+
+  # One check that sums up every job here, and the one the rulesets should require. The Claude
+  # reviews live in claude-review.yml and stay advisory.
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs: [secrets, repo-rules, pr-title, markdown, workflows, security]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 2
-          persist-credentials: false
-      # No release tags upstream, so this pins a main commit. Note it installs the latest
-      # @anthropic-ai/claude-code from npm on every run; that part isn't pinned.
-      - uses: anthropics/claude-code-security-review@0c6a49f1fa56a1d472575da86a94dbc1edb78eda # main, 2026-02-11
-        with:
-          claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
-          claude-model: claude-sonnet-5-5
-          # By default it reviews only a PR's first commit; a gate has to see every push.
-          run-every-commit: true
-      # The action reports 0 findings when the scan errors, so check the results file, not its output.
-      - name: Fail on findings or an incomplete review
+      # Fails closed: every job must succeed. The one allowed skip is pr-title outside a PR, because
+      # a push has no title to check.
+      - env:
+          NEEDS: ${{ toJSON(needs) }}
+          EVENT: ${{ github.event_name }}
         run: |
-          f=claudecode-results.json
-          if [ ! -s "$f" ]; then echo "::error::no results file: the review didn't run"; exit 1; fi
-          if jq -e '.error' "$f" >/dev/null; then echo "::error::review failed: $(jq -r '.error' "$f")"; exit 1; fi
-          if jq -e '.analysis_summary.review_completed == false' "$f" >/dev/null; then
-            echo "::error::review incomplete: Claude's output couldn't be parsed"; exit 1
-          fi
-          n=$(jq '.findings | length' "$f")
-          if [ "$n" -gt 0 ]; then
-            jq -r '.findings[] | "::error file=\(.file),line=\(.line // 1)::[\(.severity)] \(.description // .category)"' "$f"
-            exit 1
-          fi
-          echo "No findings."
+          bad=0
+          for job in secrets repo-rules pr-title markdown workflows security; do
+            result=$(jq -r --arg job "$job" '.[$job].result // "missing"' <<<"$NEEDS")
+            echo "$job: $result"
+            if [[ "$result" == success ]]; then continue; fi
+            if [[ "$job" == pr-title && "$result" == skipped && "$EVENT" != pull_request ]]; then continue; fi
+            bad=1
+          done
+          exit "$bad"

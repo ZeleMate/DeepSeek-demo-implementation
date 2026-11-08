@@ -1,0 +1,6 @@
+# The red-team grader, a different family from the victim (ADR 0005), with the same 16k context.
+# Temperature 0 keeps its verdicts repeatable; the base model's default is 1.
+# bin/dsh-redteam creates it as redteam-granite4.2-3b-16k.
+FROM granite4.2:3b
+PARAMETER num_ctx 16384
+PARAMETER temperature 0

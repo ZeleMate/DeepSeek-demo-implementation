@@ -3,6 +3,15 @@ packages:
   - plugins/*
   - bundles/*
 
+# Supply-chain cooldown from the repo template (ADR 0016): ignore versions published in the
+# last 7 days (in minutes), the same window as Dependabot and uv. A dsh pin move for a security
+# fix (ADR 0015) may add a minimumReleaseAgeExclude entry in its own PR.
+minimumReleaseAge: 10080
+# Refuse a version whose publish trust level is lower than earlier versions'.
+trustPolicy: no-downgrade
+# Transitive dependencies may come only from the registry, not git or tarball URLs.
+blockExoticSubdeps: true
+
 # pnpm refuses to install a dependency with an unreviewed install script. These copy the
 # decisions in dsh's own pnpm-workspace.yaml at the pinned tag.
 allowBuilds:
@@ -19,8 +28,16 @@ allowBuilds:
 # dsh patches an O(n²) streaming bug in pi-ai 1.1.0 in its own workspace, but the
 # published dsh-llm-pi-ai asks for ^1.1.0, so an npm install gets a newer pi-ai unpatched.
 # We pin the version dsh tested and re-apply its patch, copied verbatim from the pinned tag
-# (dsh-v0.2.1-rc.2). On every dsh upgrade, re-check both lines against dsh's pnpm-workspace.yaml.
+# (dsh-v0.2.1-rc.2). On every dsh upgrade, re-check the pi-ai override and patch below against
+# dsh's pnpm-workspace.yaml.
 overrides:
   '@earendil-works/pi-ai': 1.1.0
+  # Dependabot alerts on versions dsh pins exactly, still pinned through dsh-v0.2.1-rc.5. Each
+  # selector matches only the vulnerable range, so an entry goes inert once dsh ships the fix.
+  # Drop them on the dsh upgrade that does.
+  'undici@<8.12.2': 8.12.3
+  'zod@<4.6.6': 4.6.7
+  '@modelcontextprotocol/client@<2.3.0': 2.3.1
+  'fflate@<0.8.3': 0.8.3
 patchedDependencies:
   '@earendil-works/pi-ai@1.1.0': patches/@earendil-works__pi-ai@1.1.0.patch

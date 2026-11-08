@@ -7,12 +7,12 @@ set -euo pipefail
 null_sha=0000000000000000000000000000000000000000
 status=0
 while read -r local_ref local_sha remote_ref remote_sha; do
-  [ -z "$local_ref" ] && continue
-  if [ "$remote_ref" = "refs/heads/main" ]; then
+  [[ -z "$local_ref" ]] && continue
+  if [[ "$remote_ref" = "refs/heads/main" ]]; then
     echo "push to main refused: open a PR instead"; status=1; continue
   fi
-  [ "$local_sha" = "$null_sha" ] && continue # branch deletion: nothing to scan
-  if [ "$remote_sha" = "$null_sha" ] || ! git cat-file -e "$remote_sha^{commit}" 2>/dev/null; then
+  [[ "$local_sha" = "$null_sha" ]] && continue # branch deletion: nothing to scan
+  if [[ "$remote_sha" = "$null_sha" ]] || ! git cat-file -e "$remote_sha^{commit}" 2>/dev/null; then
     log_opts="$local_sha --not --remotes" # new branch, or remote tip not fetched: commits no remote branch has yet
   else
     log_opts="$remote_sha..$local_sha"

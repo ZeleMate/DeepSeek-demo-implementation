@@ -16,6 +16,8 @@ for f in "$@"; do
       echo "forbidden: $f (dsh state belongs in \$DSH_HOME, outside the repo)"; status=1 ;;
     cordis.patch.yml | */cordis.patch.yml)
       echo "forbidden: $f (user-owned profile layer, ADR 0007)"; status=1 ;;
+    eval/embargoed/*)
+      echo "forbidden: $f (embargoed upstream bug, ADR 0015)"; status=1 ;;
     prototypes/*/out/*)
       echo "forbidden: $f (prototype run output)"; status=1 ;;
   esac

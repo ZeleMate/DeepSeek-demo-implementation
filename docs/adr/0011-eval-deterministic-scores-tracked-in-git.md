@@ -45,3 +45,7 @@ Promptfoo measures two v1 scores.
 Decided in [Eval strategy](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/14). Research: research/redteam-setup.md.
 
 _Amended 2026-10-23:_ hygiene CI was added ([#77](https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/77)); eval scores still have no automatic gate.
+
+_Amended 2026-10-23 by ADR 0013 ([#90](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/90)):_ CI also gets a model-free gate on every PR, the deterministic control-plane tests (policy decision, approval hash, ledger chain, effect verification), which must all pass. The two Promptfoo scores above are unchanged: still committed per version, still with no automatic gate.
+
+_Amended 2026-11-07 by ADR 0015 ([#115](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/115)):_ each results file also carries a top-level `"embargoed": <attack count>` for attacks that hit an unfixed upstream bug. Their attempts are left out of every attack success rate, and their detail stays in the untracked `eval/embargoed/` until the fix ships.

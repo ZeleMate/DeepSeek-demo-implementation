@@ -16,7 +16,7 @@ DESCRIPTION="A personal, learning-first agent harness in TypeScript"
 FULL="$OWNER/$REPO"
 
 DRY_RUN=0
-[ "${1:-}" = "--dry-run" ] && DRY_RUN=1
+[[ "${1:-}" = "--dry-run" ]] && DRY_RUN=1
 
 cd "$(dirname "$0")/.."
 
@@ -27,19 +27,19 @@ ok()   { printf '\033[32m  ✓ %s\033[0m\n' "$*"; }
 # Run a command, or print it in dry-run mode. Failures are reported, not fatal,
 # because some endpoints depend on plan or visibility.
 run() {
-  if [ "$DRY_RUN" = 1 ]; then printf '  [dry-run] %s\n' "$*"; return 0; fi
+  if [[ "$DRY_RUN" = 1 ]]; then printf '  [dry-run] %s\n' "$*"; return 0; fi
   if out=$("$@" 2>&1); then ok "$*"; else warn "failed: $*"; printf '    %s\n' "$out" | head -5; fi
 }
 
 api() { run gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" "$@"; }
 
-if [ "$DRY_RUN" = 0 ]; then
+if [[ "$DRY_RUN" = 0 ]]; then
   gh auth status >/dev/null 2>&1 || { echo "Run 'gh auth login' first."; exit 1; }
 fi
 
 # ------------------------------------------------------------------ git + repo
 say "Local git repository"
-if [ ! -d .git ]; then
+if [[ ! -d .git ]]; then
   run git init -b main
 fi
 if ! git rev-parse --verify HEAD >/dev/null 2>&1; then
@@ -67,13 +67,14 @@ api -X PATCH "repos/$FULL" \
 say "Actions: read-only default token, no PR approvals by Actions, SHA pinning required"
 api -X PUT "repos/$FULL/actions/permissions/workflow" \
   -f default_workflow_permissions=read -F can_approve_pull_request_reviews=false
-api -X PUT "repos/$FULL/actions/permissions" -F enabled=true -f allowed_actions=all -F sha_pinning_required=true
+# allowed_actions is left out on purpose: the repo keeps its Actions allowlist.
+api -X PUT "repos/$FULL/actions/permissions" -F enabled=true -F sha_pinning_required=true
 
 say "Dependabot alerts and security updates"
 api -X PUT "repos/$FULL/vulnerability-alerts"
 api -X PUT "repos/$FULL/automated-security-fixes"
 
-if [ "$VISIBILITY" = public ]; then
+if [[ "$VISIBILITY" = public ]]; then
   say "Public-repo security features (free)"
   api -X PATCH "repos/$FULL" --input - <<'JSON'
 {"security_and_analysis": {
@@ -91,13 +92,13 @@ fi
 
 # ------------------------------------------------------------------ ruleset
 say "Default-branch ruleset (PR required, merge commits only, required checks, no force-push/delete)"
-if [ "$VISIBILITY" = public ] || [ "$PLAN" = pro ]; then
+if [[ "$VISIBILITY" = public ]] || [[ "$PLAN" = pro ]]; then
   existing=""
-  if [ "$DRY_RUN" = 0 ]; then
+  if [[ "$DRY_RUN" = 0 ]]; then
     # Match the ruleset by the name in main.json ("Protect main"), so a re-run updates it in place.
     existing=$(gh api "repos/$FULL/rulesets" | jq -r --arg name "$(jq -r .name .github/rulesets/main.json)" '.[] | select(.name==$name) | .id' 2>/dev/null || true)
   fi
-  if [ -n "$existing" ]; then
+  if [[ -n "$existing" ]]; then
     api -X PUT "repos/$FULL/rulesets/$existing" --input .github/rulesets/main.json
   else
     api -X POST "repos/$FULL/rulesets" --input .github/rulesets/main.json
@@ -107,10 +108,10 @@ else
 fi
 
 # ------------------------------------------------------------------ releases
-if [ "$PUBLISHES" = yes ]; then
+if [[ "$PUBLISHES" = yes ]]; then
   say "Release settings: immutable releases, 'release' environment limited to main"
   api -X PUT "repos/$FULL/immutable-releases"
-  if [ "$VISIBILITY" = public ] || [ "$PLAN" = pro ]; then
+  if [[ "$VISIBILITY" = public ]] || [[ "$PLAN" = pro ]]; then
     api -X PUT "repos/$FULL/environments/release" --input - <<'JSON'
 {"deployment_branch_policy": {"protected_branches": false, "custom_branch_policies": true}}
 JSON

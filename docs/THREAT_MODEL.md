@@ -2,6 +2,8 @@
 
 Living document. Update it when a new entry point, data store, external service or agent tool is added. Last reviewed: _YYYY-MM-DD_. Adopted from the repo template (ADR 0016); the defences themselves are decided in [docs/adr/](adr/).
 
+**Not filled in yet.** The review date, the diagram in §1 and the italic values are the template's placeholders, and §5 still needs this repo's rows.
+
 ## 1. System overview
 
 _Describe the components and draw the data flow. Mark trust boundaries._
@@ -32,7 +34,7 @@ Use STRIDE for the classic part. Status: open / mitigated / accepted.
 | ID | Threat | Component | Mitigation | Status |
 |---|---|---|---|---|
 | T1 | Leaked secret in repo or logs | repo, CI | Gitleaks in lefthook + CI (full history), GitHub push protection; Keychain (ADR 0007) | mitigated |
-| T2 | Malicious or compromised dependency | build | Lockfiles, 7-day cooldown, OSV-Scanner, Dependabot malware alerts | mitigated |
+| T2 | Malicious or compromised dependency | build | Lockfiles, 7-day cooldown, OSV-Scanner; Dependabot malware alerts once the manual step in `SETUP.md` is done | partly mitigated |
 | T3 | Compromised GitHub Action | CI | Actions pinned to SHAs, `permissions: {}` default, zizmor | mitigated |
 | T4 | Unreviewed change reaches main | repo | PR-only rulesets on `main` and `development`, required checks, CODEOWNERS, ADR 0016 | accepted (solo) |
 | T5 | Stranger-written issue or comment steers a CI agent that can push | CI | Same-repo PRs only; reviews read only owner/member/collaborator text; protected-path filter (ADR 0014) | mitigated |

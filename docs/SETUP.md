@@ -12,6 +12,8 @@ Adapted from the repo template (v0.3.0) for a **public** repo on GitHub **Free**
 - [ ] Secret scanning + push protection, private vulnerability reporting, CodeQL default setup, approval before fork PR workflows run for every outside contributor
 - [ ] Ruleset `Protect main` from `.github/rulesets/main.json`: PR required, merge commits only, the five repo checks plus `ci-ok` required, review threads resolved, no force-push/delete
 
+Run the script only after `ci-ok` has run once on `main`, because the ruleset requires that check.
+
 The `Protect development`, `Protect version tags` and `Copilot review on every PR` rulesets are managed by hand in the GitHub UI.
 
 ## Manual steps

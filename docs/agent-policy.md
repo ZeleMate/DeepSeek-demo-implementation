@@ -1,6 +1,8 @@
 # Agent runtime policy
 
-How the agents **inside this application** are allowed to behave. The enforced source of truth is the dsh profile layers in `bundles/*/bundle.patch.yml` and the ADRs; this file summarises them. (For coding agents working on the repo, see `AGENTS.md`.) Every change to this file needs a PR that also updates `THREAT_MODEL.md` §5.
+How the agents **inside this application** are allowed to behave. The enforced source of truth is the dsh profile layers in `bundles/*/bundle.patch.yml` and the ADRs; this file summarises them.
+
+**Not filled in yet.** The italic rows and values below are the template's examples, not this repo's policy. (For coding agents working on the repo, see `AGENTS.md`.) Every change to this file needs a PR that also updates `THREAT_MODEL.md` §5.
 
 ## Models
 

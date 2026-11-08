@@ -9,6 +9,8 @@ packages:
 minimumReleaseAge: 10080
 # Refuse a version whose publish trust level is lower than earlier versions'.
 trustPolicy: no-downgrade
+# Transitive dependencies may come only from the registry, not git or tarball URLs.
+blockExoticSubdeps: true
 
 # pnpm refuses to install a dependency with an unreviewed install script. These copy the
 # decisions in dsh's own pnpm-workspace.yaml at the pinned tag.

@@ -108,7 +108,7 @@ jobs:
           advanced-security: false
           version: 1.31.1
 
-  # Semgrep CE and OSV-Scanner, from the repo template (ADR 0016). Also runs weekly on its own.
+  # OSV-Scanner, from the repo template (ADR 0016). Also runs weekly on its own.
   security:
     name: security
     uses: ./.github/workflows/security.yml

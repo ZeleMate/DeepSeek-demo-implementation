@@ -1,12 +1,12 @@
 ---
-status: reversed 2026-11-08 (#PRNUM); reviews read only trusted authors' text 2026-11-07 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/120)
+status: reversed 2026-11-08 (#126); reviews read only trusted authors' text 2026-11-07 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/120)
 ---
 
 # CI fixes the Claude review findings and pushes them to the PR branch
 
 ## Reversed
 
-We removed the fixer on 2026-11-08 in #PRNUM. CI no longer fixes findings or pushes to any branch. The reviews stay as advisory comments, and local Claude sessions take over the fixes.
+We removed the fixer on 2026-11-08 in #126. CI no longer fixes findings or pushes to any branch. The reviews stay as advisory comments, and local Claude sessions take over the fixes.
 
 - **Bot commits don't start CI.** A push with the job's own token starts no workflow until someone approves it, so a fix commit stalled its PR without required checks.
 - **Most runs fixed nothing.** Workflows and other protected files are off limits to the fixer, so it had to leave those findings. Patches were also refused whole when they created, deleted or renamed a file.

@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: accepted; Semgrep removed for CodeQL default setup 2026-11-08 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/129)
 ---
 
 # Adopt the repo template and keep this repo's stricter choices
@@ -8,7 +8,7 @@ The owner keeps a shared baseline in [ZeleMate/repo-template](https://github.com
 
 ## What we take
 
-- `security.yml`: Semgrep CE and OSV-Scanner on every PR and weekly, behind a new `ci-ok` job in `ci.yml`.
+- `security.yml`: OSV-Scanner on every PR and weekly, behind a new `ci-ok` job in `ci.yml`.
 - The template update check, the CI tools lock in `.github/tools/`, and Dependabot for it.
 - A 7-day supply-chain cooldown for pnpm (`minimumReleaseAge`) and npm Dependabot updates, plus pnpm's `trustPolicy: no-downgrade`.
 - `.claude/` settings, review agent and `spec-review` skill, `CLAUDE.md`, `REVIEW.md`, `CONTRIBUTING.md`, issue and PR templates, `.editorconfig`.
@@ -24,6 +24,10 @@ The owner keeps a shared baseline in [ZeleMate/repo-template](https://github.com
 - **Our ADRs in `docs/adr/`.** The template's `docs/decisions/` and its first two ADRs are not copied. Its solo-maintainer review exception is this ADR's last section.
 - **Our `SECURITY.md` and ADR 0015.** They are stricter on embargo and response time.
 - **Our eval approach (ADR 0011).** The template's Inspect AI `evals/` and its nightly workflow are left out.
+
+## What we dropped later
+
+The template's Semgrep CE job ran only until the repo went public. Code scanning is now CodeQL default setup, which is free on public repos and covers JavaScript/TypeScript, Python and Actions. Semgrep also forced overrides of its pinned `mcp` and OpenTelemetry dependencies to clear OSV advisories, and those are gone with it. A `copier update` may offer the job again; keep it out.
 
 ## Left for later
 

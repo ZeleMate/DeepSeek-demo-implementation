@@ -9,26 +9,9 @@ dependencies = [
     "copier>=9.19",
     "diff-cover>=11.0",
     "pre-commit>=4.7",
-    "semgrep>=1.181",
 ]
 
 [tool.uv]
 package = false
 # Same 7-day supply-chain cooldown as the app's dependencies.
 exclude-newer = "7 days"
-# semgrep 1.183 pins mcp and the OpenTelemetry family to versions with known advisories. These move
-# them to fixed releases; `semgrep scan` runs the same rules on them. OpenTelemetry moves as a family,
-# because the parts import each other. Drop each entry when semgrep allows the fixed version.
-override-dependencies = [
-    "mcp>=1.30.0,<2",
-    "opentelemetry-api>=1.45.1",
-    "opentelemetry-sdk>=1.45.1",
-    "opentelemetry-exporter-otlp-proto-http>=1.45.1",
-    "opentelemetry-exporter-otlp-proto-common>=1.45.1",
-    "opentelemetry-proto>=1.45.1",
-    "opentelemetry-semantic-conventions>=0.66b0",
-    "opentelemetry-instrumentation>=0.66b0",
-    "opentelemetry-instrumentation-requests>=0.66b0",
-    "opentelemetry-instrumentation-threading>=0.66b0",
-    "opentelemetry-util-http>=0.66b0",
-]

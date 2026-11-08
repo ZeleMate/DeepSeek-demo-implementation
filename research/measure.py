@@ -10,7 +10,7 @@ CTX = 16384
 def post(path, body, timeout=900):
     req = urllib.request.Request(HOST + path, json.dumps(body).encode(), {"Content-Type": "application/json"})
     # HOST's scheme is checked above, so no file:// URL gets here.
-    with urllib.request.urlopen(req, timeout=timeout) as r:  # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
+    with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.loads(r.read())
 
 
@@ -26,7 +26,7 @@ def swap_used():
 
 def loaded_size(model):
     # HOST's scheme is checked above, so no file:// URL gets here.
-    for m in json.loads(urllib.request.urlopen(HOST + "/api/ps").read())["models"]:  # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
+    for m in json.loads(urllib.request.urlopen(HOST + "/api/ps").read())["models"]:
         if m["name"] == model:
             return round(m["size"] / 1e9, 2), round(m.get("size_vram", 0) / 1e9, 2)
     return None, None

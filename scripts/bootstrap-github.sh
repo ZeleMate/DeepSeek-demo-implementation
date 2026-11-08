@@ -87,7 +87,7 @@ JSON
   say "Fork PRs: workflows from every outside contributor wait for approval"
   api -X PUT "repos/$FULL/actions/permissions/fork-pr-contributor-approval" -f approval_policy=all_external_contributors
 else
-  say "Private repo: GitHub code/secret scanning need a paid org add-on; Semgrep, OSV-Scanner and Gitleaks run in CI instead"
+  say "Private repo: GitHub code/secret scanning need a paid org add-on; OSV-Scanner and Gitleaks still run in CI, but no code scanner does"
 fi
 
 # ------------------------------------------------------------------ ruleset

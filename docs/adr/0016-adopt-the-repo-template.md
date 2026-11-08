@@ -1,5 +1,5 @@
 ---
-status: accepted; Semgrep removed for CodeQL default setup 2026-11-08
+status: accepted; Semgrep removed for CodeQL default setup 2026-11-08 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/129)
 ---
 
 # Adopt the repo template and keep this repo's stricter choices

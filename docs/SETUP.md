@@ -22,4 +22,5 @@ The `Protect development`, `Protect version tags` and `Copilot review on every P
 1. **Claude reviews:** run `claude setup-token` and copy the token. The token often wraps onto two lines, and a copied line break breaks it, so check the length (about 108) and store it without whitespace:
    `pbpaste | tr -d '[:space:]' | wc -c`, then `pbpaste | tr -d '[:space:]' | gh secret set CLAUDE_CODE_OAUTH_TOKEN`. Copy something else afterwards to clear the clipboard. `CLAUDE_FIX_TOKEN` is optional (ADR 0014).
 1. **Model API keys:** in the macOS Keychain, read by the launchers in `bin/` (ADR 0007). Never in `.env` files or GitHub secrets.
+1. **Optional:** register at bestpractices.dev for the OpenSSF Best Practices Badge (passing level is reachable).
 1. **Fill in** `docs/THREAT_MODEL.md` §5 and `docs/agent-policy.md` from the bundles and ADRs.

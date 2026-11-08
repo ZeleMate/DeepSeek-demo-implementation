@@ -14,6 +14,7 @@ The owner keeps a shared baseline in [ZeleMate/repo-template](https://github.com
 - `.claude/` settings, review agent and `spec-review` skill, `CLAUDE.md`, `REVIEW.md`, `CONTRIBUTING.md`, issue and PR templates, `.editorconfig`.
 - The threat model, agent policy, secrets, dependency and setup docs, adapted to the ADRs here.
 - `scripts/bootstrap-github.sh` and `.github/rulesets/main.json`, adapted to our branch flow.
+- The MIT licence: `LICENSE`, `LICENSES/MIT.txt` and `REUSE.toml`. `REUSE.toml` also credits the pi-ai patch and the dsh config snapshots, which are MIT too.
 
 ## What we keep
 
@@ -28,7 +29,6 @@ The owner keeps a shared baseline in [ZeleMate/repo-template](https://github.com
 
 - TypeScript lint, type check, tests and coverage (the template's `typescript` job). The repo has one JavaScript plugin so far, so the tooling comes with the first TypeScript code.
 - Releases. release-please assumes squash commits on `main`, which our flow doesn't make.
-- A licence. The answers say `Proprietary` until the owner picks one.
 
 ## Solo maintainer: no non-author review
 

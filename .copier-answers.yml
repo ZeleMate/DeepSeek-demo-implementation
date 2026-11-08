@@ -11,7 +11,7 @@ github_owner: ZeleMate
 github_plan: free
 languages:
 - typescript
-license: Proprietary
+license: MIT
 node_version: '24'
 project_name: DeepSeek demo implementation
 project_slug: deepseek-demo-implementation

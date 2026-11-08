@@ -16,7 +16,7 @@ v1 is built in seven milestones, each a vertical slice tracked as a GitHub miles
 
 The repo is tagged at the end of each milestone (`v0.1` … `v0.6`, then `v1.0`), and the tag is the `<version>` in `eval/results/<version>.json` (ADR 0011).
 
-**Packaging.** v1 loads only plugins and skills from our own bundles. dsh's plugin manager and plugin market rows are disabled in every profile, and the only MCP servers are the ones under test, pinned (ADR 0003).
+**Packaging.** v1 loads only plugins and skills from our own bundles. dsh's plugin manager, plugin market and filesystem skill rows are disabled in every profile, and the only MCP servers are the ones under test, pinned (ADR 0003).
 
 **Jev and Laya** become backends to try behind the `ctx.decisions` seam later, in a judge bake-off the eval scores ([#51](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/51)). They are not in v1.
 

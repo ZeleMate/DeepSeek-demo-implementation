@@ -111,7 +111,7 @@ jobs:
   # Semgrep CE and OSV-Scanner, from the repo template (ADR 0016). Also runs weekly on its own.
   security:
     name: security
-    uses: $/.github/workflows/security.yml
+    uses: ./.github/workflows/security.yml
     permissions:
       contents: read
 
@@ -125,11 +125,21 @@ jobs:
     timeout-minutes: 5
     permissions: {}
     steps:
+      # Fails closed: every job must succeed. The one allowed skip is pr-title outside a PR, because
+      # a push has no title to check.
       - env:
-          RESULTS: ${{ join(needs.*.result, ' ') }}
+          NEEDS: ${{ toJSON(needs) }}
+          EVENT: ${{ github.event_name }}
         run: |
-          echo "results: $RESULTS"
-          case "$RESULTS" in *failure*|*cancelled*) exit 1 ;; esac
+          bad=0
+          for job in secrets repo-rules pr-title markdown workflows security; do
+            result=$(jq -r --arg job "$job" '.[$job].result // "missing"' <<<"$NEEDS")
+            echo "$job: $result"
+            if [[ "$result" == success ]]; then continue; fi
+            if [[ "$job" == pr-title && "$result" == skipped && "$EVENT" != pull_request ]]; then continue; fi
+            bad=1
+          done
+          exit "$bad"
 
   # Claude's fix commit starts this workflow again. On that commit only the security review runs:
   # no code review and no new fix, so Claude doesn't keep fixing its own fixes.

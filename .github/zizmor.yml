@@ -1,0 +1,5 @@
+# zizmor's self-repository rule wants GitHub's newer `$/` syntax for this repo's own workflows and
+# actions. We use the plain `./` form, which actionlint understands without a suppression.
+rules:
+  self-repository:
+    disable: true

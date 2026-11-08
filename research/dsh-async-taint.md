@@ -1,5 +1,7 @@
 # dsh async tool calls versus the taint rule and the injection filter
 
+These findings predate the change that turned the rows off in both bundles ([#121](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/121)). Read "on today" below as the state before that change.
+
 Research for [#121](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/121). Feeds [#66](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/66) and [#67](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/67). Builds on ADR 0003, ADR 0013 and `research/dsh-pinning.md`. Checked **2026-11-07**.
 
 Markers: **[verified]** = read in the dsh source at the tag, or run locally. **[inferred]** = follows from verified facts but not run. **[unverified]** = not confirmed; test before relying on it.

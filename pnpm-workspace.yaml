@@ -3,6 +3,15 @@ packages:
   - plugins/*
   - bundles/*
 
+# Supply-chain cooldown from the repo template (ADR 0016): ignore versions published in the
+# last 7 days (in minutes), the same window as Dependabot and uv. A dsh pin move for a security
+# fix (ADR 0015) may add a minimumReleaseAgeExclude entry in its own PR.
+minimumReleaseAge: 10080
+# Refuse a version whose publish trust level is lower than earlier versions'.
+trustPolicy: no-downgrade
+# Transitive dependencies may come only from the registry, not git or tarball URLs.
+blockExoticSubdeps: true
+
 # pnpm refuses to install a dependency with an unreviewed install script. These copy the
 # decisions in dsh's own pnpm-workspace.yaml at the pinned tag.
 allowBuilds:

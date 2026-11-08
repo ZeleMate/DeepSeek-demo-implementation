@@ -1,0 +1,3 @@
+# OSV-Scanner's accept list (security.yml's `dependencies` job). Empty on purpose: fix an advisory
+# when you can. An entry needs an `id`, a `reason` and an `ignoreUntil` review date, after which
+# the scan fails again. Re-check on every bump.

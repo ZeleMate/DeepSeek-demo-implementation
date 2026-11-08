@@ -25,6 +25,15 @@ prototypes/*/out/
 
 # Local tooling
 node_modules/
+.venv/
+.idea/
+.vscode/*
+!.vscode/extensions.json
+CLAUDE.local.md
+dist/
+coverage/
+*.tsbuildinfo
+logs/
 .DS_Store
 .claude/worktrees/
 .claude/settings.local.json

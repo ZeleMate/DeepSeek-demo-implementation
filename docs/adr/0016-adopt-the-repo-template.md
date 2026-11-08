@@ -18,7 +18,7 @@ The owner keeps a shared baseline in [ZeleMate/repo-template](https://github.com
 
 ## What we keep
 
-- **Lefthook, not pre-commit.** The hooks and `scripts/checks/` are mirrored in CI job by job, and the rulesets require those jobs by name.
+- **Lefthook, not pre-commit.** The hooks and `scripts/checks/` are mirrored in CI job by job, and `ci-ok` sums those jobs up for the rulesets.
 - **Our Claude reviews (ADR 0014).** They read only trusted authors' text and deny `/proc`, which the template's `claude-review.yml` doesn't do.
 - **The branch flow.** PRs squash-merge into `development`, and `main` takes only merge commits from `development`. The template assumes squash-only on `main`, so the bootstrap script and ruleset are changed to match.
 - **Our ADRs in `docs/adr/`.** The template's `docs/decisions/` and its first two ADRs are not copied. Its solo-maintainer review exception is this ADR's last section.

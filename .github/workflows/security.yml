@@ -2,7 +2,7 @@ name: Security
 
 # Called from ci.yml on every PR/push (so it feeds the ci-ok check), and run weekly
 # so new advisories against unchanged code are caught. Gitleaks runs in ci.yml's own
-# `secrets` job, which the rulesets require by name.
+# `secrets` job, which ci-ok requires.
 on:
   workflow_call:
   workflow_dispatch:

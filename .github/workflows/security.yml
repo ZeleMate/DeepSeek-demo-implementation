@@ -21,11 +21,19 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+    env:
+      UV_VERSION: "0.13.3"
+      UV_SHA256: "e4f169ec380f1793b898a6f1fcbacd22db25cf7ca0349a6e96ffb85b69998d04"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+      # astral-sh/setup-uv isn't on this repo's Actions allowlist, so install uv like the other CI tools.
+      - name: Install uv (checksum-verified)
+        run: |
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/uv.tgz" "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz"
+          echo "${UV_SHA256}  $RUNNER_TEMP/uv.tgz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/uv.tgz" -C "$RUNNER_TEMP" --strip-components=1 uv-x86_64-unknown-linux-gnu/uv
       # Semgrep Community Edition runs entirely in CI; no code leaves the runner except rule downloads.
       # Add project rules under .semgrep/ and they are picked up automatically.
       - env:
@@ -35,7 +43,7 @@ jobs:
         run: |
           configs=(--config p/default)
           [ -d .semgrep ] && configs+=(--config .semgrep)
-          uv run --project .github/tools semgrep scan "${configs[@]}" --error --metrics off --disable-version-check
+          "$RUNNER_TEMP/uv" run --project .github/tools semgrep scan "${configs[@]}" --error --metrics off --disable-version-check
     # CodeQL runs via GitHub "default setup" (enabled by scripts/bootstrap-github.sh), not in this file.
 
   dependencies:

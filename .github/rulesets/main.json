@@ -28,14 +28,7 @@
       "parameters": {
         "strict_required_status_checks_policy": false,
         "do_not_enforce_on_create": false,
-        "required_status_checks": [
-          { "context": "secrets (gitleaks, full history)", "integration_id": 15368 },
-          { "context": "forbidden paths and commands", "integration_id": 15368 },
-          { "context": "markdown", "integration_id": 15368 },
-          { "context": "workflows (actionlint, zizmor)", "integration_id": 15368 },
-          { "context": "PR title (conventional commit)", "integration_id": 15368 },
-          { "context": "ci-ok", "integration_id": 15368 }
-        ]
+        "required_status_checks": [{ "context": "ci-ok", "integration_id": 15368 }]
       }
     }
   ]

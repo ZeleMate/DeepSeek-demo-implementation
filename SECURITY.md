@@ -37,5 +37,5 @@ We follow [ADR 0015](docs/adr/0015-upstream-bugs-are-disclosed-privately.md).
 
 - Changes land only through reviewed PRs, and [CODEOWNERS](.github/CODEOWNERS) names the owner for every file.
 - gitleaks runs on every commit and on the full history in CI. Keys live in the macOS Keychain, never in files (ADR 0007).
-- The Claude reviews in CI run only on PRs from branches of this repo, never forks or Dependabot. They never read issue or comment text from anyone but the owner, members and collaborators (ADR 0014).
+- The Claude reviews in CI run only on PRs from branches of this repo, never forks or Dependabot. They never read issue or comment text from anyone but the owner, members and collaborators, and no CI job can push to the repo (ADR 0014).
 - Planned once the repo is public: approval for workflow runs from all outside contributors, secret scanning with push protection, Dependabot alerts, CodeQL for Actions and JavaScript/TypeScript, and interaction limits for non-collaborators.

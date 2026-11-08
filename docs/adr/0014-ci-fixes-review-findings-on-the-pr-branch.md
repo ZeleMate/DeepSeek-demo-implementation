@@ -1,8 +1,24 @@
 ---
-status: accepted; reviews read only trusted authors' text 2026-11-07 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/120)
+status: reversed 2026-11-08 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/126); reviews read only trusted authors' text 2026-11-07 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/120)
 ---
 
-# CI fixes the Claude review findings and pushes them to the PR branch
+# CI fixed the Claude review findings on the PR branch (reversed)
+
+## Reversed
+
+We removed the fixer on 2026-11-08 in [#126](https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/126). CI no longer fixes findings or pushes to any branch. The reviews stay as advisory comments, and local Claude sessions take over the fixes.
+
+- **Bot commits don't start CI.** A push with the job's own token starts no workflow until someone approves it, so a fix commit stalled its PR without required checks.
+- **Most runs fixed nothing.** Workflows and other protected files are off limits to the fixer, so it had to leave those findings. Patches were also refused whole when they created, deleted or renamed a file.
+- **It was the only job with write access.** Removing it means no CI job holds `contents: write`, which matters more now that the repo is going public.
+
+What replaces it:
+
+- The two reviews live in `.github/workflows/claude-review.yml`. They run once per PR, on `opened`, `ready_for_review` and `reopened`, and on demand with `workflow_dispatch`, not on every push.
+- The limits below on what the reviews can read still hold: no git, one exact `gh pr comment`, only trusted authors' text, and no `/proc`.
+- A local session reads the review comment, makes the fix and pushes it as the owner, so CI runs on it.
+
+The rest of this ADR records the flow as it was.
 
 Every PR gets two Claude reviews in CI: a code review and a security review. Until now they only commented. Now a fixer acts on their findings, and CI pushes its fix to the PR branch as one commit. Whatever it doesn't fix becomes a check on the head commit, which goes back to the PR's owner.
 

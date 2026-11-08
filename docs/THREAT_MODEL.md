@@ -37,7 +37,7 @@ Use STRIDE for the classic part. Status: open / mitigated / accepted.
 | T2 | Malicious or compromised dependency | build | Lockfiles, 7-day cooldown, OSV-Scanner; Dependabot malware alerts once the manual step in `SETUP.md` is done | partly mitigated |
 | T3 | Compromised GitHub Action | CI | Actions pinned to SHAs, `permissions: {}` default, zizmor | mitigated |
 | T4 | Unreviewed change reaches main | repo | PR-only rulesets on `main` and `development`, required checks, CODEOWNERS, ADR 0016 | accepted (solo) |
-| T5 | Stranger-written issue or comment steers a CI agent that can push | CI | Same-repo PRs only; reviews read only owner/member/collaborator text; protected-path filter (ADR 0014) | mitigated |
+| T5 | Stranger-written issue or comment steers a CI agent | CI | No CI job can push; same-repo PRs only; reviews read only owner/member/collaborator text (ADR 0014) | mitigated |
 
 ## 5. Agentic threats
 

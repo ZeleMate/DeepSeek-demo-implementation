@@ -6,8 +6,7 @@ Following the OWASP Secrets Management Cheat Sheet: centralise, prefer short-liv
 
 | Secret | Store | Used by | Rotation |
 |---|---|---|---|
-| `CLAUDE_CODE_OAUTH_TOKEN` | GitHub Actions secret | the Claude jobs in `ci.yml` (ADR 0014) | yearly (the token expires after 1 year) or on leak |
-| `CLAUDE_FIX_TOKEN` (optional) | GitHub Actions secret | `claude-push` in `ci.yml` | fine-grained PAT, contents: write on this repo, no Workflows permission, ≤ 1 year |
+| `CLAUDE_CODE_OAUTH_TOKEN` | GitHub Actions secret | `claude-review.yml` (ADR 0014) | yearly (the token expires after 1 year) or on leak |
 | Model API keys | macOS Keychain, exported by the launchers in `bin/` | dsh, through `apiKeyEnv` | 90 days |
 
 No package is published, so there are no registry tokens.

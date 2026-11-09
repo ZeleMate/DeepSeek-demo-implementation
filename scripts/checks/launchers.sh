@@ -27,17 +27,34 @@ fresh_root() {
   printf '%s\n' "$root"
 }
 
-# Starts a launcher with a shell full of things that must not reach dsh.
+# Starts a launcher with a shell full of things that must not reach dsh, plus any extra
+# NAME=value assignments given after the root, exported in a subshell.
 launch() {
   local launcher=$1 root=$2
-  PATH="$tmp/stubs:$PATH" DSH_DEMO_ROOT=$root DSH_DEMO_NO_KEYS=1 \
-    AUDIT_PLAIN=leak OPENAI_API_KEY=leak DEEPSEEK_API_KEY=leak DEEPSEEK_BASE_URL=leak \
-    DSH_PERMISSION_MODE=danger-full-access DSH_TOOLS_MODE=leak DSH_TELEMETRY_OTLP_URL=leak \
-    HTTPS_PROXY=leak NODE_OPTIONS=leak "$tmp/repo/bin/$launcher"
+  shift 2
+  (
+    for assignment in "$@"; do export "${assignment?}"; done
+    PATH="$tmp/stubs:$PATH" DSH_DEMO_ROOT="$root" DSH_DEMO_NO_KEYS=1 \
+      AUDIT_PLAIN=leak OPENAI_API_KEY=leak DEEPSEEK_API_KEY=leak DEEPSEEK_BASE_URL=leak \
+      DSH_PERMISSION_MODE=danger-full-access DSH_TOOLS_MODE=leak DSH_TELEMETRY_OTLP_URL=leak \
+      HTTPS_PROXY=leak NODE_OPTIONS=leak "$tmp/repo/bin/$launcher"
+  )
+}
+
+# Expects the launcher to stop before dsh starts, with a message matching the pattern, so a
+# failure for some other reason doesn't count as the guard working.
+refuses() {
+  local launcher=$1 root=$2 pattern=$3 label=$4 out
+  shift 4
+  if out=$(launch "$launcher" "$root" "$@" 2>&1); then
+    fail "$launcher started with $label"
+  elif ! grep -q -- "$pattern" <<<"$out"; then
+    fail "$launcher stopped with $label, but not at its guard: $out"
+  fi
 }
 
 check() {
-  local launcher=$1 profile=$2 home=$3 bundle=$4 workspace=$5 root out
+  local launcher=$1 profile=$2 home=$3 bundle=$4 workspace=$5 sentinel=$6 root out
   root=$(fresh_root "$profile" "$home" "$bundle")
 
   if ! out=$(launch "$launcher" "$root" 2>&1); then
@@ -48,24 +65,34 @@ check() {
     fail "$launcher did not turn telemetry off"
   fi
 
-  # Each of these must stop the launcher before dsh starts.
+  # Setting the re-run marker by hand must not skip the cleanup.
+  root=$(fresh_root "$profile" "$home" "$bundle")
+  refuses "$launcher" "$root" "is set; start $launcher without" "a forged $sentinel" "$sentinel=1"
+
   for stray in "$workspace/.env" "$home/.env" "$home/.credentials.yaml"; do
     root=$(fresh_root "$profile" "$home" "$bundle")
     mkdir -p "$root/$(dirname "$stray")"
     : >"$root/$stray"
-    if launch "$launcher" "$root" >/dev/null 2>&1; then fail "$launcher started with a stray $stray"; fi
+    refuses "$launcher" "$root" "$stray exists" "a stray $stray"
+  done
+
+  for stray in AGENTS.md CLAUDE.local.md .agents; do
+    root=$(fresh_root "$profile" "$home" "$bundle")
+    mkdir -p "$root/$workspace"
+    : >"$root/$workspace/$stray"
+    refuses "$launcher" "$root" "$workspace/$stray exists" "a stray $workspace/$stray"
   done
 
   root=$(fresh_root "$profile" "$home" "$bundle")
   printf -- '- id: x\n' >"$root/$home/cordis.patch.yml"
-  if launch "$launcher" "$root" >/dev/null 2>&1; then fail "$launcher started with a non-empty home patch"; fi
+  refuses "$launcher" "$root" "must be exactly \[\]" "a non-empty home patch"
 
   root=$(fresh_root "$profile" "$home" "not-our-bundle")
-  if launch "$launcher" "$root" >/dev/null 2>&1; then fail "$launcher started without its bundle"; fi
+  refuses "$launcher" "$root" "refusing to start" "no bundle"
 }
 
-check dsh-job job home @zelemate/dsh-bundle-job workspace/job
-check dsh-redteam redteam redteam/home @zelemate/dsh-bundle-redteam workspace/redteam
+check dsh-job job home @zelemate/dsh-bundle-job workspace/job DSH_JOB_CLEAN_ENV
+check dsh-redteam redteam redteam/home @zelemate/dsh-bundle-redteam workspace/redteam DSH_REDTEAM_CLEAN_ENV
 
 if [[ "$status" -eq 0 ]]; then echo "launchers ok"; fi
 exit "$status"

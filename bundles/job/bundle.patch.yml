@@ -68,6 +68,9 @@
 - id: web-fetch-http
   disabled: true
 
+# Keep the shell, async, PTC, sandbox and instruction rows below in step with bundles/redteam:
+# both hardened profiles turn off the same ones.
+
 # No async tools (ADR 0003, ADR 0013, #121). In dsh rc.2 a background job's output and a
 # subagent's answer reach the model later, as a user message in a new turn: no tool hook
 # sees a subagent's answer, and per-turn taint is gone by then. Bash and PTC go with them.

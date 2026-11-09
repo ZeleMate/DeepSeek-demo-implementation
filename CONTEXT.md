@@ -145,3 +145,61 @@ _Avoid_: redacted secret, sanitised hit
 **Finding**:
 A candidate issue raised by a deterministic tool (e.g. a gitleaks hit) before any model judges it.
 _Avoid_: alert, hit, result
+
+### Harnessing
+
+**Fixture task**:
+A self-contained task (inputs, a task domain and an answer key) used only to probe harness candidates.
+_Avoid_: benchmark, test case
+
+**Task domain**:
+A family of fixture tasks that share an answer shape and an experience library.
+_Avoid_: category, suite
+
+**Answer key**:
+A fixture task's expected answer, read only by the checker and never shown to the agent or the improver.
+_Avoid_: ground truth, gold, label
+
+**Checker**:
+Deterministic code that scores a submitted answer against its answer key. It scores an answer to a fixture task, not an attack attempt, so it is distinct from the deterministic checks that judge attack success (ADR 0011), and from a grader or judge, which is a model.
+_Avoid_: grader, judge, scorer
+
+**Harness**:
+The text a model is told, held as files: an instructions section, skills and tool descriptions. It changes what the model is told, never what it is allowed to do, which the profile decides. It is unrelated to the **Hardened harness**, which is a profile.
+_Avoid_: prompt, config, profile
+
+**Base harness**:
+The harness a fixture task's probes start from and fall back to; in v1, the empty harness.
+_Avoid_: default harness, seed
+
+**Editable surface**:
+The paths and rules a proposal may touch; anything outside it rejects the whole proposal.
+_Avoid_: whitelist, scope
+
+**Edit**:
+One change to a harness: a file's full new content, or its deletion. Files without an edit are inherited from the base harness.
+_Avoid_: patch (a dsh config layer), diff
+
+**Proposal**:
+One improver stage's full set of edits plus its notes, accepted or rejected whole. Always "proposal" here, never "action proposal", which is a tool call.
+_Avoid_: submission, change set
+
+**Harness candidate**:
+The harness a valid proposal produces from the base harness, before it is probed.
+_Avoid_: variant, version
+
+**Improver**:
+The model session that proposes, composes or reflects on harness candidates; it reads evidence and submits proposals, and never runs a probe.
+_Avoid_: optimizer, meta-agent
+
+**Probe**:
+One run of one fixture task under one harness.
+_Avoid_: rollout, trial
+
+**Kept base**:
+A stage whose valid proposal leaves the harness unchanged.
+_Avoid_: no-op
+
+**Fell back**:
+A stage that produced no valid proposal after its retry, so the base harness is probed in its place. Distinct from kept base.
+_Avoid_: failed stage, reverted

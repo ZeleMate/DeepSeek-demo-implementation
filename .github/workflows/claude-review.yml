@@ -31,7 +31,9 @@ jobs:
   # Both triggers read the PR from the API, so the reviews see one shape of input.
   # Same-repo PRs only: the action isn't hardened against prompt injection from untrusted diffs.
   # No bot PRs, such as Dependabot's: their text is third-party release notes. Drafts wait for
-  # ready_for_review unless someone asks for a review by hand.
+  # ready_for_review unless someone asks for a review by hand. A PR labelled `embargo` is never
+  # reviewed: the comments, annotations and logs are public, and it may touch an unfixed upstream
+  # bug (ADR 0015).
   context:
     name: find the PR
     if: github.actor != 'dependabot[bot]'
@@ -56,7 +58,7 @@ jobs:
           {
             jq -r '"number=\(.number)", "head=\(.head.sha)", "base=\(.base.sha)"' <<<"$pr"
             jq -r --arg repo "$REPO" --arg event "$EVENT" \
-              '"run=\(.head.repo.full_name == $repo and .user.type != "Bot" and (.draft == false or $event == "workflow_dispatch"))"' <<<"$pr"
+              '"run=\(.head.repo.full_name == $repo and .user.type != "Bot" and (.draft == false or $event == "workflow_dispatch") and ([.labels[].name] | index("embargo") | not))"' <<<"$pr"
           } >> "$GITHUB_OUTPUT"
 
   claude-code-review:
@@ -151,13 +153,17 @@ jobs:
             --allowedTools "Skill,Agent,Task,Read,Glob,Grep,Edit(./.review/**),Bash(gh pr comment ${{ needs.context.outputs.number }} --body-file .review/comment.md)"
             --disallowedTools "Read(//proc/**),Read(//sys/**),Read(~/.claude/**),Read(~/.config/**),Edit(./.git/**)"
       # The action hides Claude's output; print the tool calls it was denied, and on failure the
-      # run's final message (an API error, say).
+      # run's final message (an API error, say). That text is the model's, so workflow commands
+      # are turned off while it prints: a `::` line in it can't set an output, mask or annotation.
       - name: Show denied tools and errors
         if: always() && steps.review.outputs.execution_file != ''
         env:
           EXECUTION_FILE: ${{ steps.review.outputs.execution_file }}
           FAILED: ${{ steps.review.outcome == 'failure' }}
         run: |
+          stop=$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')
+          echo "::stop-commands::$stop"
+          trap 'echo "::$stop::"' EXIT
           jq -r '.[] | select(.type == "result") | .permission_denials[]? | "denied: \(.tool_name) \(.tool_input | tostring | .[:200])"' "$EXECUTION_FILE"
           if [ "$FAILED" = true ]; then
             jq -r '.[] | select(.type == "result") | .result // empty' "$EXECUTION_FILE"
@@ -215,13 +221,17 @@ jobs:
             --disallowedTools "Read(//proc/**),Read(//sys/**),Read(~/.claude/**),Read(~/.config/**),Edit(./.git/**)"
             --json-schema '{"type":"object","required":["findings"],"properties":{"findings":{"type":"array","items":{"type":"object","required":["file","severity","description"],"properties":{"file":{"type":"string"},"line":{"type":"integer"},"severity":{"type":"string","enum":["high","medium","low"]},"category":{"type":"string"},"description":{"type":"string"},"fix":{"type":"string"}}}}}}'
       # The action hides Claude's output; print the tool calls it was denied, and on failure the
-      # run's final message (an API error, say).
+      # run's final message (an API error, say). That text is the model's, so workflow commands
+      # are turned off while it prints: a `::` line in it can't set an output, mask or annotation.
       - name: Show denied tools and errors
         if: always() && steps.review.outputs.execution_file != ''
         env:
           EXECUTION_FILE: ${{ steps.review.outputs.execution_file }}
           FAILED: ${{ steps.review.outcome == 'failure' }}
         run: |
+          stop=$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')
+          echo "::stop-commands::$stop"
+          trap 'echo "::$stop::"' EXIT
           jq -r '.[] | select(.type == "result") | .permission_denials[]? | "denied: \(.tool_name) \(.tool_input | tostring | .[:200])"' "$EXECUTION_FILE"
           if [ "$FAILED" = true ]; then
             jq -r '.[] | select(.type == "result") | .result // empty' "$EXECUTION_FILE"

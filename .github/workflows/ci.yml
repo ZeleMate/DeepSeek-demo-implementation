@@ -51,6 +51,7 @@ jobs:
       - run: git ls-files -z | xargs -0 scripts/checks/forbidden-paths.sh
       - run: git ls-files -z | xargs -0 scripts/checks/forbidden-patterns.sh
       - run: git ls-files -z | xargs -0 scripts/checks/file-hygiene.sh
+      - run: scripts/checks/launchers.sh
       - name: shellcheck
         run: git ls-files -z 'bin/*' 'scripts/**.sh' | xargs -0 --no-run-if-empty shellcheck
 

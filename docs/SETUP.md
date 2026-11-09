@@ -20,6 +20,7 @@ The `Protect development`, `Protect version tags` and `Copilot review on every P
 
 1. **Account security (once per account):** passkey or security key on GitHub.
 1. **Hooks:** `brew bundle`, then `lefthook install` (see [README.md](../README.md)).
+1. **Commit email:** `git config user.email <id>+<login>@users.noreply.github.com`. The pre-push hook refuses any other author or committer address, because the repo is public. Rewrite older commits on a branch with `git rebase -r --exec 'git commit --amend --no-edit --reset-author' <base>`.
 1. **Dependabot malware alerts:** Settings → Advanced Security → enable "Malware alerts" (UI only).
 1. **Claude reviews:** run `claude setup-token` and copy the token. The token often wraps onto two lines, and a copied line break breaks it, so check the length (about 108) and store it without whitespace:
    `pbpaste | tr -d '[:space:]' | wc -c`, then `pbpaste | tr -d '[:space:]' | gh secret set CLAUDE_CODE_OAUTH_TOKEN`. Copy something else afterwards to clear the clipboard. The reviews run once per PR, or by hand from the Actions tab (ADR 0014).

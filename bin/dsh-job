@@ -3,8 +3,31 @@
 # Usage: bin/dsh-job [app args...], e.g. bin/dsh-job "what is 17+25?" or bin/dsh-job --dump-config
 set -eu
 
-repo=$(cd "$(dirname "$0")/.." && pwd)
 root=${DSH_DEMO_ROOT:-$HOME/.dsh-demo}
+
+# The script re-runs itself with an empty environment plus a fixed allowlist, so nothing exported
+# in the calling shell reaches dsh: no other key, no proxy, no endpoint, no DSH_* setting.
+if [ "${DSH_JOB_CLEAN_ENV:-}" != 1 ]; then
+  exec env -i \
+    HOME="$HOME" USER="${USER:-}" PATH="$PATH" LANG="${LANG:-en_US.UTF-8}" \
+    TERM="${TERM:-dumb}" TMPDIR="${TMPDIR:-/tmp}" \
+    DSH_DEMO_ROOT="$root" DSH_DEMO_NO_KEYS="${DSH_DEMO_NO_KEYS:-}" DSH_JOB_CLEAN_ENV=1 \
+    "$0" "$@"
+fi
+# DSH_JOB_CLEAN_ENV can be set by hand, so the re-run also checks that only allowlisted names are
+# left. PWD, OLDPWD, SHLVL and _ are the shell's own.
+for name in $(env | sed -n 's/^\([A-Za-z_][A-Za-z0-9_]*\)=.*/\1/p'); do
+  case $name in
+    HOME | USER | PATH | LANG | TERM | TMPDIR | DSH_DEMO_ROOT | DSH_DEMO_NO_KEYS | DSH_JOB_CLEAN_ENV) ;;
+    PWD | OLDPWD | SHLVL | _) ;;
+    *)
+      echo "dsh-job: $name is set; start dsh-job without DSH_JOB_CLEAN_ENV so it clears the environment" >&2
+      exit 1
+      ;;
+  esac
+done
+
+repo=$(cd "$(dirname "$0")/.." && pwd)
 DSH_HOME=$root/home
 workspace=$root/workspace/job
 # Called by path, not through `pnpm exec`, which would run dsh in the repo instead of the workspace.
@@ -25,6 +48,24 @@ if [ "$(cat "$home_patch")" != "[]" ]; then
   exit 1
 fi
 
+# dsh falls back to these files for keys and settings. Keys live in the Keychain, so none may
+# exist: one left in the workspace by an earlier run would apply to this one (ADR 0007).
+for file in "$DSH_HOME/.env" "$DSH_HOME/.credentials.yaml" "$workspace/.env"; do
+  if [ -e "$file" ]; then
+    echo "dsh-job: $file exists; keys live in the Keychain (ADR 0007)" >&2
+    exit 1
+  fi
+done
+
+# The bundle turns off dsh's instruction and skill rows, but a file one run leaves here would steer
+# every later run if a row came back, so none may exist (ADR 0009, ADR 0010).
+for file in AGENTS.md AGENTS.local.md CLAUDE.md CLAUDE.local.md .agents .dsh; do
+  if [ -e "$workspace/$file" ]; then
+    echo "dsh-job: $workspace/$file exists; the job workspace holds no instructions (ADR 0009)" >&2
+    exit 1
+  fi
+done
+
 # dsh reads ./.env as a key fallback and ./AGENTS.md as instructions, so it never starts
 # inside a repo. A scanned repo reaches a job as a tool argument (ADR 0007, ADR 0009).
 cd "$workspace"
@@ -33,7 +74,9 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   exit 1
 fi
 
-export DSH_HOME DSH_TELEMETRY_DISABLED=1
+# Ollama needs no key, but pi-ai's OpenAI-compatible transport requires one. The upgrade check's
+# overlay names this dummy, which is not a secret (ADR 0007).
+export DSH_HOME DSH_TELEMETRY_DISABLED=1 OLLAMA_DUMMY_KEY=ollama
 
 # First run: the job profile is dsh-base, then dsh-headless, then our bundle (#53). The manifest
 # is written here instead of using dsh's template flag, which deletes an existing profile (ADR 0001).
@@ -73,7 +116,7 @@ fi
 for name in OPENROUTER_API_KEY; do
   unset "$name"
   [ "${DSH_DEMO_NO_KEYS:-}" = 1 ] && continue
-  if value=$(security find-generic-password -a "$USER" -s "dsh-demo.$name" -w 2>/dev/null); then
+  if value=$(/usr/bin/security find-generic-password -a "$USER" -s "dsh-demo.$name" -w 2>/dev/null); then
     export "$name=$value"
   fi
 done

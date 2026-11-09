@@ -1,5 +1,7 @@
 # Upgrade-check overlay: points the job profile's default model at local Ollama, so the
 # smoke turn costs nothing and no remote model is reachable (no remote route, no key).
+# check.sh builds the model tag from smoke.Modelfile, under the name agent-default-model
+# selects. The route's model id must be the same tag, or dsh refuses the default model.
 - id: llm-pi-ai
   config:
     providers:
@@ -7,13 +9,13 @@
         displayName: Ollama (local)
         api: openai-completions
         baseURL: http://127.0.0.1:11434/v1
-        apiKeyEnv: OLLAMA_API_KEY
+        apiKeyEnv: OLLAMA_DUMMY_KEY
         models:
-          - id: qwen3.5:2b
-            contextWindow: 32768
+          - id: upgrade-check-qwen3.5-2b-16k
+            contextWindow: 16384
             maxTokens: 4096
 
 - id: agent-default-model
   config:
     provider: ollama
-    model: qwen3.5:2b
+    model: upgrade-check-qwen3.5-2b-16k

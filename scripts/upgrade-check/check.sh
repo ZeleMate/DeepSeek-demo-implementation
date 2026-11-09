@@ -16,8 +16,6 @@ update=false
 root=$(mktemp -d)
 trap 'rm -rf "$root"' EXIT
 export DSH_DEMO_ROOT=$root DSH_DEMO_NO_KEYS=1
-# Ollama ignores the key; pi-ai needs one set. Not a secret.
-export OLLAMA_API_KEY=ollama
 
 failed=()
 step() { printf '\n== %s\n' "$1"; }
@@ -63,8 +61,19 @@ snapshot config-schema.json --dump-config-schema
 
 # Checks dsh's plumbing, not the model: a 2B model's answer is too noisy to gate an upgrade on.
 step "Headless smoke turn on local Ollama"
+# The overlay's default model is the tag built from smoke.Modelfile.
+smoke_tag=$(sed -n 's/^ *model: //p' "$here/ollama.patch.yml")
+smoke_base=$(sed -n 's/^FROM //p' "$here/smoke.Modelfile")
 if ! curl -sf http://127.0.0.1:11434/api/tags >/dev/null; then
   fail "Ollama is not running on 127.0.0.1:11434"
+elif ! command -v ollama >/dev/null 2>&1; then
+  fail "the ollama CLI is not on PATH"
+elif ! ollama show "$smoke_base" >/dev/null 2>&1; then
+  # Checked first so `ollama create` never downloads the base.
+  fail "$smoke_base is missing; run 'ollama pull $smoke_base'"
+elif ! ollama create "$smoke_tag" -f "$here/smoke.Modelfile" >/dev/null 2>&1; then
+  # Recreated every run, so a changed Modelfile always takes effect.
+  fail "could not create the smoke model from smoke.Modelfile"
 else
   if "$job" --patch "$here/ollama.patch.yml" --json "What is 17+25? Reply with only the number." \
     >"$root/smoke.out" 2>"$root/smoke.err"; then

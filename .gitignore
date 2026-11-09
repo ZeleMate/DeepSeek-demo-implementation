@@ -14,6 +14,7 @@
 # dsh state: session logs and profiles live in $DSH_HOME, outside the repo
 dsh-home/
 *.jsonl.zstd
+**/sessions/**/*.jsonl
 session.lock
 cordis.patch.yml
 

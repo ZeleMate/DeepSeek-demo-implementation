@@ -1,5 +1,5 @@
 ---
-status: accepted; embargo label skips the Claude reviews 2026-11-09
+status: accepted; embargo label skips the Claude reviews 2026-11-09 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/135)
 ---
 
 # Upstream bugs are disclosed privately and kept out of git until fixed

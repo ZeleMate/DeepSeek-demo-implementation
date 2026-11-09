@@ -12,7 +12,7 @@ for f in "$@"; do
       echo "forbidden: $f (keys live in the Keychain, ADR 0007)"; status=1 ;;
     *.pem | *.key | *.p12 | *.credentials.yaml)
       echo "forbidden: $f (credential file)"; status=1 ;;
-    *dsh-home/* | *.jsonl.zstd | *session.lock | sessions/*.jsonl | */sessions/*.jsonl)
+    *dsh-home/* | *.jsonl.zstd | *session.lock | *sessions/*.jsonl)
       echo "forbidden: $f (dsh state belongs in \$DSH_HOME, outside the repo)"; status=1 ;;
     cordis.patch.yml | */cordis.patch.yml)
       echo "forbidden: $f (user-owned profile layer, ADR 0007)"; status=1 ;;

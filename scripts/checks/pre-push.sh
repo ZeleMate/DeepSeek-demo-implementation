@@ -24,7 +24,11 @@ while read -r local_ref local_sha remote_ref remote_sha; do
   # email or a machine's hostname (docs/THREAT_MODEL.md T9). Set it with
   # git config user.email <id>+<login>@users.noreply.github.com.
   read -r -a range <<<"$log_opts"
-  bad=$(git log --format='%ae%n%ce' "${range[@]}" | grep -vE '@users\.noreply\.github\.com$|^noreply@github\.com$' | sort -u || true)
+  # Fails closed: if git can't list the commits, the push is refused.
+  if ! emails=$(git log --format='%ae%n%ce' "${range[@]}"); then
+    echo "push refused: could not list the commits $remote_ref adds"; status=1; continue
+  fi
+  bad=$(grep -vE '@users\.noreply\.github\.com$|^noreply@github\.com$' <<<"$emails" | sort -u || true)
   if [[ -n "$bad" ]]; then
     echo "push refused: $remote_ref has commits by an address that isn't a GitHub noreply one:"
     printf '  %s\n' "$bad"

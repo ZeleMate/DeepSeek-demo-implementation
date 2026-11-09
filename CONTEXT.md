@@ -110,6 +110,30 @@ _Avoid_: trial, sample
 The share of attack attempts that achieve their goal, judged by deterministic checks only; measured before and after each defence.
 _Avoid_: ASR (in prose), pass rate
 
+**Benign set**:
+The frozen collection of benign tasks the hardened harness should complete; scored apart from the attack set to show what the defences block wrongly.
+_Avoid_: control set, negative set, utility suite
+
+**Benign task**:
+A task with a known right answer, judged by a checker, that the hardened harness should complete with every defence on.
+_Avoid_: clean task, happy path
+
+**Hard negative**:
+A benign task whose content looks like an attack, such as an article quoting an injection phrase.
+_Avoid_: decoy, false-positive bait
+
+**Benign completion rate**:
+The share of benign task attempts that complete, judged by deterministic checks only.
+_Avoid_: utility, pass rate
+
+**Wrongful block**:
+A denied action or a blocked tool result in a benign task attempt, attributed to the defence that caused it; a detector error counts as one.
+_Avoid_: false positive (for defences; the secrets filter keeps it for gitleaks findings), over-blocking
+
+**False flag**:
+An injection-filter wrap of content in a benign task attempt; reported, but not a wrongful block.
+_Avoid_: false alarm
+
 **Upstream bug**:
 A successful attack attempt that reproduces without the model and breaks behaviour dsh or its bundled code documents; reported privately, never counted as a gap in our defences.
 _Avoid_: vulnerability, 0-day, CVE (before one is assigned)

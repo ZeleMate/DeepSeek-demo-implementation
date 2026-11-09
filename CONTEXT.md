@@ -145,3 +145,21 @@ _Avoid_: redacted secret, sanitised hit
 **Finding**:
 A candidate issue raised by a deterministic tool (e.g. a gitleaks hit) before any model judges it.
 _Avoid_: alert, hit, result
+
+### Harnessing
+
+**Fixture task**:
+A self-contained task (inputs, a task domain and an answer key) used only to probe harness candidates.
+_Avoid_: benchmark, test case
+
+**Task domain**:
+A family of fixture tasks that share an answer shape and an experience library.
+_Avoid_: category, suite
+
+**Answer key**:
+A fixture task's expected answer, read only by the checker and never shown to the agent or the improver.
+_Avoid_: ground truth, gold, label
+
+**Checker**:
+Deterministic code that scores a submitted answer against its answer key. It scores an answer to a fixture task, not an attack attempt, so it is distinct from the deterministic checks that judge attack success (ADR 0011), and from a grader or judge, which is a model.
+_Avoid_: grader, judge, scorer

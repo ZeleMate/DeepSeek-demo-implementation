@@ -16,7 +16,18 @@
       "Bash(git push -f *)",
       "Bash(gh release create *)",
       "Bash(gh secret *)",
-      "Bash(gh api -X DELETE *)"
+      "Bash(gh api -X DELETE *)",
+      "Read(~/.ssh/**)",
+      "Read(~/.dsh-demo/**)",
+      "Bash(security *)",
+      "Bash(/usr/bin/security *)",
+      "Bash(git push --force-with-lease*)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f*)",
+      "Bash(git push * +*)",
+      "Bash(gh api --method DELETE *)",
+      "Bash(gh api --method=DELETE *)",
+      "Bash(gh api -XDELETE *)"
     ],
     "ask": [
       "Bash(git push *)",

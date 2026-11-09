@@ -1,5 +1,5 @@
 ---
-status: accepted; both launchers clear the environment and refuse key files 2026-11-08
+status: accepted; both launchers clear the environment and refuse key files 2026-11-08 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/132)
 ---
 
 # API keys live in the macOS Keychain and reach dsh only through a launcher

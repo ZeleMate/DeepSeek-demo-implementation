@@ -127,8 +127,8 @@ The share of benign task attempts that complete, judged by deterministic checks 
 _Avoid_: utility, pass rate
 
 **Wrongful block**:
-A denial or block of an action in a benign task attempt, attributed to the defence that caused it; a detector error counts as one.
-_Avoid_: false positive (in prose), over-blocking
+A denied action or a blocked tool result in a benign task attempt, attributed to the defence that caused it; a detector error counts as one.
+_Avoid_: false positive (for defences; the secrets filter keeps it for gitleaks findings), over-blocking
 
 **False flag**:
 An injection-filter wrap of content in a benign task attempt; reported, but not a wrongful block.

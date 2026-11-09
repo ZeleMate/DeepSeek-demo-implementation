@@ -163,11 +163,11 @@ jobs:
         run: |
           stop=$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')
           echo "::stop-commands::$stop"
+          trap 'echo "::$stop::"' EXIT
           jq -r '.[] | select(.type == "result") | .permission_denials[]? | "denied: \(.tool_name) \(.tool_input | tostring | .[:200])"' "$EXECUTION_FILE"
           if [ "$FAILED" = true ]; then
             jq -r '.[] | select(.type == "result") | .result // empty' "$EXECUTION_FILE"
           fi
-          echo "::$stop::"
 
   claude-security:
     name: security review (Claude)
@@ -231,11 +231,11 @@ jobs:
         run: |
           stop=$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')
           echo "::stop-commands::$stop"
+          trap 'echo "::$stop::"' EXIT
           jq -r '.[] | select(.type == "result") | .permission_denials[]? | "denied: \(.tool_name) \(.tool_input | tostring | .[:200])"' "$EXECUTION_FILE"
           if [ "$FAILED" = true ]; then
             jq -r '.[] | select(.type == "result") | .result // empty' "$EXECUTION_FILE"
           fi
-          echo "::$stop::"
       # A missing result means the review didn't finish, so fail rather than pass silently.
       - name: Fail on findings or an incomplete review
         env:

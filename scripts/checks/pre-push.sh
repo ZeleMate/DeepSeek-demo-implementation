@@ -28,6 +28,7 @@ while read -r local_ref local_sha remote_ref remote_sha; do
   if [[ -n "$bad" ]]; then
     echo "push refused: $remote_ref has commits by an address that isn't a GitHub noreply one:"
     printf '  %s\n' "$bad"
+    echo "  Rewrite them with: git rebase -r --exec 'git commit --amend --no-edit --reset-author' <base>"
     status=1
   fi
 done

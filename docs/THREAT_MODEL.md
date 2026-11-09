@@ -31,7 +31,7 @@ Trust boundaries: the Mac and the outside world; the model and the harness (mode
 | OpenRouter API key | Spend, account takeover | macOS Keychain (ADR 0007, `secrets.md`) |
 | `CLAUDE_CODE_OAUTH_TOKEN` | The owner's Claude subscription | GitHub Actions secret, read only by `claude-review.yml` |
 | Files on the owner's Mac (`~/.ssh`, other repos) | Privacy, credentials | Local disk, outside the workspaces |
-| Session logs | Prompts and tool results, possibly sensitive | `~/.dsh-demo/*/home/sessions`, mode 0700 |
+| Session logs | Prompts and tool results, possibly sensitive | `~/.dsh-demo/home/sessions` and `~/.dsh-demo/redteam/home/sessions`, directories mode 0700 |
 | Repos the secrets filter scans (M7) | Real candidate secrets | Local disk; values never leave the machine (ADR 0004) |
 | Unfixed upstream bugs | Disclosure before a fix | `eval/embargoed/`, gitignored (ADR 0015) |
 
@@ -50,7 +50,7 @@ STRIDE for the classic part. Status: open / mitigated / accepted.
 | T3 | Compromised GitHub Action | CI | Actions allowlist, SHAs required, `permissions: {}` default, zizmor | mitigated |
 | T4 | Unreviewed change reaches `main` | repo | PR-only rulesets on `main` and `development`, required `ci-ok`, CODEOWNERS (ADR 0016) | accepted (solo) |
 | T5 | Stranger-written issue or comment steers a CI agent | CI | No CI job can push; same-repo PRs only; reviews read only owner, member and collaborator text (ADR 0014) | mitigated |
-| T6 | Model output in a CI log runs a workflow command | CI | Printed model text is wrapped in `stop-commands`; annotations escape `%`, `:`, `,` and newlines | mitigated |
+| T6 | Model output in a CI log runs a workflow command | CI | Printed model text is wrapped in `stop-commands`; annotation messages escape `%` and newlines, and file names also `:` and `,` | mitigated |
 | T7 | A public review comment discloses an unfixed upstream bug | CI | PRs labelled `embargo` skip the Claude reviews (ADR 0015) | mitigated |
 | T8 | Third-party review bots (Codex, SonarQube Cloud) read the repo or act on comments | GitHub apps | Installed by the owner; read their permissions and who can trigger them in Settings → Integrations | open |
 | T9 | Personal data in git history | repo | New commits use the GitHub noreply address, and `pre-push.sh` refuses any other author or committer email; older commits keep theirs | accepted |

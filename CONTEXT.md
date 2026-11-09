@@ -99,8 +99,24 @@ A detector or rule whose result feeds a policy decision (egress allowlist, read 
 _Avoid_: guardrail, protection
 
 **Attack set**:
-The fixed collection of attacks (DVMCP challenges, our malicious MCP server, local Promptfoo red-team probes) that the hardened harness is scored against.
-_Avoid_: test suite, red-team suite
+The frozen collection of attacks (DVMCP challenges, our malicious MCP server, local Promptfoo red-team probes) that the hardened harness is scored against; variants are kept apart from it.
+_Avoid_: test suite, red-team suite, core set
+
+**Variant**:
+An attack made from one in the attack set by a single mutation (encoding, split, tool or server move, fixture-spot move, paraphrase); it keeps its parent's goal and defence.
+_Avoid_: mutant, derivative
+
+**Variant set**:
+The append-only collection of committed variants, scored apart from the attack set; its attack success rate is the variant rate.
+_Avoid_: extended set, regression set
+
+**Variant sweep**:
+The step that ends each defence milestone: make variants of the attacks the new defence blocks and keep them all.
+_Avoid_: fuzzing, bypass hunt
+
+**Bypass**:
+A variant whose attack attempts succeed against the defence its parent maps to.
+_Avoid_: evasion, hole
 
 **Attack attempt**:
 One run of one attack from the attack set; each attack is attempted several times because the victim model is nondeterministic.

@@ -31,7 +31,7 @@ jobs:
             git config --global url."https://x-access-token:${TEMPLATE_READ_TOKEN}@github.com/".insteadOf "https://github.com/"
           fi
           set +e
-          UV_LOCKED=1 "$RUNNER_TEMP/uv" run --project .github/tools copier check-update --quiet
+          UV_LOCKED=1 "$RUNNER_TEMP/uv" run --no-build --project .github/tools copier check-update --quiet
           rc=$?
           set -e
           if [ "$rc" -eq 2 ]; then
@@ -40,5 +40,6 @@ jobs:
               gh issue create --title "$title" --body "Run \`uvx copier update --trust\` locally, review the diff, and open a PR."
             fi
           elif [ "$rc" -ne 0 ]; then
-            echo "copier check-update failed (rc=$rc)"; exit "$rc"
+            echo "::error::copier check-update failed (rc=$rc). If the template repo is private, set the TEMPLATE_READ_TOKEN secret (see docs/SETUP.md)."
+            exit "$rc"
           fi

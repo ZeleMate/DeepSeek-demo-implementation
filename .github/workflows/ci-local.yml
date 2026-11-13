@@ -1,0 +1,61 @@
+name: Local CI
+
+# This repo's own CI jobs: the template wrote this file once and never updates it.
+# ci.yml calls it on every PR and push, and the merge gate (ci-ok) waits for it.
+# Same checks as the git hooks (lefthook.yml), so --no-verify can't skip them. The
+# commit-msg check runs on the PR title, which becomes the squash commit. Gitleaks,
+# actionlint and zizmor run in ci.yml's central `security` and `repo-lint` calls.
+#
+# Rules: no job may need a secret (Dependabot PRs get none), every action is pinned
+# to a full commit SHA, and each job asks for read access only.
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  repo-rules:
+    name: forbidden paths and commands
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: git ls-files -z | xargs -0 scripts/checks/forbidden-paths.sh
+      - run: git ls-files -z | xargs -0 scripts/checks/forbidden-patterns.sh
+      - run: git ls-files -z | xargs -0 scripts/checks/file-hygiene.sh
+      - run: scripts/checks/launchers.sh
+      - name: shellcheck
+        run: git ls-files -z 'bin/*' 'scripts/**.sh' | xargs -0 --no-run-if-empty shellcheck
+
+  pr-title:
+    name: PR title (conventional commit)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: printf '%s\n' "$PR_TITLE" | scripts/checks/commit-message.sh
+
+  markdown:
+    name: markdown
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: DavidAnson/markdownlint-cli2-action@21c1be1b93ad9ed58fa840aacc3f279cde2a72ff # v24.2.0
+        with:
+          globs: "**/*.md"

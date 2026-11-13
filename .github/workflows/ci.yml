@@ -1,143 +1,55 @@
 name: CI
 
-# Same checks as the git hooks (lefthook.yml), so --no-verify can't skip them.
-# The commit-msg check runs on the PR title, which becomes the squash commit.
-# Every action is pinned to a full commit SHA; Dependabot keeps the pins current.
-
+# Caller workflow: each job below calls a reusable workflow in ZeleMate/workflows, all pinned
+# to the same release SHA. Dependabot moves the pin through minor and patch releases; a major
+# arrives with a template update. This file is the template's: put jobs of your own in
+# ci-local.yml, which the `local` job below calls and the merge gate waits on.
 on:
   pull_request:
   push:
-    branches: [main, development]
+    branches: [main]
 
 permissions: {}
 
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  secrets:
-    name: secrets (gitleaks, full history)
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+  repo-lint:
+    uses: ZeleMate/workflows/.github/workflows/repo-lint.yml@95244ca1c8b62ab0f3d56aefee2c60348445d132  # v1.0.0
     permissions:
       contents: read
-    env:
-      GITLEAKS_VERSION: 8.30.1
-      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - name: Install gitleaks (checksum-verified)
-        run: |
-          curl --proto '=https' --proto-redir '=https' -sSfL -o gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
-          echo "${GITLEAKS_SHA256}  gitleaks.tgz" | sha256sum -c -
-          tar -xzf gitleaks.tgz gitleaks && rm gitleaks.tgz
-      - name: Scan every commit
-        run: ./gitleaks git --redact --no-banner --log-opts=--all
 
-  repo-rules:
-    name: forbidden paths and commands
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - run: git ls-files -z | xargs -0 scripts/checks/forbidden-paths.sh
-      - run: git ls-files -z | xargs -0 scripts/checks/forbidden-patterns.sh
-      - run: git ls-files -z | xargs -0 scripts/checks/file-hygiene.sh
-      - run: scripts/checks/launchers.sh
-      - name: shellcheck
-        run: git ls-files -z 'bin/*' 'scripts/**.sh' | xargs -0 --no-run-if-empty shellcheck
-
-  pr-title:
-    name: PR title (conventional commit)
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-        run: printf '%s\n' "$PR_TITLE" | scripts/checks/commit-message.sh
-
-  markdown:
-    name: markdown
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: DavidAnson/markdownlint-cli2-action@21c1be1b93ad9ed58fa840aacc3f279cde2a72ff # v24.2.0
-        with:
-          globs: "**/*.md"
-
-  workflows:
-    name: workflows (actionlint, zizmor)
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-    env:
-      ACTIONLINT_VERSION: 1.7.12
-      ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Install actionlint (checksum-verified)
-        run: |
-          curl --proto '=https' --proto-redir '=https' -sSfL -o actionlint.tgz "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
-          echo "${ACTIONLINT_SHA256}  actionlint.tgz" | sha256sum -c -
-          tar -xzf actionlint.tgz actionlint && rm actionlint.tgz
-      - run: ./actionlint -color
-      - uses: zizmorcore/zizmor-action@85b2b9fb8e3325e7a23d7d0a9d7ba5ae0f999e3e # v0.7.1
-        with:
-          # No GitHub Advanced Security on this private repo: print findings instead of uploading SARIF.
-          advanced-security: false
-          version: 1.31.1
-
-  # OSV-Scanner, from the repo template (ADR 0016). Also runs weekly on its own.
   security:
-    name: security
-    uses: ./.github/workflows/security.yml
+    uses: ZeleMate/workflows/.github/workflows/security.yml@95244ca1c8b62ab0f3d56aefee2c60348445d132  # v1.0.0
+    permissions:
+      contents: read
+    with:
+      # Semgrep runs on private repos; public repos use CodeQL default setup instead.
+      sast: false
+
+  # This repo's own jobs. ci-local.yml is written once by the template and never updated.
+  local:
+    uses: $/.github/workflows/ci-local.yml
     permissions:
       contents: read
 
-  # One check that sums up every job here, and the one the rulesets should require. The Claude
-  # reviews live in claude-review.yml and stay advisory.
+  # The merge gate: the single required status check for the ruleset.
+  # Fails if any job failed or was cancelled. repo-lint checks that every job is listed here.
   ci-ok:
     name: ci-ok
     if: always()
-    needs: [secrets, repo-rules, pr-title, markdown, workflows, security]
+    needs:
+      - repo-lint
+      - security
+      - local
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions: {}
     steps:
-      # Fails closed: every job must succeed. The one allowed skip is pr-title outside a PR, because
-      # a push has no title to check.
       - env:
-          NEEDS: ${{ toJSON(needs) }}
-          EVENT: ${{ github.event_name }}
+          RESULTS: ${{ join(needs.*.result, ' ') }}
         run: |
-          bad=0
-          for job in secrets repo-rules pr-title markdown workflows security; do
-            result=$(jq -r --arg job "$job" '.[$job].result // "missing"' <<<"$NEEDS")
-            echo "$job: $result"
-            if [[ "$result" == success ]]; then continue; fi
-            if [[ "$job" == pr-title && "$result" == skipped && "$EVENT" != pull_request ]]; then continue; fi
-            bad=1
-          done
-          exit "$bad"
+          echo "results: $RESULTS"
+          case "$RESULTS" in *failure*|*cancelled*) exit 1 ;; esac

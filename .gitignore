@@ -44,3 +44,6 @@ lefthook-local.yml
 # Local research output, kept off git
 reports/
 research_notes/
+
+# Keep last: template files that broad rules above (`.python-version`, `/*.json`) must not hide.
+!.github/tools/.python-version

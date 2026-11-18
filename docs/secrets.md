@@ -7,7 +7,10 @@ Following the OWASP Secrets Management Cheat Sheet: centralise, prefer short-liv
 | Secret | Store | Used by | Rotation |
 |---|---|---|---|
 | `CLAUDE_CODE_OAUTH_TOKEN` | GitHub Actions secret | `claude-review.yml` (ADR 0014) | yearly (the token expires after 1 year) or on leak |
+| `TEMPLATE_READ_TOKEN` (only if the template repo is private) | GitHub Actions secret | `template-update.yml` | fine-grained PAT, contents:read on the template repo, ≤ 1 year |
 | Model API keys | macOS Keychain, exported by the launchers in `bin/` | dsh, through `apiKeyEnv` | 90 days |
+
+The machine-readable list is `.github/secret-requirements.json`; the GitHub audit reads it.
 
 No package is published, so there are no registry tokens.
 

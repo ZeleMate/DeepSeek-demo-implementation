@@ -29,6 +29,9 @@ pre-commit:
     shell:
       glob: "{bin/*,scripts/**/*.sh}"
       run: shellcheck {staged_files}
+    launchers:
+      glob: "{bin/*,scripts/checks/launchers.sh}"
+      run: scripts/checks/launchers.sh
 
 commit-msg:
   commands:

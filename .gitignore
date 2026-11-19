@@ -14,15 +14,36 @@
 # dsh state: session logs and profiles live in $DSH_HOME, outside the repo
 dsh-home/
 *.jsonl.zstd
+**/sessions/**/*.jsonl
 session.lock
 cordis.patch.yml
+
+# Unfixed upstream bugs stay off git until disclosure (ADR 0015)
+eval/embargoed/
 
 # Prototype run output (session logs, raw requests)
 prototypes/*/out/
 
 # Local tooling
 node_modules/
+.venv/
+.idea/
+.vscode/*
+!.vscode/extensions.json
+CLAUDE.local.md
+dist/
+coverage/
+*.tsbuildinfo
+# Eval logs
+logs/
 .DS_Store
 .claude/worktrees/
 .claude/settings.local.json
 lefthook-local.yml
+
+# Local research output, kept off git
+reports/
+research_notes/
+
+# Keep last: template files that broad rules above (`.python-version`, `/*.json`) must not hide.
+!.github/tools/.python-version

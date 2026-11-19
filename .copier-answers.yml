@@ -1,0 +1,20 @@
+# Changes here will be overwritten by Copier. Do not edit by hand; run `copier update`.
+_commit: v1.1.3
+_src_path: gh:ZeleMate/repo-template
+agentic: true
+ai_reviewers:
+- claude
+author_email: 179591691+ZeleMate@users.noreply.github.com
+author_name: Zelenyiánszki Máté
+description: A personal, learning-first agent harness in TypeScript
+extra_ecosystems:
+- npm
+github_owner: ZeleMate
+github_plan: free
+languages: []
+license: MIT
+project_name: DeepSeek demo implementation
+project_slug: deepseek-demo-implementation
+quality_platform: none
+repo_name: DeepSeek-demo-implementation
+visibility: public

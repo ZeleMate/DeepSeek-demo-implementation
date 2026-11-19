@@ -1,0 +1,10 @@
+# Advisories accepted for a limited time. osv-scanner reads this file for the lockfiles in this
+# directory; each ignore expires on its date, after which the scan fails again.
+
+[[IgnoredVulns]]
+id = "GHSA-fc5q-39xc-vjpf"
+ignoreUntil = 2026-12-17T00:00:00Z
+reason = """
+picomatch <= 4.0.7 ReDoS via crafted extglobs; no fixed version yet. It only comes in through \
+@deepseek-ai/dsh-hmr, a devDependency that never ships, and needs attacker-supplied glob \
+patterns. Remove once Dependabot bumps picomatch to a fixed release."""

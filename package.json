@@ -1,6 +1,7 @@
 {
   "name": "@zelemate/dsh-demo",
   "private": true,
+  "license": "MIT",
   "description": "Our dsh plugins and bundles (ADR 0001)",
   "packageManager": "pnpm@11.28.5",
   "engines": {

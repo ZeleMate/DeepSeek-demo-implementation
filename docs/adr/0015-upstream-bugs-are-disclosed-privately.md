@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: accepted; embargo label skips the Claude reviews 2026-11-09 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/135)
 ---
 
 # Upstream bugs are disclosed privately and kept out of git until fixed
@@ -16,6 +16,7 @@ Red-team runs attack our own harness, and the harness is dsh plus its bundled co
 - `eval/results/<version>.json` carries one top-level `"embargoed": <attack count>` field: no attack names, no defence, no rate. Embargoed attempts are left out of every attack success rate.
 - PR text and commit messages say nothing about the bug.
 - A cheap workaround in our own defences may ship before the fix, with a generic commit message; its test stays in `eval/embargoed/`.
+- Its PR is opened with the `embargo` label (`gh pr create --label embargo`). The Claude reviews in `claude-review.yml` then skip it, because their PR comments, CI annotations and logs are public and could describe the bug. A label added after the PR opens is too late for the automatic run.
 
 **Timeline.** The embargo ends when the fix ships or 90 days after the first report, whichever comes first, and earlier if a public fix or commit already reveals the bug. After it ends we publish a write-up, never a working exploit (ADR 0002).
 

@@ -54,6 +54,8 @@ _Amended 2026-10-23 by ADR 0013 ([#90](https://github.com/ZeleMate/DeepSeek-demo
 
 _Amended 2026-11-07 by ADR 0015 ([#115](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/115)):_ each results file also carries a top-level `"embargoed": <attack count>` for attacks that hit an unfixed upstream bug. Their attempts are left out of every attack success rate, and their detail stays in the untracked `eval/embargoed/` until the fix ships.
 
+_Amended 2026-11-07 by ADR 0017 ([#116](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/116)):_ the attack set above stays frozen. Each defence milestone adds variants of the attacks its defence blocks, made by local mutators and a local paraphrase model and committed under `eval/variants/`. They are judged like core attacks and reported as a separate per-defence variant rate with its variant count, never mixed into the attack success rate.
+
 _Amended 2026-11-09 ([#117](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/117)):_ attack success rate alone rewards a defence that blocks everything. So a third score measures what the defences block wrongly, on a **benign set**.
 
 - **The set.** About 12 frozen benign tasks in the red-team profile: about 8 ordinary tasks (an allowlisted fetch, reads inside the allowlist, a call to a pin-mode tool on our test MCP server, a job-shaped read then report) and about 4 hard negatives, harmless content that looks like an attack. Each task maps to the defences it could wrongly trigger. The MCP tool's lockfile entry is committed when the pinning guard lands (M6), so the guard sees it as pinned.

@@ -99,8 +99,24 @@ A detector or rule whose result feeds a policy decision (egress allowlist, read 
 _Avoid_: guardrail, protection
 
 **Attack set**:
-The fixed collection of attacks (DVMCP challenges, our malicious MCP server, local Promptfoo red-team probes) that the hardened harness is scored against.
-_Avoid_: test suite, red-team suite
+The frozen collection of attacks (DVMCP challenges, our malicious MCP server, local Promptfoo red-team probes) that the hardened harness is scored against; variants are kept apart from it.
+_Avoid_: test suite, red-team suite, core set
+
+**Variant**:
+An attack made from one in the attack set by a single mutation (encoding, split, tool or server move, fixture-spot move, paraphrase); it keeps its parent's goal and defence.
+_Avoid_: mutant, derivative
+
+**Variant set**:
+The append-only collection of committed variants, scored apart from the attack set; its attack success rate is the variant rate.
+_Avoid_: extended set, regression set
+
+**Variant sweep**:
+The step that ends each defence milestone: make variants of the attacks the new defence blocks and keep them all.
+_Avoid_: fuzzing, bypass hunt
+
+**Bypass**:
+A variant whose attack attempts succeed against the defence its parent maps to.
+_Avoid_: evasion, hole
 
 **Attack attempt**:
 One run of one attack from the attack set; each attack is attempted several times because the victim model is nondeterministic.
@@ -187,3 +203,43 @@ _Avoid_: ground truth, gold, label
 **Checker**:
 Deterministic code that scores a submitted answer against its answer key. It scores an answer to a fixture task, not an attack attempt, so it is distinct from the deterministic checks that judge attack success (ADR 0011), and from a grader or judge, which is a model.
 _Avoid_: grader, judge, scorer
+
+**Harness**:
+The text a model is told, held as files: an instructions section, skills and tool descriptions. It changes what the model is told, never what it is allowed to do, which the profile decides. It is unrelated to the **Hardened harness**, which is a profile.
+_Avoid_: prompt, config, profile
+
+**Base harness**:
+The harness a fixture task's probes start from and fall back to; in v1, the empty harness.
+_Avoid_: default harness, seed
+
+**Editable surface**:
+The paths and rules a proposal may touch; anything outside it rejects the whole proposal.
+_Avoid_: whitelist, scope
+
+**Edit**:
+One change to a harness: a file's full new content, or its deletion. Files without an edit are inherited from the base harness.
+_Avoid_: patch (a dsh config layer), diff
+
+**Proposal**:
+One improver stage's full set of edits plus its notes, accepted or rejected whole. Always "proposal" here, never "action proposal", which is a tool call.
+_Avoid_: submission, change set
+
+**Harness candidate**:
+The harness a valid proposal produces from the base harness, before it is probed.
+_Avoid_: variant, version
+
+**Improver**:
+The model session that proposes, composes or reflects on harness candidates; it reads evidence and submits proposals, and never runs a probe.
+_Avoid_: optimizer, meta-agent
+
+**Probe**:
+One run of one fixture task under one harness.
+_Avoid_: rollout, trial
+
+**Kept base**:
+A stage whose valid proposal leaves the harness unchanged.
+_Avoid_: no-op
+
+**Fell back**:
+A stage that produced no valid proposal after its retry, so the base harness is probed in its place. Distinct from kept base.
+_Avoid_: failed stage, reverted

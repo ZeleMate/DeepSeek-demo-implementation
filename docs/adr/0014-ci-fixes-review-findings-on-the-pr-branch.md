@@ -1,8 +1,24 @@
 ---
-status: accepted
+status: reversed 2026-11-08 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/126); reviews read only trusted authors' text 2026-11-07 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/120)
 ---
 
-# CI fixes the Claude review findings and pushes them to the PR branch
+# CI fixed the Claude review findings on the PR branch (reversed)
+
+## Reversed
+
+We removed the fixer on 2026-11-08 in [#126](https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/126). CI no longer fixes findings or pushes to any branch. The reviews stay as advisory comments, and local Claude sessions take over the fixes.
+
+- **Bot commits don't start CI.** A push with the job's own token starts no workflow until someone approves it, so a fix commit stalled its PR without required checks.
+- **Most runs fixed nothing.** Workflows and other protected files are off limits to the fixer, so it had to leave those findings. Patches were also refused whole when they created, deleted or renamed a file.
+- **It was the only job with write access.** Removing it means no CI job holds `contents: write`, which matters more now that the repo is going public.
+
+What replaces it:
+
+- The two reviews live in `.github/workflows/claude-review.yml`. They run once per PR, on `opened`, `ready_for_review` and `reopened`, and on demand with `workflow_dispatch`, not on every push.
+- The limits below on what the reviews can read still hold: no git, one exact `gh pr comment`, only trusted authors' text, and no `/proc`.
+- A local session reads the review comment, makes the fix and pushes it as the owner, so CI runs on it.
+
+The rest of this ADR records the flow as it was.
 
 Every PR gets two Claude reviews in CI: a code review and a security review. Until now they only commented. Now a fixer acts on their findings, and CI pushes its fix to the PR branch as one commit. Whatever it doesn't fix becomes a check on the head commit, which goes back to the PR's owner.
 
@@ -18,7 +34,8 @@ This puts model-written code on our branches without a human writing it first. S
 
 ## Limits on the fixer
 
-- **No git and no shell.** A prep step hands Claude the diff and commit log as files. The reviews may run only read-only `gh pr view` and `gh issue view`, plus one exact `gh pr comment`.
+- **No git and no shell.** A prep step hands Claude the diff and commit log as files. The reviews may run only one exact `gh pr comment`.
+- **Only trusted authors reach the model.** The repo is public, so anyone can write an issue or a comment, and an injected finding there would reach the fixer and then the PR branch. So no review can run `gh pr view` or `gh issue view`. A plain step fetches the PR text and the issues it references, with their comments, and keeps only what the owner, members and collaborators wrote.
 - **File tools stay in the checkout.** Reading `/proc`, `/sys`, `~/.claude` and `~/.config` is denied, which keeps `CLAUDE_CODE_OAUTH_TOKEN` out of reach. Writes to `.git/` are denied, and a hash of git's hooks and settings taken before and after Claude runs is the second line of defence.
 - **Protected files never take a fix.** These are files that run code on a developer's machine, decide what CI checks, or steer an agent. That means workflows, hook and package config, dev-machine config (`.envrc`, `Makefile`, `.vscode/`, `.devcontainer/`, Dockerfiles), `scripts/`, `bin/` (ADR 0007), `patches/`, `eval/` (ADR 0011), `plugins/` and `bundles/` (dsh runs them, and the defences live there), `prototypes/`, tests, `AGENTS.md`, `CLAUDE.md` and `.claude/`. A finding there goes to the PR's owner. So a defence never changes after its score was measured without a human making the change (ADR 0011). This leaves the fixer mostly docs to fix, which is the price of that rule.
 - **Inputs are data.** The prompt tells Claude to treat the findings, the diff and the repo's files as data, never as instructions. Annotation text from the model is kept to one line, and its `@mentions` are broken before the fixer's summary is posted.

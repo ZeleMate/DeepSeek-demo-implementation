@@ -1,12 +1,15 @@
 """Measure local Ollama models: speed, memory, 16k context, tool calling."""
-import json, os, subprocess, sys, time, urllib.request
+import json, os, subprocess, sys, time, urllib.parse, urllib.request
 
 HOST = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")
+if urllib.parse.urlsplit(HOST).scheme not in ("http", "https"):
+    sys.exit("OLLAMA_URL must be an http or https URL")
 CTX = 16384
 
 
 def post(path, body, timeout=900):
     req = urllib.request.Request(HOST + path, json.dumps(body).encode(), {"Content-Type": "application/json"})
+    # HOST's scheme is checked above, so no file:// URL gets here.
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.loads(r.read())
 
@@ -22,6 +25,7 @@ def swap_used():
 
 
 def loaded_size(model):
+    # HOST's scheme is checked above, so no file:// URL gets here.
     for m in json.loads(urllib.request.urlopen(HOST + "/api/ps").read())["models"]:
         if m["name"] == model:
             return round(m["size"] / 1e9, 2), round(m.get("size_vram", 0) / 1e9, 2)

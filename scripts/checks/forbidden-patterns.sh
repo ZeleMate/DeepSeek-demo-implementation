@@ -8,10 +8,10 @@ files=()
 for f in "$@"; do
   case "$f" in
     *.md | scripts/checks/forbidden-patterns.sh) ;;
-    *) [ -f "$f" ] && files+=("$f") ;;
+    *) [[ -f "$f" ]] && files+=("$f") ;;
   esac
 done
-[ "${#files[@]}" -eq 0 ] && exit 0
+[[ "${#files[@]}" -eq 0 ]] && exit 0
 
 status=0
 check() {

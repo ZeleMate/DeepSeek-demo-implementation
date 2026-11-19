@@ -6,11 +6,11 @@ set -euo pipefail
 
 status=0
 for f in "$@"; do
-  [ -f "$f" ] || continue
+  [[ -f "$f" ]] || continue
   if grep -nE '^(<<<<<<<|>>>>>>>)( |$)' "$f"; then
     echo "^ conflict marker in $f"; status=1
   fi
-  if [ "$(wc -c <"$f")" -gt 1048576 ]; then
+  if [[ "$(wc -c <"$f")" -gt 1048576 ]]; then
     echo "too large: $f (over 1 MB)"; status=1
   fi
 done

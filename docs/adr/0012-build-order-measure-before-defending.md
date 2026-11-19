@@ -1,3 +1,7 @@
+---
+status: accepted; ledger and policy decision 2026-10-23 (ADR 0013, #90); benign set in M2 2026-11-09 (#117)
+---
+
 # v1 is built skeleton first, measured before it is defended, and loads only our own plugins
 
 v1 is built in seven milestones, each a vertical slice tracked as a GitHub milestone with one issue per slice:
@@ -5,7 +9,7 @@ v1 is built in seven milestones, each a vertical slice tracked as a GitHub miles
 | Milestone | Contents | Ends with |
 |---|---|---|
 | **M1 Walking skeleton** | pnpm workspace, exact dsh pin plus the pi-ai patch (ADR 0001), `bundles/job`, launcher `bin/dsh-job` (ADR 0007), one trivial plugin, the $0 upgrade check | A task answered on DeepSeek V4.1 Flash; tag `v0.1` |
-| **M2 Red-team baseline** | `bundles/redteam` on local Ollama, Promptfoo, the first attack set (ADR 0011), fixture search and fetch providers; **no defences** | `eval/results/v0.2.json` |
+| **M2 Red-team baseline** | `bundles/redteam` on local Ollama, Promptfoo, the first attack set and the benign set (ADR 0011), fixture search and fetch providers; **no defences** | `eval/results/v0.2.json` |
 | **M3 Canary and ledger** | Per-run canary, the hash-chained ledger (ADR 0013) | Results file with the delta |
 | **M4 Policy decision** | Risk-tier table, the `pre-execute` policy decision and its guard, egress allowlist, read allowlist, taint, per-turn tool-call cap, subagents off, the control-plane tests in CI | Results file with the delta |
 | **M5 Injection filter** | Regex rules, then the `ctx.decisions` seam with its local backend | Results file with the delta |
@@ -37,3 +41,5 @@ The repo is tagged at the end of each milestone (`v0.1` … `v0.6`, then `v1.0`)
 _Amended 2026-10-23 by ADR 0013 ([#90](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/90)):_ M3 builds the ledger instead of a plain audit plugin, and M4 builds the control plane's policy decision instead of a standalone policy plugin. M5 and M6 deliver defences that feed that policy decision. The order is unchanged.
 
 Decided in [Build order and milestones](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/50).
+
+_Amended 2026-11-09 by [#117](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/117):_ M2 also builds the benign set (ADR 0011), so `v0.2` carries the baseline benign completion rate with no defences.

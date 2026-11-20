@@ -4,7 +4,7 @@ This is a personal, defensive-security project with one maintainer. It hardens a
 
 ## Supported versions
 
-Only the latest commit on `development` and `main` is supported. There are no releases.
+Only the latest commit on `main` is supported. There are no releases.
 
 ## Reporting a vulnerability
 

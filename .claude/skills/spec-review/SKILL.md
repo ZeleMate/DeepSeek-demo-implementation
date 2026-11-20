@@ -9,7 +9,7 @@ Goal: say whether this diff implements what was asked, and nothing else. Correct
 
 1. **Find the spec.** In order: the PR body (`gh pr view --json body,title`), an issue number in the branch name or commits (`gh issue view <n>`), ADRs touched or referenced under `docs/adr/`, or ask the user. If none exists, stop and say so.
 2. **List the requirements** as short, checkable statements. Include acceptance criteria and explicit non-goals.
-3. **Read the diff**: `git diff --merge-base origin/development`. Read surrounding code where needed.
+3. **Read the diff**: `git diff --merge-base origin/main`. Read surrounding code where needed.
 4. **Check each requirement**: met / partly met / not met / can't tell, with the file and line that shows it.
 5. **Check tests**: is each requirement covered by a test that would fail without the change?
 6. **Flag scope creep**: changed behaviour no requirement asked for.

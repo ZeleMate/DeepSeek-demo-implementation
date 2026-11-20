@@ -1,12 +1,12 @@
 # Setup checklist — DeepSeek demo implementation
 
-Adapted from the repo template (v0.3.0) for a **public** repo on GitHub **Free** with this repo's branch flow: PRs squash-merge into `development`, and `main` moves only by a merge commit from `development` (ADR 0016).
+Adapted from the repo template (v0.3.0) for a **public** repo on GitHub **Free** with this repo's branch flow: every PR merges into `main` with a merge commit (ADR 0016).
 
 ## Automated
 
 `./scripts/bootstrap-github.sh` (run with `--dry-run` first) does:
 
-- [ ] Squash merges for PRs, merge commits for `development` into `main`, PR title as commit message, auto-delete branches
+- [ ] Merge commits allowed (the `Protect main` ruleset permits only those), auto-merge, auto-delete branches
 - [ ] Read-only default `GITHUB_TOKEN`; Actions must be pinned to full SHAs
 - [ ] Dependabot alerts and security updates
 - [ ] Secret scanning + push protection, private vulnerability reporting, CodeQL default setup, approval before fork PR workflows run for every outside contributor
@@ -14,7 +14,7 @@ Adapted from the repo template (v0.3.0) for a **public** repo on GitHub **Free**
 
 Run the script only after `ci-ok` has run once on `main`, because the ruleset requires that check.
 
-The `Protect development`, `Protect version tags` and `Copilot review on every PR` rulesets are managed by hand in the GitHub UI.
+The `Protect version tags` and `Copilot review on every PR` rulesets are managed by hand in the GitHub UI.
 
 ## Manual steps
 

@@ -37,3 +37,5 @@ The template's Semgrep CE job ran only until the repo went public. Code scanning
 ## Solo maintainer: no non-author review
 
 OpenSSF OSPS Baseline QA-07.01, the Scorecard Code-Review check and the Best Practices Badge expect someone other than the author to approve changes. This repo has one maintainer, so we accept the gap. Every change still goes through a PR under a ruleset, the required checks must pass, review threads must be resolved, and the Claude reviews run on every PR. AI review is a mitigation, not a substitute for human review. Revisit when a second maintainer joins.
+
+_Amended 2026-11-20:_ `development` is retired. Every PR now merges into `main` directly, with a merge commit, which is the only method the `Protect main` ruleset allows. The `development` branch and its `Protect development` ruleset are deleted. "The branch flow" above describes the earlier two-branch setup.

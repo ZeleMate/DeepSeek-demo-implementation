@@ -57,8 +57,8 @@ else
 fi
 
 # ------------------------------------------------------------------ repo settings
-# PRs squash into development; main takes merge commits from development (ADR 0016).
-say "Merge settings: squash for PRs, merge commits for development into main, delete merged branches"
+# PRs merge into main with merge commits; the Protect main ruleset allows no other method (ADR 0016).
+say "Merge settings: merge commits for PRs into main, auto-merge, delete merged branches"
 api -X PATCH "repos/$FULL" \
   -F allow_squash_merge=true -F allow_merge_commit=true -F allow_rebase_merge=false \
   -F delete_branch_on_merge=true -F allow_auto_merge=true -F has_wiki=false \

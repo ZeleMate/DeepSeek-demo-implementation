@@ -55,7 +55,7 @@ All three Claude jobs run on the owner's Claude subscription through `CLAUDE_COD
 
 ## Consequences
 
-- Model-written commits can land on a PR branch. The squash-merge into `development` still needs a human, and the reviews can't block a merge.
+- Model-written commits can land on a PR branch. The merge into `main` still needs a human, and the reviews can't block a merge.
 - The trailer check can be faked by anyone who can push. A faked trailer only skips the code review and the fixer. The security review still runs.
 - Each push starts a new round of reviews, and each round can raise new judgement calls. So the loop doesn't always settle on its own, and the PR's owner decides when a PR is done.
 - PR diffs go to Anthropic's API. They are our own code, and gitleaks runs on every PR, so no secret value goes with them (ADR 0004).

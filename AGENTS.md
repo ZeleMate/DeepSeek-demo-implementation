@@ -11,7 +11,7 @@ A personal, learning-first agent harness built as our own plugins and bundles on
 
 ## Workflow
 
-- Every change lands through a PR into `development`, squash-merged. The PR title becomes the squash commit, so it follows the same `type(scope): summary` rule as commit messages. `main` accepts merge commits only and moves forward by merging `development`.
+- Every change lands through a PR into `main`, merged with a merge commit (the ruleset allows no other method). The PR title follows the same `type(scope): summary` rule as commit messages, and CI checks it.
 - Pin every GitHub Action to a full commit SHA with a version comment, and give each job its own least-privilege `permissions`.
 - Prototypes live on `prototype/<issue>-<slug>` branches under `prototypes/`; their run output stays untracked.
 

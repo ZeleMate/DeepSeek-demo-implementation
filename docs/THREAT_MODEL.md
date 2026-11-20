@@ -48,7 +48,7 @@ STRIDE for the classic part. Status: open / mitigated / accepted.
 | T1 | Leaked secret in repo or logs | repo, CI | gitleaks in lefthook and CI (full history), GitHub secret scanning with push protection; Keychain (ADR 0007) | mitigated |
 | T2 | Malicious or compromised dependency | build | Lockfiles, 7-day cooldown, `trustPolicy: no-downgrade`, OSV-Scanner, Dependabot alerts; malware alerts once the manual step in `SETUP.md` is done | partly mitigated |
 | T3 | Compromised GitHub Action | CI | Actions allowlist, SHAs required, `permissions: {}` default, zizmor | mitigated |
-| T4 | Unreviewed change reaches `main` | repo | PR-only rulesets on `main` and `development`, required `ci-ok`, CODEOWNERS (ADR 0016) | accepted (solo) |
+| T4 | Unreviewed change reaches `main` | repo | PR-only ruleset on `main`, required `ci-ok`, CODEOWNERS (ADR 0016) | accepted (solo) |
 | T5 | Stranger-written issue or comment steers a CI agent | CI | No CI job can push; same-repo PRs only; reviews read only owner, member and collaborator text (ADR 0014) | mitigated |
 | T6 | Model output in a CI log runs a workflow command | CI | Printed model text is wrapped in `stop-commands`; annotation messages escape `%` and newlines, and file names also `:` and `,` | mitigated |
 | T7 | A public review comment discloses an unfixed upstream bug | CI | PRs labelled `embargo` skip the Claude reviews (ADR 0015) | mitigated |

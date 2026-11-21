@@ -89,8 +89,36 @@ else
 fi
 
 step "Resume a session from the previous dsh version"
-# Added with the first upgrade: commit a session written by the old pin, resume it with --session-id.
-echo "skipped: no previous dsh version yet"
+# resume/<version>/<id>.v4.jsonl is one session the previous pin wrote. It is synthetic: one
+# prompt to the local smoke model, with the throwaway root replaced by <root>. It lives outside a
+# sessions/ folder because .gitignore and forbidden-paths.sh keep real session logs out of git.
+# On each upgrade, replace it with a session written by the pin being left.
+# dsh files sessions under a folder named after the workspace, which the smoke turn just created.
+fixture=$(find "$here/resume" -name '*.v4.jsonl' | head -n 1)
+sessions_dir=$(find "$root/home/sessions" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -n 1)
+if [[ -z $fixture ]]; then
+  fail "no session fixture under resume/"
+elif [[ -z $sessions_dir ]]; then
+  fail "the smoke turn left no sessions folder to resume into"
+else
+  session_id=$(basename "$fixture" .v4.jsonl)
+  echo "resuming $session_id from $(basename "$(dirname "$fixture")")"
+  mkdir -p "$sessions_dir/$session_id"
+  resumed=$sessions_dir/$session_id/session.v4.jsonl
+  # dsh checks the log's cwd against the resolved path (on macOS /var is a link to /private/var).
+  sed "s#<root>#$(cd "$root" && pwd -P)#g" "$fixture" >"$resumed"
+  if "$job" --patch "$here/ollama.patch.yml" --session-id "$session_id" --json \
+    "Which word did I ask you to remember? Reply with only the word." \
+    >"$root/resume.out" 2>"$root/resume.err"; then
+    tail -n 1 "$root/resume.out" | cut -c1-200
+    grep -q '"type":"final"' "$root/resume.out" || fail "resumed turn ended without a final answer"
+    grep -q '"type":"turn/start","seq":[0-9]*,"time":[0-9]*,"data":{"turn":2}' "$resumed" ||
+      fail "the resumed turn wasn't appended to the old session log"
+  else
+    tail -n 5 "$root/resume.err"
+    fail "resumed turn exited non-zero"
+  fi
+fi
 
 echo
 if [[ "${#failed[@]}" -eq 0 ]]; then

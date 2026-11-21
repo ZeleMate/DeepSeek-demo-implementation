@@ -92,8 +92,9 @@ fi
 
 step "A wider --permission-mode is refused (ADR 0003)"
 # Since dsh 0.2.2, headless applies --permission-mode over the sandbox row. The bundle keeps
-# read-only as the only preset, so this must fail before any model call.
-if "$job" --permission-mode danger-full-access --json "Reply with only OK." \
+# read-only as the only preset, so this must fail before any model call. The Ollama overlay keeps
+# a regression on the local model instead of the profile's remote route.
+if "$job" --patch "$here/ollama.patch.yml" --permission-mode danger-full-access --json "Reply with only OK." \
   >"$root/permission.out" 2>"$root/permission.err"; then
   fail "--permission-mode danger-full-access was accepted"
 elif ! grep -q 'unknown preset "danger-full-access"' "$root/permission.err"; then

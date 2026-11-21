@@ -25,9 +25,11 @@ step "Frozen install (fails if the pi-ai patch no longer applies)"
 (cd "$repo" && pnpm install --frozen-lockfile) || fail "frozen install"
 
 step "pi-ai: exactly one version, installed patched"
-pi_ai=$(cd "$repo/node_modules/.pnpm" && find . -maxdepth 1 -name '@earendil-works+pi-ai@*' | sed 's#^\./##')
+# Read from the lockfile's snapshots, which the frozen install above just installed. A local
+# node_modules/.pnpm keeps folders of versions it no longer uses, so it can list an old pi-ai.
+pi_ai=$(awk '/^snapshots:/{s=1; next} s && /^  '"'"'?@earendil-works\/pi-ai@/{print $1}' "$repo/pnpm-lock.yaml")
 echo "$pi_ai"
-if [[ "$(printf '%s\n' "$pi_ai" | grep -c .)" -ne 1 ]] || [[ $pi_ai != *_patch_hash=* ]]; then
+if [[ "$(printf '%s\n' "$pi_ai" | grep -c .)" -ne 1 ]] || [[ $pi_ai != *patch_hash=* ]]; then
   fail "pi-ai is not a single patched copy"
 fi
 
@@ -86,6 +88,20 @@ else
     tail -n 5 "$root/smoke.err"
     fail "smoke turn exited non-zero"
   fi
+fi
+
+step "A wider --permission-mode is refused (ADR 0003)"
+# Since dsh 0.2.2, headless applies --permission-mode over the sandbox row. The bundle keeps
+# read-only as the only preset, so this must fail before any model call. The Ollama overlay keeps
+# a regression on the local model instead of the profile's remote route.
+if "$job" --patch "$here/ollama.patch.yml" --permission-mode danger-full-access --json "Reply with only OK." \
+  >"$root/permission.out" 2>"$root/permission.err"; then
+  fail "--permission-mode danger-full-access was accepted"
+elif ! grep -q 'unknown preset "danger-full-access"' "$root/permission.err"; then
+  tail -n 5 "$root/permission.err"
+  fail "--permission-mode danger-full-access failed, but not as an unknown preset"
+else
+  grep 'unknown preset' "$root/permission.err"
 fi
 
 step "Resume a session from the previous dsh version"

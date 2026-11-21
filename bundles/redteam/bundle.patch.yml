@@ -2,8 +2,8 @@
 # Not named cordis.patch.yml: that name is reserved for user-owned profile layers (ADR 0007).
 # A patch replaces a row's whole config, so every overridden row restates all of its keys.
 # Base rows overridden here (re-check each on a dsh upgrade, ADR 0001): llm-pi-ai,
-# agent-default-model, session-persistence-jsonl, sandbox-policy, approval, and the disabled
-# rows below.
+# agent-default-model, session-persistence-jsonl, sandbox-policy, approval, permission,
+# fs-observation-policy, and the disabled rows below.
 
 # Models (ADR 0005). Local Ollama only, with no remote route and no fallback of any kind:
 # providers forbid injection and jailbreak testing against their models. The tags are
@@ -102,8 +102,6 @@
   disabled: true
 - id: tool-subagent-control
   disabled: true
-- id: tool-subagent-list-agents
-  disabled: true
 - id: workflow-ptc
   disabled: true
 - id: tool-workflow
@@ -121,6 +119,10 @@
 # bash and PTC off, a jailbroken victim has no way to the Keychain or the network (ADR 0002).
 - id: ptc-runtime
   disabled: true
+# dsh 0.2.2 moved PTC execution into its own row. Off by default, restated so an upgrade
+# can't turn it on.
+- id: tool-executor-ptc
+  disabled: true
 
 # Read-only and fixed here (ADR 0003). An escalation asks, and in a headless run nobody can
 # answer, so it is denied.
@@ -131,6 +133,20 @@
 - id: approval
   config:
     policy: ask
+# The only permission preset (ADR 0003). Since dsh 0.2.2, headless takes --permission-mode on
+# the command line and applies that preset over the sandbox row above, so with dsh's presets
+# `--permission-mode danger-full-access` ran this profile with full access. With read-only
+# as the only preset, any other name is refused.
+- id: permission
+  config:
+    presets:
+      read-only:
+        sandbox: read-only
+        approval: ask
+# Read-before-write (ADR 0003). dsh 0.2.2 ships this row off, so write and edit no longer need
+# a prior read of the file. Turned back on so an upgrade doesn't loosen a hardened profile.
+- id: fs-observation-policy
+  disabled: false
 
 # No instructions or skills from disk (ADR 0009, ADR 0010, ADR 0012). These rows read AGENTS.md,
 # CLAUDE.md and skills from the working directory and the home folders, so a file left by one

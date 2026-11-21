@@ -230,6 +230,21 @@
                 }
               ]
             },
+            "gitTransportTimeoutMs": {
+              "default": 5000,
+              "anyOf": [
+                {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1000
+                },
+                {
+                  "$ref": "#/$defs/loaderExpression"
+                }
+              ]
+            },
             "idleTimeoutMs": {
               "default": 600000,
               "anyOf": [
@@ -283,6 +298,140 @@
                       }
                     ]
                   }
+                },
+                {
+                  "$ref": "#/$defs/loaderExpression"
+                }
+              ]
+            },
+            "versionListLimit": {
+              "default": 20,
+              "anyOf": [
+                {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                {
+                  "$ref": "#/$defs/loaderExpression"
+                }
+              ]
+            },
+            "versionLookupConcurrency": {
+              "default": 4,
+              "anyOf": [
+                {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                {
+                  "$ref": "#/$defs/loaderExpression"
+                }
+              ]
+            },
+            "detailMaxBytes": {
+              "default": 1048576,
+              "anyOf": [
+                {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                {
+                  "$ref": "#/$defs/loaderExpression"
+                }
+              ]
+            },
+            "detailImageMaxBytes": {
+              "default": 5242880,
+              "anyOf": [
+                {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                {
+                  "$ref": "#/$defs/loaderExpression"
+                }
+              ]
+            },
+            "detailFetchTimeoutMs": {
+              "default": 15000,
+              "anyOf": [
+                {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1,
+                  "maximum": 2147483647
+                },
+                {
+                  "$ref": "#/$defs/loaderExpression"
+                }
+              ]
+            },
+            "detailNpmFileSources": {
+              "default": [
+                "jsdelivr",
+                "unpkg",
+                "npmmirror"
+              ],
+              "anyOf": [
+                {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "x-cordis": {
+                      "branchSelection": "first-success"
+                    },
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "anyOf": [
+                              {
+                                "const": "jsdelivr",
+                                "not": {
+                                  "type": "null"
+                                }
+                              },
+                              {
+                                "const": "unpkg",
+                                "not": {
+                                  "type": "null"
+                                }
+                              },
+                              {
+                                "const": "npmmirror",
+                                "not": {
+                                  "type": "null"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "$ref": "#/$defs/loaderExpression"
+                      }
+                    ]
+                  },
+                  "minItems": 1
                 },
                 {
                   "$ref": "#/$defs/loaderExpression"
@@ -530,6 +679,48 @@
                     "null"
                   ],
                   "minimum": 1
+                },
+                {
+                  "$ref": "#/$defs/loaderExpression"
+                }
+              ]
+            },
+            "websocketCompression": {
+              "default": "deflate",
+              "x-cordis": {
+                "branchSelection": "first-success"
+              },
+              "anyOf": [
+                {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "const": "none"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        {
+                          "anyOf": [
+                            {
+                              "const": "deflate"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 },
                 {
                   "$ref": "#/$defs/loaderExpression"
@@ -3960,7 +4151,7 @@
                             ]
                           },
                           "defaultContextWindow": {
-                            "default": 262144,
+                            "default": 1000000,
                             "anyOf": [
                               {
                                 "type": [
@@ -3975,7 +4166,7 @@
                             ]
                           },
                           "defaultMaxTokens": {
-                            "default": 32768,
+                            "default": 128000,
                             "anyOf": [
                               {
                                 "type": [
@@ -4332,6 +4523,35 @@
                           },
                           "maxRequestImageBytes": {
                             "default": 20971520,
+                            "anyOf": [
+                              {
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ],
+                                "minimum": 1
+                              },
+                              {
+                                "$ref": "#/$defs/loaderExpression"
+                              }
+                            ]
+                          },
+                          "maxRequestImages": {
+                            "default": 50,
+                            "anyOf": [
+                              {
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ],
+                                "minimum": 1
+                              },
+                              {
+                                "$ref": "#/$defs/loaderExpression"
+                              }
+                            ]
+                          },
+                          "imageOffloadCountQuantum": {
                             "anyOf": [
                               {
                                 "type": [
@@ -4745,7 +4965,7 @@
               ]
             },
             "maxImageBytes": {
-              "default": 20971520,
+              "default": 52428800,
               "anyOf": [
                 {
                   "type": [
@@ -4805,7 +5025,7 @@
               ]
             },
             "maxImageDimension": {
-              "default": 8192,
+              "default": 65535,
               "anyOf": [
                 {
                   "type": [
@@ -5481,6 +5701,33 @@
                     "string",
                     "null"
                   ]
+                },
+                {
+                  "$ref": "#/$defs/loaderExpression"
+                }
+              ]
+            },
+            "additionalWritableRoots": {
+              "default": [],
+              "anyOf": [
+                {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      {
+                        "$ref": "#/$defs/loaderExpression"
+                      }
+                    ]
+                  }
                 },
                 {
                   "$ref": "#/$defs/loaderExpression"
@@ -6169,6 +6416,21 @@
                   "$ref": "#/$defs/loaderExpression"
                 }
               ]
+            },
+            "inlineOutputBytes": {
+              "default": 2048,
+              "anyOf": [
+                {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                {
+                  "$ref": "#/$defs/loaderExpression"
+                }
+              ]
             }
           }
         },
@@ -6230,6 +6492,20 @@
             },
             "edit": {
               "default": true,
+              "anyOf": [
+                {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/loaderExpression"
+                }
+              ]
+            },
+            "applyPatch": {
+              "default": false,
               "anyOf": [
                 {
                   "type": [
@@ -7341,7 +7617,21 @@
                 }
               ]
             },
-            "modelSelectionSettings": {
+            "modelSelection": {
+              "default": false,
+              "anyOf": [
+                {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/loaderExpression"
+                }
+              ]
+            },
+            "modelDiscovery": {
               "default": false,
               "anyOf": [
                 {
@@ -7554,12 +7844,36 @@
                               "type": "null"
                             }
                           ]
+                        },
+                        {
+                          "anyOf": [
+                            {
+                              "const": "vm-script"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         }
                       ]
                     },
                     {
                       "type": "null"
                     }
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/loaderExpression"
+                }
+              ]
+            },
+            "scriptPersistence": {
+              "default": false,
+              "anyOf": [
+                {
+                  "type": [
+                    "boolean",
+                    "null"
                   ]
                 },
                 {
@@ -8667,6 +8981,20 @@
                 }
               ]
             },
+            "searchSummaryMaxChars": {
+              "default": 800,
+              "anyOf": [
+                {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/loaderExpression"
+                }
+              ]
+            },
             "fetchTimeoutMs": {
               "default": 30000,
               "anyOf": [
@@ -8726,39 +9054,43 @@
           ],
           "properties": {
             "mode": {
-              "default": "native",
-              "x-cordis": {
-                "branchSelection": "first-success"
-              },
+              "description": "Removed. Mount a native or PTC tool executor instead.",
               "anyOf": [
                 {
-                  "anyOf": [
-                    {
-                      "anyOf": [
-                        {
-                          "const": "native",
-                          "not": {
-                            "type": "null"
-                          }
-                        },
-                        {
-                          "const": "ptc",
-                          "not": {
-                            "type": "null"
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
+                  "type": "null"
                 },
                 {
                   "$ref": "#/$defs/loaderExpression"
                 }
               ]
             },
+            "maxParallelSubCalls": {
+              "description": "Moved to the PTC tool executor configuration.",
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "#/$defs/loaderExpression"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/loaderExpression"
+        }
+      ]
+    },
+    "config61": {
+      "default": {},
+      "anyOf": [
+        {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
             "maxParallelSubCalls": {
               "default": 10,
               "anyOf": [
@@ -8781,7 +9113,7 @@
         }
       ]
     },
-    "config61": {
+    "config62": {
       "default": {},
       "anyOf": [
         {
@@ -8879,7 +9211,7 @@
         }
       ]
     },
-    "config62": {
+    "config63": {
       "default": {},
       "anyOf": [
         {
@@ -9048,7 +9380,7 @@
         }
       ]
     },
-    "config63": {
+    "config64": {
       "default": {},
       "anyOf": [
         {
@@ -9092,7 +9424,7 @@
         }
       ]
     },
-    "config64": {
+    "config65": {
       "default": {},
       "anyOf": [
         {
@@ -10001,7 +10333,7 @@
         }
       ]
     },
-    "config65": {
+    "config66": {
       "default": {},
       "anyOf": [
         {
@@ -10867,7 +11199,7 @@
         }
       ]
     },
-    "config66": {
+    "config67": {
       "default": {},
       "anyOf": [
         {
@@ -10908,6 +11240,52 @@
                   "type": [
                     "boolean",
                     "null"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/loaderExpression"
+                }
+              ]
+            },
+            "permissionMode": {
+              "anyOf": [
+                {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/loaderExpression"
+                }
+              ]
+            },
+            "approvalPolicy": {
+              "x-cordis": {
+                "branchSelection": "first-success"
+              },
+              "anyOf": [
+                {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "const": "ask",
+                          "not": {
+                            "type": "null"
+                          }
+                        },
+                        {
+                          "const": "never",
+                          "not": {
+                            "type": "null"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
                   ]
                 },
                 {
@@ -13002,29 +13380,6 @@
           "if": {
             "properties": {
               "name": {
-                "const": "@deepseek-ai/dsh-tool-subagent-control/list-agents"
-              }
-            },
-            "required": [
-              "name"
-            ]
-          },
-          "then": {
-            "properties": {
-              "config": {
-                "anyOf": [
-                  {
-                    "$ref": "#/$defs/unknownConfig"
-                  }
-                ]
-              }
-            }
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "name": {
                 "const": "@deepseek-ai/dsh-tool-subagent"
               }
             },
@@ -13561,7 +13916,30 @@
           "if": {
             "properties": {
               "name": {
-                "const": "@deepseek-ai/dsh-system-prompt"
+                "const": "@deepseek-ai/dsh-tool-executor-native"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          "then": {
+            "properties": {
+              "config": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/unknownConfig"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "const": "@deepseek-ai/dsh-tool-executor-ptc"
               }
             },
             "required": [
@@ -13584,7 +13962,7 @@
           "if": {
             "properties": {
               "name": {
-                "const": "@deepseek-ai/dsh-agent-loop"
+                "const": "@deepseek-ai/dsh-system-prompt"
               }
             },
             "required": [
@@ -13607,7 +13985,7 @@
           "if": {
             "properties": {
               "name": {
-                "const": "@deepseek-ai/dsh-fs-sandbox"
+                "const": "@deepseek-ai/dsh-agent-loop"
               }
             },
             "required": [
@@ -13630,7 +14008,7 @@
           "if": {
             "properties": {
               "name": {
-                "const": "@deepseek-ai/dsh-llm-deepseek-api-key"
+                "const": "@deepseek-ai/dsh-fs-sandbox"
               }
             },
             "required": [
@@ -13653,7 +14031,7 @@
           "if": {
             "properties": {
               "name": {
-                "const": "@deepseek-ai/dsh-llm-deepseek-account"
+                "const": "@deepseek-ai/dsh-llm-deepseek-api-key"
               }
             },
             "required": [
@@ -13666,6 +14044,29 @@
                 "anyOf": [
                   {
                     "$ref": "#/$defs/config65"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "const": "@deepseek-ai/dsh-llm-deepseek-account"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          "then": {
+            "properties": {
+              "config": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/config66"
                   }
                 ]
               }
@@ -13711,7 +14112,7 @@
               "config": {
                 "anyOf": [
                   {
-                    "$ref": "#/$defs/config66"
+                    "$ref": "#/$defs/config67"
                   }
                 ]
               }
@@ -17138,55 +17539,6 @@
             ],
             "properties": {
               "id": {
-                "const": "tool-subagent-list-agents"
-              }
-            },
-            "allOf": [
-              {
-                "not": {
-                  "required": [
-                    "insert"
-                  ]
-                }
-              },
-              {
-                "anyOf": [
-                  {
-                    "not": {
-                      "required": [
-                        "name"
-                      ]
-                    }
-                  },
-                  {
-                    "properties": {
-                      "name": {
-                        "enum": [
-                          "",
-                          "@deepseek-ai/dsh-tool-subagent-control/list-agents"
-                        ]
-                      }
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          "then": {
-            "properties": {
-              "config": {
-                "$ref": "#/$defs/unknownConfig"
-              }
-            }
-          }
-        },
-        {
-          "if": {
-            "required": [
-              "id"
-            ],
-            "properties": {
-              "id": {
                 "const": "tool-subagent"
               }
             },
@@ -18216,6 +18568,104 @@
             ],
             "properties": {
               "id": {
+                "const": "tool-executor-native"
+              }
+            },
+            "allOf": [
+              {
+                "not": {
+                  "required": [
+                    "insert"
+                  ]
+                }
+              },
+              {
+                "anyOf": [
+                  {
+                    "not": {
+                      "required": [
+                        "name"
+                      ]
+                    }
+                  },
+                  {
+                    "properties": {
+                      "name": {
+                        "enum": [
+                          "",
+                          "@deepseek-ai/dsh-tool-executor-native"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "then": {
+            "properties": {
+              "config": {
+                "$ref": "#/$defs/unknownConfig"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "const": "tool-executor-ptc"
+              }
+            },
+            "allOf": [
+              {
+                "not": {
+                  "required": [
+                    "insert"
+                  ]
+                }
+              },
+              {
+                "anyOf": [
+                  {
+                    "not": {
+                      "required": [
+                        "name"
+                      ]
+                    }
+                  },
+                  {
+                    "properties": {
+                      "name": {
+                        "enum": [
+                          "",
+                          "@deepseek-ai/dsh-tool-executor-ptc"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "then": {
+            "properties": {
+              "config": {
+                "$ref": "#/$defs/config61"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
                 "const": "system-prompt"
               }
             },
@@ -18253,7 +18703,7 @@
           "then": {
             "properties": {
               "config": {
-                "$ref": "#/$defs/config61"
+                "$ref": "#/$defs/config62"
               }
             }
           }
@@ -18302,7 +18752,7 @@
           "then": {
             "properties": {
               "config": {
-                "$ref": "#/$defs/config62"
+                "$ref": "#/$defs/config63"
               }
             }
           }
@@ -18351,7 +18801,7 @@
           "then": {
             "properties": {
               "config": {
-                "$ref": "#/$defs/config63"
+                "$ref": "#/$defs/config64"
               }
             }
           }
@@ -18400,7 +18850,7 @@
           "then": {
             "properties": {
               "config": {
-                "$ref": "#/$defs/config64"
+                "$ref": "#/$defs/config65"
               }
             }
           }
@@ -18449,7 +18899,7 @@
           "then": {
             "properties": {
               "config": {
-                "$ref": "#/$defs/config65"
+                "$ref": "#/$defs/config66"
               }
             }
           }
@@ -18547,7 +18997,7 @@
           "then": {
             "properties": {
               "config": {
-                "$ref": "#/$defs/config66"
+                "$ref": "#/$defs/config67"
               }
             }
           }
@@ -19099,209 +19549,216 @@
       },
       {
         "path": "/69",
-        "id": "tool-subagent-list-agents",
-        "name": "@deepseek-ai/dsh-tool-subagent-control/list-agents",
-        "status": "absent",
-        "configRef": "#/$defs/unknownConfig"
-      },
-      {
-        "path": "/70",
         "id": "tool-subagent",
         "name": "@deepseek-ai/dsh-tool-subagent",
         "status": "schema",
         "configRef": "#/$defs/config45"
       },
       {
-        "path": "/71",
+        "path": "/70",
         "id": "tool-subagent-fork",
         "name": "@deepseek-ai/dsh-tool-subagent",
         "status": "schema",
         "configRef": "#/$defs/config45"
       },
       {
-        "path": "/72",
+        "path": "/71",
         "id": "ptc-runtime",
         "name": "@deepseek-ai/dsh-ptc-runtime-node",
         "status": "schema",
         "configRef": "#/$defs/config46"
       },
       {
-        "path": "/73",
+        "path": "/72",
         "id": "workflow-ptc",
         "name": "@deepseek-ai/dsh-workflow-ptc",
         "status": "schema",
         "configRef": "#/$defs/config47"
       },
       {
-        "path": "/74",
+        "path": "/73",
         "id": "tool-workflow",
         "name": "@deepseek-ai/dsh-tool-workflow",
         "status": "schema",
         "configRef": "#/$defs/config48"
       },
       {
-        "path": "/75",
+        "path": "/74",
         "id": "timeout-policy",
         "name": "@deepseek-ai/dsh-tool-call-timeout-policy",
         "status": "absent",
         "configRef": "#/$defs/unknownConfig"
       },
       {
-        "path": "/76",
+        "path": "/75",
         "id": "spill-local",
         "name": "@deepseek-ai/dsh-spill-local",
         "status": "schema",
         "configRef": "#/$defs/config49"
       },
       {
-        "path": "/77",
+        "path": "/76",
         "id": "spill-policy",
         "name": "@deepseek-ai/dsh-spill-policy",
         "status": "schema",
         "configRef": "#/$defs/config50"
       },
       {
-        "path": "/78",
+        "path": "/77",
         "id": "session-checkpoint-policy",
         "name": "@deepseek-ai/dsh-session-checkpoint-policy",
         "status": "absent",
         "configRef": "#/$defs/unknownConfig"
       },
       {
-        "path": "/79",
+        "path": "/78",
         "id": "tool-result-pruner",
         "name": "@deepseek-ai/dsh-compaction-tool-result-pruner",
         "status": "schema",
         "configRef": "#/$defs/config51"
       },
       {
-        "path": "/80",
+        "path": "/79",
         "id": "image-offload",
         "name": "@deepseek-ai/dsh-compaction-image-offload",
         "status": "absent",
         "configRef": "#/$defs/unknownConfig"
       },
       {
-        "path": "/81",
+        "path": "/80",
         "id": "tool-todo",
         "name": "@deepseek-ai/dsh-tool-todo",
         "status": "schema",
         "configRef": "#/$defs/config52"
       },
       {
-        "path": "/82",
+        "path": "/81",
         "id": "tool-goal",
         "name": "@deepseek-ai/dsh-tool-goal",
         "status": "schema",
         "configRef": "#/$defs/config53"
       },
       {
-        "path": "/83",
+        "path": "/82",
         "id": "repeat-tool-reminder",
         "name": "@deepseek-ai/dsh-repeat-tool-reminder",
         "status": "schema",
         "configRef": "#/$defs/config54"
       },
       {
-        "path": "/84",
+        "path": "/83",
         "id": "web",
         "name": "@deepseek-ai/dsh-web",
         "status": "schema",
         "configRef": "#/$defs/config55"
       },
       {
-        "path": "/85",
+        "path": "/84",
         "id": "web-search-deepseek",
         "name": "@deepseek-ai/dsh-web-search-deepseek",
         "status": "schema",
         "configRef": "#/$defs/config56"
       },
       {
-        "path": "/86",
+        "path": "/85",
         "id": "web-deepseek-api",
         "name": "@deepseek-ai/dsh-web-deepseek-api",
         "status": "schema",
         "configRef": "#/$defs/config57"
       },
       {
-        "path": "/87",
+        "path": "/86",
         "id": "web-fetch-http",
         "name": "@deepseek-ai/dsh-web-fetch-http",
         "status": "schema",
         "configRef": "#/$defs/config58"
       },
       {
-        "path": "/88",
+        "path": "/87",
         "id": "tool-web",
         "name": "@deepseek-ai/dsh-tool-web",
         "status": "schema",
         "configRef": "#/$defs/config59"
       },
       {
-        "path": "/89",
+        "path": "/88",
         "id": "mcp-resources",
         "name": "@deepseek-ai/dsh-mcp-resources",
         "status": "absent",
         "configRef": "#/$defs/unknownConfig"
       },
       {
-        "path": "/90",
+        "path": "/89",
         "id": "tools",
         "name": "@deepseek-ai/dsh-tools",
         "status": "schema",
         "configRef": "#/$defs/config60"
       },
       {
+        "path": "/90",
+        "id": "tool-executor-native",
+        "name": "@deepseek-ai/dsh-tool-executor-native",
+        "status": "absent",
+        "configRef": "#/$defs/unknownConfig"
+      },
+      {
         "path": "/91",
-        "id": "system-prompt",
-        "name": "@deepseek-ai/dsh-system-prompt",
+        "id": "tool-executor-ptc",
+        "name": "@deepseek-ai/dsh-tool-executor-ptc",
         "status": "schema",
         "configRef": "#/$defs/config61"
       },
       {
         "path": "/92",
-        "id": "agent-loop",
-        "name": "@deepseek-ai/dsh-agent-loop",
+        "id": "system-prompt",
+        "name": "@deepseek-ai/dsh-system-prompt",
         "status": "schema",
         "configRef": "#/$defs/config62"
       },
       {
         "path": "/93",
-        "id": "fs-sandbox",
-        "name": "@deepseek-ai/dsh-fs-sandbox",
+        "id": "agent-loop",
+        "name": "@deepseek-ai/dsh-agent-loop",
         "status": "schema",
         "configRef": "#/$defs/config63"
       },
       {
         "path": "/94",
-        "id": "llm-deepseek",
-        "name": "@deepseek-ai/dsh-llm-deepseek-api-key",
+        "id": "fs-sandbox",
+        "name": "@deepseek-ai/dsh-fs-sandbox",
         "status": "schema",
         "configRef": "#/$defs/config64"
       },
       {
         "path": "/95",
-        "id": "llm-deepseek-account",
-        "name": "@deepseek-ai/dsh-llm-deepseek-account",
+        "id": "llm-deepseek",
+        "name": "@deepseek-ai/dsh-llm-deepseek-api-key",
         "status": "schema",
         "configRef": "#/$defs/config65"
       },
       {
         "path": "/96",
+        "id": "llm-deepseek-account",
+        "name": "@deepseek-ai/dsh-llm-deepseek-account",
+        "status": "schema",
+        "configRef": "#/$defs/config66"
+      },
+      {
+        "path": "/97",
         "id": "headless-startup",
         "name": "@deepseek-ai/dsh-headless/startup",
         "status": "absent",
         "configRef": "#/$defs/unknownConfig"
       },
       {
-        "path": "/97",
+        "path": "/98",
         "id": "headless-runner",
         "name": "@deepseek-ai/dsh-headless",
         "status": "schema",
-        "configRef": "#/$defs/config66"
+        "configRef": "#/$defs/config67"
       },
       {
-        "path": "/98",
+        "path": "/99",
         "id": "zelemate-hello",
         "name": "@zelemate/dsh-hello",
         "status": "absent",

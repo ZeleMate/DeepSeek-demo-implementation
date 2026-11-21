@@ -5,13 +5,13 @@
   "description": "Our dsh plugins and bundles (ADR 0001)",
   "packageManager": "pnpm@11.28.5",
   "engines": {
-    "node": "^22.19.0 || >=24.0.0"
+    "node": ">=24.9.0"
   },
   "scripts": {
     "dsh": "dsh",
     "check:upgrade": "scripts/upgrade-check/check.sh"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh": "0.2.1-rc.5"
+    "@deepseek-ai/dsh": "0.2.2-rc.1"
   }
 }

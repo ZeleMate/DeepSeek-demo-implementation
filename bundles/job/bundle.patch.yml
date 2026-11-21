@@ -3,8 +3,8 @@
 # .gitignore and scripts/checks/forbidden-paths.sh keep out of the repo (ADR 0007).
 # A patch replaces a row's whole config, so every overridden row restates all of its keys.
 # Base rows overridden here (re-check each on a dsh upgrade, ADR 0001): llm-pi-ai,
-# agent-default-model, session-persistence-jsonl, sandbox-policy, approval, and the disabled
-# rows below.
+# agent-default-model, session-persistence-jsonl, sandbox-policy, approval, permission,
+# fs-observation-policy, and the disabled rows below.
 
 # Models (ADR 0006). DeepSeek V4.1 Flash is the everyday model; the Switchyard preset
 # escalates hard turns to Opus 5.5. Router ids need maxTokens raised from 4,096, and Opus
@@ -90,8 +90,6 @@
   disabled: true
 - id: tool-subagent-control
   disabled: true
-- id: tool-subagent-list-agents
-  disabled: true
 - id: workflow-ptc
   disabled: true
 - id: tool-workflow
@@ -107,6 +105,10 @@
 
 # PTC runs model-written programs, and dsh's sandbox limits file writes only (ADR 0003).
 - id: ptc-runtime
+  disabled: true
+# dsh 0.2.2 moved PTC execution into its own row. Off by default, restated so an upgrade
+# can't turn it on.
+- id: tool-executor-ptc
   disabled: true
 
 # No direct DeepSeek route (ADR 0005): every model request goes through llm-pi-ai above.
@@ -132,6 +134,20 @@
 - id: approval
   config:
     policy: ask
+# The only permission preset (ADR 0003). Since dsh 0.2.2, headless takes --permission-mode on
+# the command line and applies that preset over the sandbox row above, so with dsh's presets
+# `--permission-mode danger-full-access` ran this profile with full access. With read-only
+# as the only preset, any other name is refused.
+- id: permission
+  config:
+    presets:
+      read-only:
+        sandbox: read-only
+        approval: ask
+# Read-before-write (ADR 0003). dsh 0.2.2 ships this row off, so write and edit no longer need
+# a prior read of the file. Turned back on so an upgrade doesn't loosen a hardened profile.
+- id: fs-observation-policy
+  disabled: false
 
 # No file tools until the read allowlist lands (M4, ADR 0012). Reads are unconfined, and this
 # profile's model is remote, so anything a file tool could read would go to OpenRouter.

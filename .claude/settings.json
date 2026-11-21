@@ -35,9 +35,20 @@
       "Bash(git -c core.hooksPath*)",
       "Bash(LEFTHOOK=* git *)",
       "Bash(gh pr merge --admin*)",
-      "Bash(gh pr merge * --admin*)"
+      "Bash(gh pr merge * --admin*)",
+      "Bash(git push * --delete*)",
+      "Bash(git push * -d *)",
+      "Bash(git push * :*)",
+      "Bash(git commit -n*)",
+      "Bash(git commit * -n*)",
+      "Bash(git config core.hooksPath*)",
+      "Bash(git config * core.hooksPath*)",
+      "Bash(lefthook uninstall*)",
+      "Bash(env LEFTHOOK=*)",
+      "Bash(export LEFTHOOK=*)"
     ],
     "allow": [
+      "Bash(git push)",
       "Bash(git push *)",
       "Bash(gh pr merge *)"
     ]

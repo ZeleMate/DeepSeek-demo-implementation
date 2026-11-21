@@ -1,5 +1,5 @@
 ---
-status: accepted; pinning and upgrade policy amended 2026-10-19 (#36); overrides' home and security overrides added 2026-11-01 (#96)
+status: accepted; pinning and upgrade policy amended 2026-10-19 (#36); overrides' home and security overrides added 2026-11-01 (#96); enabled-rows check added 2026-11-21 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/157)
 ---
 
 # Build on DeepSeek Harness as a bundle of our own plugins
@@ -29,3 +29,5 @@ Each upgrade PR must pass a $0 check before it merges: frozen install (fails if 
 Decided in [Which dsh plugins do we use, and which do we write?](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/10). Pinning and upgrade policy amended after [Pinning and upgrading dsh: how do we follow its prereleases?](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/36) (research/dsh-pinning.md).
 
 _Amended 2026-11-07 by ADR 0015 ([#115](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/115)):_ one exception to "one rc at a time". The PR that moves to a release fixing an upstream bug may skip release candidates. It still reads every upgrade guide in between and passes the $0 upgrade check.
+
+_Amended 2026-11-21 ([#157](https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/157)):_ the $0 check also compares each profile's enabled rows with a hand-kept list in `scripts/upgrade-check/enabled-rows/`. The bundles turn base rows off one by one, so a row a dsh upgrade adds starts on, as AgentTeam did in 0.2.2-rc.2. `--update` never rewrites these lists: a new row is disabled in the bundle or added to the list by hand, with the reason in the PR. The check also confirms that a wider `--permission-mode` is refused (ADR 0003).

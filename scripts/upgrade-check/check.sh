@@ -2,7 +2,8 @@
 # The $0 upgrade check (ADR 0001): every dsh upgrade PR must pass it. No remote model is reachable.
 # Usage: pnpm check:upgrade [--update]
 #   --update rewrites the config snapshots; review their diff in the upgrade PR.
-# Needs Ollama running locally with qwen3.5:2b pulled.
+# Needs Ollama running locally with qwen3.5:2b pulled, plus the red-team victim base qwen3.5:4b
+# for bin/dsh-redteam, which the enabled-rows step runs.
 set -euo pipefail
 
 repo=$(cd "$(dirname "$0")/../.." && pwd)

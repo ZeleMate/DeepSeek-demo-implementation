@@ -94,10 +94,12 @@ step "Resume a session from the previous dsh version"
 # sessions/ folder because .gitignore and forbidden-paths.sh keep real session logs out of git.
 # On each upgrade, replace it with a session written by the pin being left.
 # dsh files sessions under a folder named after the workspace, which the smoke turn just created.
-fixture=$(find "$here/resume" -name '*.v4.jsonl' | head -n 1)
-sessions_dir=$(find "$root/home/sessions" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -n 1)
-if [[ -z $fixture ]]; then
-  fail "no session fixture under resume/"
+# `|| true`: a missing folder must reach the fail branches below, not end the script under set -e.
+fixture=$(find "$here/resume" -name '*.v4.jsonl' 2>/dev/null || true)
+sessions_dir=$(find "$root/home/sessions" -mindepth 1 -maxdepth 1 -type d 2>/dev/null || true)
+sessions_dir=${sessions_dir%%$'\n'*}
+if [[ "$(printf '%s' "$fixture" | grep -c .)" -ne 1 ]]; then
+  fail "resume/ must hold exactly one session fixture, from the pin being left"
 elif [[ -z $sessions_dir ]]; then
   fail "the smoke turn left no sessions folder to resume into"
 else
@@ -106,7 +108,9 @@ else
   mkdir -p "$sessions_dir/$session_id"
   resumed=$sessions_dir/$session_id/session.v4.jsonl
   # dsh checks the log's cwd against the resolved path (on macOS /var is a link to /private/var).
-  sed "s#<root>#$(cd "$root" && pwd -P)#g" "$fixture" >"$resumed"
+  # The path is escaped for sed's replacement, where \, & and the # delimiter are special.
+  real_root=$(cd "$root" && pwd -P | sed 's/[\\&#]/\\&/g')
+  sed "s#<root>#$real_root#g" "$fixture" >"$resumed"
   if "$job" --patch "$here/ollama.patch.yml" --session-id "$session_id" --json \
     "Which word did I ask you to remember? Reply with only the word." \
     >"$root/resume.out" 2>"$root/resume.err"; then

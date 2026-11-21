@@ -61,6 +61,26 @@ snapshot config.yml --dump-config
 step "Config schema against its snapshot"
 snapshot config-schema.json --dump-config-schema
 
+# The bundles turn base rows off one by one, so a row a dsh upgrade adds starts on (AgentTeam in
+# 0.2.2-rc.2 did). --update rewrites the snapshots above but never these lists: a new row needs a
+# hand edit, here or in the bundle (ADR 0003).
+step "Enabled rows match enabled-rows/ (ADR 0003)"
+for profile in job redteam; do
+  expected=$here/enabled-rows/$profile.txt
+  actual=$root/enabled-rows.$profile.txt
+  if ! "$repo/bin/dsh-$profile" --dump-config >"$root/dump.$profile.yml" 2>"$root/dump.$profile.err"; then
+    tail -n 5 "$root/dump.$profile.err"
+    fail "$profile: --dump-config exited non-zero"
+    continue
+  fi
+  awk -f "$here/enabled-rows.awk" "$root/dump.$profile.yml" | sort >"$actual"
+  if diff -u <(grep -v '^#' "$expected" | sort) "$actual"; then
+    echo "matches enabled-rows/$profile.txt ($(grep -c . "$actual") rows)"
+  else
+    fail "$profile: enabled rows differ from enabled-rows/$profile.txt (+ is on now; disable it in the bundle or add it by hand)"
+  fi
+done
+
 # Checks dsh's plumbing, not the model: a 2B model's answer is too noisy to gate an upgrade on.
 step "Headless smoke turn on local Ollama"
 # The overlay's default model is the tag built from smoke.Modelfile.

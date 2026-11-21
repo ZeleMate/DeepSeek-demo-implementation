@@ -90,6 +90,11 @@
   disabled: true
 - id: tool-subagent-control
   disabled: true
+# AgentTeam (dsh 0.2.2-rc.2) adds a durable task board shared across a subagent tree.
+- id: agent-team
+  disabled: true
+- id: tool-agent-team
+  disabled: true
 - id: workflow-ptc
   disabled: true
 - id: tool-workflow

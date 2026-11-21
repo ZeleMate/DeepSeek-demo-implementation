@@ -85,7 +85,7 @@
   name: '@deepseek-ai/dsh-authorization'
   disabled: true
 - id: deepseek-account
-  name: '@deepseek-ai/dsh-deepseek-account-platform'
+  name: '@deepseek-ai/dsh-deepseek-account'
   config:
     desktopPlatform: !!js >-
       ctx.get('profileContext')?.name === 'desktop' && ['darwin',
@@ -322,6 +322,16 @@
   name: '@deepseek-ai/dsh-command-compact'
 - id: subagent
   name: '@deepseek-ai/dsh-subagent'
+# == @deepseek-ai/dsh-base, patched by @zelemate/dsh-bundle-job
+- id: agent-team
+  name: '@deepseek-ai/dsh-agent-team'
+  config:
+    maxTasks: 256
+  disabled: true
+- id: tool-agent-team
+  name: '@deepseek-ai/dsh-tool-agent-team'
+  disabled: true
+# == @deepseek-ai/dsh-base
 - id: subagent-spawn-in-process
   name: '@deepseek-ai/dsh-subagent-spawn-in-process'
   config:
@@ -333,6 +343,8 @@
 # == @deepseek-ai/dsh-base, patched by @zelemate/dsh-bundle-job
 - id: tool-subagent-control
   name: '@deepseek-ai/dsh-tool-subagent-control'
+  config:
+    interrupt: false
   disabled: true
 - id: tool-subagent
   name: '@deepseek-ai/dsh-tool-subagent'
@@ -397,7 +409,7 @@
 - id: web
   name: '@deepseek-ai/dsh-web'
   config:
-    searchProvider: deepseek-official
+    searchProvider: deepseek-search-api
     fetchProvider: http
   disabled: true
 - id: web-search-deepseek
@@ -407,8 +419,6 @@
   disabled: true
 - id: web-deepseek-api
   name: '@deepseek-ai/dsh-web-deepseek-api'
-  config:
-    apiKeyEnv: DEEPSEEK_API_KEY
   disabled: true
 - id: web-fetch-http
   name: '@deepseek-ai/dsh-web-fetch-http'

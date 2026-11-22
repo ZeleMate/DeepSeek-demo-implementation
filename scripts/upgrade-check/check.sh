@@ -4,6 +4,7 @@
 #   --update rewrites the config snapshots; review their diff in the upgrade PR.
 # Needs Ollama running locally with qwen3.5:2b pulled, plus the red-team victim base qwen3.5:4b
 # for bin/dsh-redteam, which the enabled-rows step runs.
+# scripts/checks/upgrade-check.sh tests every branch offline, against stub launchers and tools.
 set -euo pipefail
 
 repo=$(cd "$(dirname "$0")/../.." && pwd)

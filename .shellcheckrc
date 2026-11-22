@@ -1,0 +1,3 @@
+# Lets shellcheck follow the launchers into bin/lib/launcher.sh, which they source.
+external-sources=true
+source-path=SCRIPTDIR

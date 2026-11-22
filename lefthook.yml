@@ -27,10 +27,10 @@ pre-commit:
       # Offline here (no token needed); CI runs zizmor online with a pinned version.
       run: actionlint && zizmor --no-progress --offline .github/
     shell:
-      glob: "{bin/*,scripts/**/*.sh}"
+      glob: "{bin/*,bin/lib/*.sh,scripts/**/*.sh}"
       run: shellcheck {staged_files}
     launchers:
-      glob: "{bin/*,scripts/checks/launchers.sh}"
+      glob: "{bin/*,bin/lib/*.sh,scripts/checks/launchers.sh,.shellcheckrc}"
       run: scripts/checks/launchers.sh
 
 commit-msg:

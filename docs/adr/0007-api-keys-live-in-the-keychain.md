@@ -36,3 +36,5 @@ dsh looks for a key in `$DSH_HOME/.credentials.yaml`, then the environment it wa
 - Tested: `scripts/checks/launchers.sh` checks that neither launcher passes the calling shell's environment to dsh and that both refuse key files, and the upgrade check's `--dump-config` snapshot runs keyless. Still untested: that a missing key gives `MISSING_CREDENTIAL`, and that `--dump-config` with the real key loaded shows no key value. Bash's environment no longer matters while both bundles keep bash off.
 
 Decided in [Config and secrets: where do API keys and profile settings live?](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/37). Research: research/config-secrets.md.
+
+_Amended 2026-11-22:_ both launchers share one implementation, `bin/lib/launcher.sh`. Each `bin/dsh-<profile>` is still the committed per-profile launcher, and states only its profile, its `DSH_HOME`, its Keychain key names and its local models. Every guard above lives once in the library, so a fix reaches every profile. `DSH_DEMO_NO_KEYS` is allowlisted only for a profile that has keys, and the re-run marker is one name, `DSH_LAUNCHER_CLEAN_ENV`.

@@ -1,5 +1,5 @@
 ---
-status: accepted; both launchers clear the environment and refuse key files 2026-11-08 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/132)
+status: accepted; both launchers clear the environment and refuse key files 2026-11-08 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/132); launchers share one launcher module 2026-11-22 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/159)
 ---
 
 # API keys live in the macOS Keychain and reach dsh only through a launcher
@@ -37,4 +37,4 @@ dsh looks for a key in `$DSH_HOME/.credentials.yaml`, then the environment it wa
 
 Decided in [Config and secrets: where do API keys and profile settings live?](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/37). Research: research/config-secrets.md.
 
-_Amended 2026-11-22:_ both launchers share one implementation, `bin/lib/launcher.sh`. Each `bin/dsh-<profile>` is still the committed per-profile launcher, and states only its profile, its `DSH_HOME`, its Keychain key names and its local models. Every guard above lives once in the library, so a fix reaches every profile. `DSH_DEMO_NO_KEYS` is allowlisted only for a profile that has keys, and the re-run marker is one name, `DSH_LAUNCHER_CLEAN_ENV`.
+_Amended 2026-11-22 ([#159](https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/159)):_ both launchers share one implementation, `bin/lib/launcher.sh`. Each `bin/dsh-<profile>` is still the committed per-profile launcher, and states only its profile, its `DSH_HOME`, its Keychain key names and its local models. Every guard above lives once in the library, so a fix reaches every profile. `DSH_DEMO_NO_KEYS` is allowlisted only for a profile that has keys, and the re-run marker is one name, `DSH_LAUNCHER_CLEAN_ENV`.

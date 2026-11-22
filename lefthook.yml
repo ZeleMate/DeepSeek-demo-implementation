@@ -32,6 +32,9 @@ pre-commit:
     launchers:
       glob: "{bin/*,bin/lib/*.sh,scripts/checks/launchers.sh,.shellcheckrc}"
       run: scripts/checks/launchers.sh
+    upgrade-check:
+      glob: "{scripts/upgrade-check/**,scripts/checks/upgrade-check.sh}"
+      run: scripts/checks/upgrade-check.sh
 
 commit-msg:
   commands:

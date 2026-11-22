@@ -88,6 +88,13 @@ exit 0
 EOF
 chmod +x "$base/bin/dsh-job" "$base/bin/dsh-redteam" "$tmp/stubs/"*
 
+# A PATH with the stubs and the tools check.sh uses, but no ollama at all.
+mkdir -p "$tmp/no-ollama"
+cp "$tmp/stubs/pnpm" "$tmp/stubs/curl" "$tmp/no-ollama/"
+for tool in bash env awk sed grep diff sort cp mkdir mktemp rm find cut tail basename dirname cat cmp; do
+  ln -s "$(command -v "$tool")" "$tmp/no-ollama/$tool"
+done
+
 status=0
 cases=0
 fail() { echo "FAIL: $1"; status=1; }
@@ -102,7 +109,9 @@ run() {
   cp -R "$base/." "$dir/"
   (cd "$dir" && eval "$setup")
   code=0
-  out=$(cd "$dir" && env PATH="$tmp/stubs:$PATH" "$@" scripts/upgrade-check/check.sh ${update:+--update} 2>&1) || code=$?
+  path=$tmp/stubs:$PATH
+  [[ -n "${no_ollama:-}" ]] && path=$tmp/no-ollama
+  out=$(cd "$dir" && env PATH="$path" "$@" scripts/upgrade-check/check.sh ${update:+--update} 2>&1) || code=$?
   last_dir=$dir
 }
 
@@ -146,8 +155,13 @@ expect_fail "red-team dump fails" : "redteam: --dump-config exited non-zero" STU
 
 expect_fail "Ollama down" : "Ollama is not running on 127.0.0.1:11434
 the smoke turn left no sessions folder to resume into" STUB_OLLAMA=down
-expect_fail "smoke base missing" : "qwen3.5:2b is missing; run 'ollama pull qwen3.5:2b'
+smoke_base=$(sed -n 's/^FROM //p' "$base/scripts/upgrade-check/smoke.Modelfile")
+expect_fail "smoke base missing" : "$smoke_base is missing; run 'ollama pull $smoke_base'
 the smoke turn left no sessions folder to resume into" STUB_OLLAMA=nobase
+no_ollama=1
+expect_fail "no ollama CLI" : "the ollama CLI is not on PATH
+the smoke turn left no sessions folder to resume into"
+unset no_ollama
 expect_fail "smoke turn fails" : "smoke turn exited non-zero
 the smoke turn left no sessions folder to resume into" STUB_SMOKE=fail
 expect_fail "no final answer" : "smoke turn ended without a final answer" STUB_SMOKE=nofinal

@@ -13,7 +13,10 @@ cp "$repo/bin/dsh-job" "$repo/bin/dsh-redteam" "$tmp/repo/bin/"
 cp "$repo/bin/lib/launcher.sh" "$tmp/repo/bin/lib/"
 cp "$repo"/bundles/redteam/*.Modelfile "$tmp/repo/bundles/redteam/"
 printf '#!/bin/sh\nenv\n' >"$tmp/repo/node_modules/.bin/dsh"
-printf '#!/bin/sh\nexit 0\n' >"$tmp/stubs/ollama"
+# The stub ollama has every model except the ones named in stubs/missing, one per line.
+: >"$tmp/stubs/missing"
+# shellcheck disable=SC2016 # $1 and $2 are the stub's own arguments
+printf '#!/bin/sh\n[ "$1" = show ] && grep -qxF -- "$2" "%s" && exit 1\nexit 0\n' "$tmp/stubs/missing" >"$tmp/stubs/ollama"
 chmod +x "$tmp/repo/node_modules/.bin/dsh" "$tmp/stubs/ollama"
 
 status=0
@@ -123,6 +126,35 @@ check() {
 check dsh-job job home @zelemate/dsh-bundle-job workspace/job true ""
 check dsh-redteam redteam redteam/home @zelemate/dsh-bundle-redteam workspace/redteam false \
   "redteam-qwen3.5-4b-16k redteam-granite4.2-3b-16k"
+
+# The red-team models: a missing required base stops the launch, a missing optional one only
+# warns, and a changed Modelfile rebuilds its tag.
+modelfiles=$tmp/repo/bundles/redteam
+victim_base=$(sed -n 's/^FROM //p' "$modelfiles/victim.Modelfile")
+grader_base=$(sed -n 's/^FROM //p' "$modelfiles/grader.Modelfile")
+redteam_root() { fresh_root redteam redteam/home @zelemate/dsh-bundle-redteam; }
+
+printf '%s\n' "$victim_base" >"$tmp/stubs/missing"
+refuses dsh-redteam "$(redteam_root)" "the victim base $victim_base is missing" "no victim base"
+
+printf '%s\n' "$grader_base" >"$tmp/stubs/missing"
+if ! out=$(launch dsh-redteam "$(redteam_root)" 2>&1); then
+  fail "dsh-redteam did not start without the optional grader base: $out"
+elif ! grep -q "warning: the grader base $grader_base is missing" <<<"$out"; then
+  fail "dsh-redteam started without the grader base but did not warn"
+fi
+: >"$tmp/stubs/missing"
+
+root=$(redteam_root)
+stamp=$root/redteam/models/redteam-qwen3.5-4b-16k.sha256
+launch dsh-redteam "$root" >/dev/null 2>&1 || fail "dsh-redteam did not start for the rebuild check"
+cp "$modelfiles/victim.Modelfile" "$tmp/victim.Modelfile.orig"
+printf '# changed\n' >>"$modelfiles/victim.Modelfile"
+launch dsh-redteam "$root" >/dev/null 2>&1 || fail "dsh-redteam did not start after a Modelfile change"
+if [[ "$(cat "$stamp")" != "$(shasum -a 256 "$modelfiles/victim.Modelfile" | cut -d' ' -f1)" ]]; then
+  fail "dsh-redteam did not rebuild the victim tag after its Modelfile changed"
+fi
+cp "$tmp/victim.Modelfile.orig" "$modelfiles/victim.Modelfile"
 
 if [[ "$status" -eq 0 ]]; then echo "launchers ok"; fi
 exit "$status"

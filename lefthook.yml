@@ -30,7 +30,7 @@ pre-commit:
       glob: "{bin/*,bin/lib/*.sh,scripts/**/*.sh}"
       run: shellcheck {staged_files}
     launchers:
-      glob: "{bin/*,bin/lib/*.sh,scripts/checks/launchers.sh}"
+      glob: "{bin/*,bin/lib/*.sh,scripts/checks/launchers.sh,.shellcheckrc}"
       run: scripts/checks/launchers.sh
 
 commit-msg:

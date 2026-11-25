@@ -163,7 +163,7 @@ The model under attack in red-team runs: a local model, or one behind an API who
 _Avoid_: target model
 
 **Taint**:
-A per-session flag set once the agent has read untrusted content; while it is set, outbound calls need approval. No turn boundary clears it.
+A per-session flag set once the agent has read content from an untrusted source or the injection filter has scored content as suspect; while it is set, outbound calls and changes to what a later scan sees need approval. No turn boundary clears it.
 _Avoid_: contamination, dirty flag
 
 **Pin**:

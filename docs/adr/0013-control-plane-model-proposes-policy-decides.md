@@ -1,5 +1,5 @@
 ---
-status: accepted; async tools named 2026-11-07 (#121); guard deny and per-session taint land with #66
+status: accepted; async tools named 2026-11-07 (#121); guard deny and per-session taint land with #66; taint sources and raised actions settled 2026-11-25 (https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/131)
 ---
 
 # The model proposes, a control plane decides, an executor acts
@@ -21,7 +21,7 @@ Every tool has a **risk tier**, assigned in the policy table of each bundle's `d
 | T0 observe | gitleaks scan, allowlisted file reads, `web_fetch` to an allowlisted host | allow |
 | T1 draft | writing the local findings report | allow, with effect verification |
 | T2 reversible | writing `.gitleaksignore`; an MCP tool under test whose pin matches the lockfile and whose arguments pass the egress allowlist | allow; `.gitleaksignore` with effect verification |
-| T3 approve | an MCP tool not yet in the lockfile; any T0–T2 action once taint is set | ask (headless: `unavailable`, so denied) |
+| T3 approve | an MCP tool not yet in the lockfile; once taint is set, `web_fetch`, any MCP call and writing `.gitleaksignore` | ask (headless: `unavailable`, so denied) |
 | T4 critical | an MCP tool whose pin changed; any tool missing from the table | deny |
 
 The MCP rows follow ADR 0003's pinning guard: a pinned tool runs, a new tool needs approval on first use, and a changed tool is refused until it is re-approved into the lockfile. So headless red-team and job runs can still call the pinned MCP servers under test, and the pinning guard's attack cases measure the guard rather than a blanket denial.
@@ -29,6 +29,29 @@ The MCP rows follow ADR 0003's pinning guard: a pinned tool runs, a new tool nee
 Escalations stack, and a tier is never lowered, least of all because the model sounds confident.
 
 Taint is a per-session flag, and no turn boundary clears it in v1. Content can reach the model in a later turn than the one that read it, as a subagent's answer does in dsh rc.2 ([#121](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/121)). If subagents return, a child's taint passes to its parent.
+
+### What sets taint, and what it raises
+
+Settled in [#131](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/131).
+
+**Sources.** Taint is set by where content comes from, not by what it says. Any read from these sources sets it:
+
+- a file in a scanned repo (ADR 0009), and gitleaks output, which carries that repo's lines;
+- a `web_fetch` result, from any host, allowlisted or not;
+- any `mcp__*` result, and `read_mcp_resource`, `list_mcp_resources` and `list_mcp_resource_templates`;
+- a message whose `source.kind` is not `user` and that carries outside content (runtime-context snapshots are harness-written and excluded);
+- the findings report and `.gitleaksignore`, when a later session reads them, because a tainted session wrote them;
+- a `dsh-spill-*` file, which counts as the original tool's result.
+
+The trusted side is the short list: the user's own messages and the rest of our workspace. Any source not named on either list counts as untrusted. An injection-filter score of 0.5 or above also sets taint, whatever the source (ADR 0003 #2).
+
+MCP tool descriptions and server instructions are not a source, although they reach the model from the first turn. The pinning guard covers them: a pinned description was approved into the lockfile, and a changed one is withdrawn before it reaches the prompt. Until the guard lands (M6) this is a known gap.
+
+**Raised actions.** While taint is set, actions whose effect leaves the session or outlives it become T3: `web_fetch`, every MCP call, and writing `.gitleaksignore`. Reads (T0) and the findings report (T1) are not raised. Raising every tier was rejected because a secrets job reads its scanned repo first, so its report would always be denied headless. Raising outbound calls only was rejected because an injected repo could then get a `.gitleaksignore` write that hides a real secret, with no outbound call at all.
+
+So a headless secrets job never writes `.gitleaksignore`. Its report lists the findings it would dismiss, and in an interactive run you approve each write, with the approval hash recorded. In the red-team profile only the first MCP call of a session can run, because its result sets taint. The pinning guard's cases still reach the guard, because the new or changed tool is the call being made, and the benign set's single-call MCP task measures what the rule costs (ADR 0011). A loopback or stdio MCP server is not exempt, because a local server can make its own outbound calls.
+
+The main loop's model call is not an action proposal, so taint does not cover it. ADR 0004's masked findings and the canary check on the model stream (ADR 0003 #5) cover that path.
 
 ## Enforcement on dsh's hooks
 
@@ -66,7 +89,7 @@ The policy decision denies any tool call past a per-turn cap, with reason `budge
 
 ## Control-plane tests
 
-A deterministic suite with no model in it runs in CI (`ci.yml`) on every PR and must pass in full: an unknown tool is denied; an MCP tool with a changed pin is denied; taint raises T0–T2 to T3; taint set in one turn is still set in the next; each `async-disabled` tool is denied even when its row is loaded; a headless T3 is denied; the hash recorded with an approval equals the hash of what was dispatched; a failed ledger write denies the call; the chain verifies and breaks when any record is edited; a `.gitleaksignore` write whose read-back fails is recorded `effect.failed`. Attack success rate stays Promptfoo's number (ADR 0011). A PR that touches the policy table and these tests together is reviewed with that in mind, because weakening a test in the same change is a known attack.
+A deterministic suite with no model in it runs in CI (`ci.yml`) on every PR and must pass in full: an unknown tool is denied; an MCP tool with a changed pin is denied; each taint source sets taint and a trusted workspace read does not; taint raises `web_fetch`, MCP calls and `.gitleaksignore` writes to T3 but leaves reads and the findings report as they are; taint set in one turn is still set in the next; each `async-disabled` tool is denied even when its row is loaded; a headless T3 is denied; the hash recorded with an approval equals the hash of what was dispatched; a failed ledger write denies the call; the chain verifies and breaks when any record is edited; a `.gitleaksignore` write whose read-back fails is recorded `effect.failed`. Attack success rate stays Promptfoo's number (ADR 0011). A PR that touches the policy table and these tests together is reviewed with that in mind, because weakening a test in the same change is a known attack.
 
 ## Trust boundary
 

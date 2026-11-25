@@ -15,4 +15,6 @@ Each finding is sent as a **masked finding**: the value is replaced by a shape t
 - Fallback order: Decisions API → small OpenRouter model (same masked input) → you. Everything fails closed.
 - Dismissed findings go into `.gitleaksignore` by fingerprint. Confirmed ones go into a local report with rotation steps. Verdicts stay in the session log for threshold tuning. The secret value is stored nowhere.
 
+_Amended 2026-11-25 ([#131](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/131)):_ a secrets job reads its scanned repo, which sets taint, and taint raises `.gitleaksignore` writes to T3 (ADR 0013). So "auto-dismissed" means listed under "would dismiss" in the report. A headless run never writes `.gitleaksignore`, and in an interactive run you approve each write.
+
 Decided in [Secrets filter: pipeline, questions and thresholds](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/24).

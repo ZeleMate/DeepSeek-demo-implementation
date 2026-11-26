@@ -6,6 +6,8 @@
 #   keys     Keychain key names to export, space-separated; empty for a profile with no keys
 #   models   local models as role:tag:required|optional, space-separated; built from
 #            bundles/<profile>/<role>.Modelfile; empty for a profile with no local models
+#   fresh_workspace  true: each launch gets a new run directory under the workspace, so no file
+#            one attempt writes reaches the next (ADR 0011); false: one shared workspace
 
 refuse() {
   echo "$me: $1" >&2
@@ -14,11 +16,16 @@ refuse() {
 
 # Each value is reassigned from itself, so a launcher that forgets one stops here.
 read_descriptor() {
+  me=${0##*/}
   profile=${profile:?}
   home=${home:?}
   keys=${keys?}
   models=${models?}
-  me=${0##*/}
+  fresh_workspace=${fresh_workspace:?}
+  case $fresh_workspace in
+    true | false) ;;
+    *) refuse "fresh_workspace must be true or false" ;;
+  esac
 }
 
 # The script re-runs itself with an empty environment plus a fixed allowlist, so nothing exported
@@ -57,15 +64,24 @@ check_disk() {
 
   # dsh falls back to these files for keys and settings. Keys reach dsh only from the Keychain,
   # through this launcher, so none may exist: one left by an earlier run would apply (ADR 0007).
-  for file in "$DSH_HOME/.env" "$DSH_HOME/.credentials.yaml" "$workspace/.env"; do
+  for file in "$DSH_HOME/.env" "$DSH_HOME/.credentials.yaml" "$workspace_root/.env" "$workspace/.env"; do
     [ -e "$file" ] && refuse "$file exists; keys reach dsh only from the Keychain, through $me (ADR 0007)"
   done
 
   # The bundles turn off dsh's instruction and skill rows, but a file one run leaves here would
-  # steer every later run if a row came back, so none may exist (ADR 0009, 0010, 0011).
-  for file in AGENTS.md AGENTS.local.md CLAUDE.md CLAUDE.local.md .agents .dsh; do
-    [ -e "$workspace/$file" ] && refuse "$workspace/$file exists; the $profile workspace holds no instructions (ADR 0009)"
+  # steer every later run if a row came back, so none may exist (ADR 0009, 0010, 0011). A run
+  # directory sits inside the workspace, and instruction lookups can walk up, so both are checked.
+  for dir in "$workspace_root" "$workspace"; do
+    for file in AGENTS.md AGENTS.local.md CLAUDE.md CLAUDE.local.md .agents .dsh; do
+      [ -e "$dir/$file" ] && refuse "$dir/$file exists; the $profile workspace holds no instructions (ADR 0009)"
+    done
   done
+
+  # dsh's instruction and skill rows fall back to ~/.agents. The launcher points them at an
+  # empty directory of its own instead, a second lock behind those rows being off (ADR 0012).
+  if [ -n "$(ls -A "$DSH_AGENTS_HOME")" ]; then
+    refuse "$DSH_AGENTS_HOME must be empty; only our own bundles' skills load (ADR 0012)"
+  fi
   return 0
 }
 
@@ -157,12 +173,14 @@ launch() {
   repo=$(cd "$(dirname "$0")/.." && pwd)
   bundle=$repo/bundles/$profile
   DSH_HOME=$root/$home
-  workspace=$root/workspace/$profile
+  DSH_AGENTS_HOME=$root/$profile/agents-home
+  workspace_root=$root/workspace/$profile
+  workspace=$workspace_root
   # Called by path, not through `pnpm exec`, which would run dsh in the repo instead of the workspace.
   dsh=$repo/node_modules/.bin/dsh
   [ -x "$dsh" ] || refuse "run 'pnpm install --frozen-lockfile' in $repo first"
 
-  mkdir -p "$DSH_HOME" "$workspace"
+  mkdir -p "$DSH_HOME" "$DSH_AGENTS_HOME" "$workspace_root"
   check_disk
 
   # dsh reads ./.env as a key fallback and ./AGENTS.md as instructions, so it never starts inside
@@ -176,10 +194,17 @@ launch() {
 
   # Ollama needs no key, but pi-ai's OpenAI-compatible transport requires one. The red-team
   # bundle and the upgrade check's overlay name this dummy, which is not a secret (ADR 0007).
-  export DSH_HOME DSH_TELEMETRY_DISABLED=1 OLLAMA_DUMMY_KEY=ollama
+  export DSH_HOME DSH_AGENTS_HOME DSH_TELEMETRY_DISABLED=1 OLLAMA_DUMMY_KEY=ollama
 
   ensure_profile
   export_keys
+
+  # The run directory is made last, after every check that can refuse, so each one left behind
+  # is a launch that reached dsh. Run directories are kept, not deleted, as an attempt's evidence.
+  if [ "$fresh_workspace" = true ]; then
+    workspace=$(mktemp -d "$workspace_root/run.XXXXXX") || refuse "could not create a run directory in $workspace_root"
+    cd "$workspace" || exit 1
+  fi
 
   exec "$dsh" --profile "$profile" "$@"
 }

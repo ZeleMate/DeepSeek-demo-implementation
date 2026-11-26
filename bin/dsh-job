@@ -10,6 +10,9 @@ home=home
 keys=OPENROUTER_API_KEY # the Decisions API key joins it in M5
 models=
 
+# One shared workspace: a job's report outlives the run.
+fresh_workspace=false
+
 # shellcheck source=lib/launcher.sh
 . "$(dirname "$0")/lib/launcher.sh"
 launch "$@"

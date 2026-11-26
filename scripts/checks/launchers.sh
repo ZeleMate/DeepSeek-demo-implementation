@@ -83,6 +83,14 @@ check() {
     [[ -s "$root/$profile/models/$tag.sha256" ]] || fail "$launcher did not build $tag"
   done
 
+  # dsh's instruction and skill rows fall back to ~/.agents, so each profile gets its own (#110).
+  if ! grep -qxF "DSH_AGENTS_HOME=$root/$profile/agents-home" <<<"$out"; then
+    fail "$launcher did not point DSH_AGENTS_HOME at its own directory"
+  fi
+  root=$(fresh_root "$profile" "$home" "$bundle")
+  mkdir -p "$root/$profile/agents-home/skills"
+  refuses "$launcher" "$root" "agents-home must be empty" "a non-empty agents home"
+
   # Setting the re-run marker by hand must not skip the cleanup.
   root=$(fresh_root "$profile" "$home" "$bundle")
   refuses "$launcher" "$root" "is set; start $launcher without" "a forged DSH_LAUNCHER_CLEAN_ENV" DSH_LAUNCHER_CLEAN_ENV=1
@@ -126,6 +134,31 @@ check() {
 check dsh-job job home @zelemate/dsh-bundle-job workspace/job true ""
 check dsh-redteam redteam redteam/home @zelemate/dsh-bundle-redteam workspace/redteam false \
   "redteam-qwen3.5-4b-16k redteam-granite4.2-3b-16k"
+
+# Where dsh starts: the job profile always in its one workspace, the red-team profile in a new
+# run directory per launch, so a file one attempt writes never reaches the next (#110).
+start_dir() { sed -n 's/^PWD=//p' <<<"$1"; }
+root=$(fresh_root job home @zelemate/dsh-bundle-job)
+first=$(start_dir "$(launch dsh-job "$root" 2>&1)")
+second=$(start_dir "$(launch dsh-job "$root" 2>&1)")
+[[ "$first" == "$root/workspace/job" && "$second" == "$first" ]] ||
+  fail "dsh-job did not start in its shared workspace: $first, then $second"
+
+root=$(fresh_root redteam redteam/home @zelemate/dsh-bundle-redteam)
+first=$(start_dir "$(launch dsh-redteam "$root" 2>&1)")
+: >"$first/left-by-attempt-1"
+second=$(start_dir "$(launch dsh-redteam "$root" 2>&1)")
+if [[ "$first" != "$root/workspace/redteam/run."* || "$second" != "$root/workspace/redteam/run."* ]]; then
+  fail "dsh-redteam did not start in a run directory: $first, then $second"
+elif [[ "$first" == "$second" || -n "$(ls -A "$second")" ]]; then
+  fail "dsh-redteam reused a run directory: $first, then $second"
+fi
+
+# A launcher that sets fresh_workspace to anything else stops before dsh starts.
+sed 's/^fresh_workspace=true$/fresh_workspace=yes/' "$tmp/repo/bin/dsh-redteam" >"$tmp/repo/bin/dsh-redteam-bad"
+chmod +x "$tmp/repo/bin/dsh-redteam-bad"
+refuses dsh-redteam-bad "$(fresh_root redteam redteam/home @zelemate/dsh-bundle-redteam)" \
+  "fresh_workspace must be true or false" "fresh_workspace=yes"
 
 # The red-team models: a missing required base stops the launch, a missing optional one only
 # warns, and a changed Modelfile rebuilds its tag.

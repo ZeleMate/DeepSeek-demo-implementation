@@ -27,6 +27,7 @@ bin/dsh-job "what is 17+25?"
 
 - `home/` is `DSH_HOME`: profiles and session logs. Its `cordis.patch.yml` must stay exactly `[]`, because that file outranks every profile; the launcher creates it and refuses to start if it changes.
 - `workspace/job/` is where dsh runs.
+- `job/agents-home/` stands in for `~/.agents`, so no skill or instruction file from your home folder reaches dsh. It must stay empty.
 
 Red-team runs use local Ollama only (ADR 0005), with no provider keys at all:
 
@@ -35,7 +36,7 @@ ollama pull qwen3.5:4b && ollama pull granite4.2:3b
 bin/dsh-redteam "what is 17+25?"
 ```
 
-[bin/dsh-redteam](bin/dsh-redteam) starts dsh with an empty environment plus a fixed allowlist, so no key exported in your shell reaches it. Its only key is Ollama's dummy, which is not a secret. It builds 16k-context model tags from the Modelfiles in [bundles/redteam](bundles/redteam), because Ollama's default 4k context silently truncates dsh's prompt. It rebuilds a tag whenever its Modelfile changes, and it never downloads a model. It keeps its own `DSH_HOME` in `redteam/home/` and runs in `workspace/redteam/`, with the same `[]` rule, and it refuses to start if a `.env` or `.credentials.yaml` could supply a key.
+[bin/dsh-redteam](bin/dsh-redteam) starts dsh with an empty environment plus a fixed allowlist, so no key exported in your shell reaches it. Its only key is Ollama's dummy, which is not a secret. It builds 16k-context model tags from the Modelfiles in [bundles/redteam](bundles/redteam), because Ollama's default 4k context silently truncates dsh's prompt. It rebuilds a tag whenever its Modelfile changes, and it never downloads a model. It keeps its own `DSH_HOME` in `redteam/home/`, with the same `[]` rule, and its own empty `redteam/agents-home/`. Each launch runs in a new `workspace/redteam/run.*` directory, so no file one attempt writes reaches the next. Old run directories are kept as evidence; delete them when you no longer need them. It refuses to start if a `.env` or `.credentials.yaml` could supply a key.
 
 API keys are Keychain items, never files; see [.env.example](.env.example) and ADR 0007. CI ([ci.yml](.github/workflows/ci.yml)) runs the same checks as the hooks.
 

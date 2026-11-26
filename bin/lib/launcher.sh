@@ -181,10 +181,6 @@ launch() {
   [ -x "$dsh" ] || refuse "run 'pnpm install --frozen-lockfile' in $repo first"
 
   mkdir -p "$DSH_HOME" "$DSH_AGENTS_HOME" "$workspace_root"
-  # Run directories are kept, not deleted, so an attempt's files stay available as evidence.
-  if [ "$fresh_workspace" = true ]; then
-    workspace=$(mktemp -d "$workspace_root/run.XXXXXX") || refuse "could not create a run directory in $workspace_root"
-  fi
   check_disk
 
   # dsh reads ./.env as a key fallback and ./AGENTS.md as instructions, so it never starts inside
@@ -202,6 +198,13 @@ launch() {
 
   ensure_profile
   export_keys
+
+  # The run directory is made last, after every check that can refuse, so each one left behind
+  # is a launch that reached dsh. Run directories are kept, not deleted, as an attempt's evidence.
+  if [ "$fresh_workspace" = true ]; then
+    workspace=$(mktemp -d "$workspace_root/run.XXXXXX") || refuse "could not create a run directory in $workspace_root"
+    cd "$workspace" || exit 1
+  fi
 
   exec "$dsh" --profile "$profile" "$@"
 }

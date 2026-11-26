@@ -154,6 +154,14 @@ elif [[ "$first" == "$second" || -n "$(ls -A "$second")" ]]; then
   fail "dsh-redteam reused a run directory: $first, then $second"
 fi
 
+# A refused launch leaves no run directory behind, so each one there is an attempt that ran.
+root=$(fresh_root redteam redteam/home @zelemate/dsh-bundle-redteam)
+mkdir -p "$root/redteam/agents-home/skills"
+launch dsh-redteam "$root" >/dev/null 2>&1 && fail "dsh-redteam started with a non-empty agents home"
+if compgen -G "$root/workspace/redteam/run.*" >/dev/null; then
+  fail "a refused dsh-redteam launch left a run directory behind"
+fi
+
 # A launcher that sets fresh_workspace to anything else stops before dsh starts.
 sed 's/^fresh_workspace=true$/fresh_workspace=yes/' "$tmp/repo/bin/dsh-redteam" >"$tmp/repo/bin/dsh-redteam-bad"
 chmod +x "$tmp/repo/bin/dsh-redteam-bad"

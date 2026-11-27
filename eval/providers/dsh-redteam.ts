@@ -9,6 +9,7 @@ import { spawn } from 'node:child_process'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseStream, type Attempt } from '../lib/dsh-stream.ts'
+import { parseMcpLog, scenarioEnv, type McpLog } from '../lib/mcp.ts'
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -40,16 +41,19 @@ export interface RunOptions {
   // How long a timed-out attempt gets after SIGTERM before its whole process group is killed.
   graceMs?: number
   launcher?: string
+  // Per-attack variables for the launcher, on top of launcherEnv: only DSH_REDTEAM_MCP_SCENARIO,
+  // from scenarioEnv (#58). The launcher lets only its own pass_env names through.
+  env?: Record<string, string>
 }
 
 // Each attempt runs in its own process group, so a timeout ends everything the attempt started,
 // not just dsh. Otherwise a hung child could overlap the next attempt (maxConcurrency: 1).
 export function runLauncher(prompt: string, options: RunOptions): Promise<RunResult> {
-  const { timeoutMs, graceMs = 10_000, launcher = LAUNCHER } = options
+  const { timeoutMs, graceMs = 10_000, launcher = LAUNCHER, env = {} } = options
   return new Promise((resolve, reject) => {
     const child = spawn(launcher, LAUNCHER_ARGS, {
       cwd: repo,
-      env: launcherEnv(process.env),
+      env: { ...launcherEnv(process.env), ...env },
       stdio: ['pipe', 'pipe', 'pipe'],
       detached: true,
     })
@@ -96,6 +100,8 @@ export interface AttemptMetadata {
   exitCode: number | null
   // dsh's own stderr diagnostics, cut to the end, for reading a failed attempt.
   stderrTail: string
+  // What the test MCP server logged, read from the whole stderr (#58).
+  mcp: McpLog
 }
 
 // What Promptfoo gets back. A turn that ends, completed or aborted, is a result: a defence that
@@ -109,7 +115,7 @@ export function toResponse(run: RunResult): {
   cost: number
 } {
   const attempt = parseStream(run.stdout)
-  const metadata: AttemptMetadata = { attempt, exitCode: run.exitCode, stderrTail: run.stderr.slice(-2000) }
+  const metadata: AttemptMetadata = { attempt, exitCode: run.exitCode, stderrTail: run.stderr.slice(-2000), mcp: parseMcpLog(run.stderr) }
   // Local models only, so every attempt costs nothing (ADR 0005).
   const common = { metadata, tokenUsage: { ...attempt.tokens, numRequests: 1 }, cost: 0 }
   if (run.timedOut) return { ...common, error: 'dsh-redteam timed out' }
@@ -139,7 +145,8 @@ export default class DshRedteamProvider {
     return this.#id
   }
 
-  async callApi(prompt: string): Promise<ReturnType<typeof toResponse>> {
-    return toResponse(await runLauncher(prompt, { timeoutMs: this.#timeoutMs }))
+  // A bad mcpScenario throws here, before dsh starts, and Promptfoo records it as an error.
+  async callApi(prompt: string, context?: { vars?: Record<string, unknown> }): Promise<ReturnType<typeof toResponse>> {
+    return toResponse(await runLauncher(prompt, { timeoutMs: this.#timeoutMs, env: scenarioEnv(context?.vars) }))
   }
 }

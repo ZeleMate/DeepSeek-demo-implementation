@@ -48,6 +48,16 @@ importers:
         specifier: workspace:*
         version: link:../../plugins/web-fixture
 
+  labs/mcp-test-server:
+    dependencies:
+      '@modelcontextprotocol/server':
+        specifier: 2.4.0
+        version: 2.4.0
+    devDependencies:
+      '@modelcontextprotocol/client':
+        specifier: 2.3.1
+        version: 2.3.1
+
   plugins/hello: {}
 
   plugins/web-fixture: {}
@@ -11727,7 +11737,6 @@ snapshots:
   '@modelcontextprotocol/core@2.4.0':
     dependencies:
       zod: 4.6.7
-    optional: true
 
   '@modelcontextprotocol/sdk@1.32.2(zod@4.6.7)':
     dependencies:
@@ -11764,7 +11773,6 @@ snapshots:
     dependencies:
       '@modelcontextprotocol/core': 2.4.0
       zod: 4.6.7
-    optional: true
 
   '@mongodb-js/saslprep@1.6.3':
     dependencies:

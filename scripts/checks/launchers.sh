@@ -197,5 +197,45 @@ if [[ "$(cat "$stamp")" != "$(shasum -a 256 "$modelfiles/victim.Modelfile" | cut
 fi
 cp "$tmp/victim.Modelfile.orig" "$modelfiles/victim.Modelfile"
 
+# Both launchers tell dsh where the repo is, so bundle rows can start our own programs (#58).
+for launcher in dsh-job dsh-redteam; do
+  case $launcher in
+    dsh-job) root=$(fresh_root job home @zelemate/dsh-bundle-job) ;;
+    *) root=$(redteam_root) ;;
+  esac
+  out=$(launch "$launcher" "$root" 2>&1) || fail "$launcher did not start for the repo check: $out"
+  grep -qxF "DSH_DEMO_REPO=$tmp/repo" <<<"$out" || fail "$launcher did not export DSH_DEMO_REPO"
+done
+
+# The test MCP server's scenario reaches the red-team profile only, as a plain word (#58).
+out=$(launch dsh-redteam "$(redteam_root)" DSH_REDTEAM_MCP_SCENARIO=pin-tool 2>&1) ||
+  fail "dsh-redteam did not start with a scenario: $out"
+grep -qxF "DSH_REDTEAM_MCP_SCENARIO=pin-tool" <<<"$out" || fail "dsh-redteam dropped DSH_REDTEAM_MCP_SCENARIO"
+out=$(launch dsh-job "$(fresh_root job home @zelemate/dsh-bundle-job)" DSH_REDTEAM_MCP_SCENARIO=pin-tool 2>&1) ||
+  fail "dsh-job did not start with a stray scenario: $out"
+grep -q "^DSH_REDTEAM_MCP_SCENARIO=" <<<"$out" && fail "dsh-job passed DSH_REDTEAM_MCP_SCENARIO to dsh"
+for bad in 'pin tool' 'pin-tool;id' '../x/y' '--flag=1'; do
+  refuses dsh-redteam "$(redteam_root)" "DSH_REDTEAM_MCP_SCENARIO must be letters" "a scenario of '$bad'" \
+    "DSH_REDTEAM_MCP_SCENARIO=$bad"
+done
+# The re-run checks a passed value too, so a forged marker can't carry a bad one.
+if out=$(env -i HOME="$HOME" PATH="$tmp/stubs:$PATH" DSH_DEMO_ROOT="$(redteam_root)" \
+  DSH_REDTEAM_MCP_SCENARIO='a b' DSH_LAUNCHER_CLEAN_ENV=1 "$tmp/repo/bin/dsh-redteam" 2>&1); then
+  fail "dsh-redteam started with a bad scenario behind a forged DSH_LAUNCHER_CLEAN_ENV"
+elif ! grep -q "DSH_REDTEAM_MCP_SCENARIO must be letters" <<<"$out"; then
+  fail "dsh-redteam stopped a forged bad scenario, but not at its guard: $out"
+fi
+
+# A launcher can pass only our own DSH_REDTEAM_* names, never a key or a dsh setting.
+sed 's/^pass_env=DSH_REDTEAM_MCP_SCENARIO$/pass_env="DSH_REDTEAM_MCP_SCENARIO OPENAI_API_KEY"/' \
+  "$tmp/repo/bin/dsh-redteam" >"$tmp/repo/bin/dsh-redteam-keys"
+chmod +x "$tmp/repo/bin/dsh-redteam-keys"
+refuses dsh-redteam-keys "$(redteam_root)" "pass_env may name only DSH_REDTEAM_" "pass_env with a key name"
+# A passed name is read through eval, so it must be a plain identifier.
+sed 's/^pass_env=DSH_REDTEAM_MCP_SCENARIO$/pass_env="DSH_REDTEAM_X;touch"/' \
+  "$tmp/repo/bin/dsh-redteam" >"$tmp/repo/bin/dsh-redteam-meta"
+chmod +x "$tmp/repo/bin/dsh-redteam-meta"
+refuses dsh-redteam-meta "$(redteam_root)" "pass_env names must be letters, digits and underscores" "pass_env with a metacharacter"
+
 if [[ "$status" -eq 0 ]]; then echo "launchers ok"; fi
 exit "$status"

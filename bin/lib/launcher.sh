@@ -8,6 +8,8 @@
 #            bundles/<profile>/<role>.Modelfile; empty for a profile with no local models
 #   fresh_workspace  true: each launch gets a new run directory under the workspace, so no file
 #            one attempt writes reaches the next (ADR 0011); false: one shared workspace
+#   pass_env names from the calling shell that may reach dsh, space-separated; empty for none.
+#            Each value must be letters, digits, dots, dashes or underscores (#58)
 
 refuse() {
   echo "$me: $1" >&2
@@ -26,6 +28,27 @@ read_descriptor() {
     true | false) ;;
     *) refuse "fresh_workspace must be true or false" ;;
   esac
+  pass_env=${pass_env?}
+  for name in $pass_env; do
+    case $name in
+      DSH_REDTEAM_*[!A-Z0-9_]*) refuse "pass_env names must be letters, digits and underscores, not $name" ;;
+      DSH_REDTEAM_*) ;;
+      # Only names of our own pass, so a launcher can't let a dsh setting or a key through.
+      *) refuse "pass_env may name only DSH_REDTEAM_* variables, not $name" ;;
+    esac
+  done
+}
+
+is_passed() {
+  for passed in $pass_env; do [ "$passed" = "$1" ] && return 0; done
+  return 1
+}
+
+# A passed value is a plain word, so it can't smuggle a path, a flag or a second assignment.
+check_passed_value() {
+  case $2 in
+    "" | *[!A-Za-z0-9._-]*) refuse "$1 must be letters, digits, dots, dashes or underscores" ;;
+  esac
 }
 
 # The script re-runs itself with an empty environment plus a fixed allowlist, so nothing exported
@@ -35,10 +58,19 @@ clean_env() {
   if [ "${DSH_LAUNCHER_CLEAN_ENV:-}" != 1 ]; then
     no_keys=
     [ -n "$keys" ] && no_keys="DSH_DEMO_NO_KEYS=${DSH_DEMO_NO_KEYS:-}"
+    passed_env=
+    for name in $pass_env; do
+      eval "value=\${$name-}"
+      [ -n "$value" ] || continue
+      check_passed_value "$name" "$value"
+      passed_env="$passed_env $name=$value"
+    done
+    # passed_env is split on purpose: each entry is NAME=word, checked above.
+    # shellcheck disable=SC2086
     exec env -i \
       HOME="$HOME" USER="${USER:-}" PATH="$PATH" LANG="${LANG:-en_US.UTF-8}" \
       TERM="${TERM:-dumb}" TMPDIR="${TMPDIR:-/tmp}" \
-      DSH_DEMO_ROOT="$root" ${no_keys:+"$no_keys"} DSH_LAUNCHER_CLEAN_ENV=1 \
+      DSH_DEMO_ROOT="$root" ${no_keys:+"$no_keys"} $passed_env DSH_LAUNCHER_CLEAN_ENV=1 \
       "$0" "$@"
   fi
   # DSH_LAUNCHER_CLEAN_ENV can be set by hand, so the re-run also checks that only allowlisted
@@ -48,7 +80,11 @@ clean_env() {
       HOME | USER | PATH | LANG | TERM | TMPDIR | DSH_DEMO_ROOT | DSH_LAUNCHER_CLEAN_ENV) ;;
       PWD | OLDPWD | SHLVL | _) ;;
       DSH_DEMO_NO_KEYS) [ -n "$keys" ] || refuse "$name is set; start $me without DSH_LAUNCHER_CLEAN_ENV so it clears the environment" ;;
-      *) refuse "$name is set; start $me without DSH_LAUNCHER_CLEAN_ENV so it clears the environment" ;;
+      *)
+        is_passed "$name" || refuse "$name is set; start $me without DSH_LAUNCHER_CLEAN_ENV so it clears the environment"
+        eval "value=\${$name}"
+        check_passed_value "$name" "$value"
+        ;;
     esac
   done
 }
@@ -195,6 +231,8 @@ launch() {
   # Ollama needs no key, but pi-ai's OpenAI-compatible transport requires one. The red-team
   # bundle and the upgrade check's overlay name this dummy, which is not a secret (ADR 0007).
   export DSH_HOME DSH_AGENTS_HOME DSH_TELEMETRY_DISABLED=1 OLLAMA_DUMMY_KEY=ollama
+  # Bundle rows that start our own programs, such as the red-team MCP test server, find them here.
+  export DSH_DEMO_REPO="$repo"
 
   ensure_profile
   export_keys

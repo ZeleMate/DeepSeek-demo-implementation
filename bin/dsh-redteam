@@ -17,6 +17,10 @@ models="victim:redteam-qwen3.5-4b-16k:required grader:redteam-granite4.2-3b-16k:
 # A new run directory per launch, so each attempt starts clean (ADR 0011, #110).
 fresh_workspace=true
 
+# The test MCP server's scenario for this attempt, set per attack by the eval provider (#58).
+# Unset means the clean scenario.
+pass_env=DSH_REDTEAM_MCP_SCENARIO
+
 # shellcheck source=lib/launcher.sh
 . "$(dirname "$0")/lib/launcher.sh"
 launch "$@"

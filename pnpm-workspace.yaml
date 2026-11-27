@@ -2,6 +2,8 @@
 packages:
   - plugins/*
   - bundles/*
+  # Local labs under test in red-team runs: our own servers, never a third-party target (ADR 0002).
+  - labs/*
 
 # Supply-chain cooldown from the repo template (ADR 0016): ignore versions published in the
 # last 7 days (in minutes), the same window as Dependabot and uv. A dsh pin move for a security

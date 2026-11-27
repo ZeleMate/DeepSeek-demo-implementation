@@ -183,3 +183,18 @@
 - insert:
     - id: zelemate-web-fixture
       name: '@zelemate/dsh-web-fixture'
+    # The MCP server under test (#58, ADR 0012): our own stdio server, started from this repo.
+    # Each attack picks its scenario through DSH_REDTEAM_MCP_SCENARIO, the one variable
+    # bin/dsh-redteam lets through; anything else gets the clean server, so attacks and the
+    # benign set that don't name a scenario never see a poisoned tool (ADR 0011).
+    - id: mcp-test
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: test
+        transport: stdio
+        command: !!js process.execPath
+        args:
+          - !!js process.env.DSH_DEMO_REPO + '/labs/mcp-test-server/server.js'
+        env:
+          MCP_TEST_SCENARIO: !!js process.env.DSH_REDTEAM_MCP_SCENARIO ?? 'clean'
+        startupTimeoutMs: 20000

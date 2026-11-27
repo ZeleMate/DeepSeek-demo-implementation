@@ -32,8 +32,8 @@ jobs:
       - name: shellcheck
         run: git ls-files -z 'bin/*' 'scripts/**.sh' | xargs -0 --no-run-if-empty shellcheck
 
-  plugins:
-    name: plugin tests
+  node-tests:
+    name: plugin and lab tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -42,11 +42,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # Reads the pnpm version from packageManager in package.json.
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
-      # node:test with no dependencies, so no install and no model.
-      - run: node --test 'plugins/*/test/*.test.js'
+      # The labs import the MCP SDK, so this job installs. No model and no network beyond that.
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run check:node
 
   pr-title:
     name: PR title (conventional commit)

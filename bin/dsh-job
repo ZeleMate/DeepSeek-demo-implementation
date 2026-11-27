@@ -13,6 +13,9 @@ models=
 # One shared workspace: a job's report outlives the run.
 fresh_workspace=false
 
+# Nothing from the calling shell reaches dsh.
+pass_env=
+
 # shellcheck source=lib/launcher.sh
 . "$(dirname "$0")/lib/launcher.sh"
 launch "$@"

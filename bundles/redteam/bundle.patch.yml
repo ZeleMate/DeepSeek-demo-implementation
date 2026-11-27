@@ -67,12 +67,21 @@
 - id: session-title-llm
   disabled: true
 
-# No dsh search or fetch: they send queries to DeepSeek's API or the public web. Red-team
-# runs get fixture search and fetch providers instead (ADR 0008, #47, #60).
-- id: tool-web
-  disabled: true
+# No dsh search or fetch: they send queries to DeepSeek's API or the public web, and since
+# dsh 0.2.2 web-fetch-http also reaches loopback, private and metadata addresses, Ollama's API
+# included (#47). web_fetch here is served by our fixture fetch provider, which reads its pages
+# from disk and answers 404 to every other URL (ADR 0008). The web row pins it, so if our plugin
+# fails to load, every fetch fails with WEB_PROVIDER_CONFIGURED_MISSING instead of picking another
+# provider (ADR 0003). web_search stays off until the fixture search provider lands (#60).
 - id: web
-  disabled: true
+  disabled: false
+  config:
+    fetchProvider: fixture
+- id: tool-web
+  disabled: false
+  config:
+    search: false
+    fetch: true
 - id: web-search-deepseek
   disabled: true
 - id: web-deepseek-api
@@ -170,3 +179,7 @@
   disabled: true
 - id: tool-plugin-manager
   disabled: true
+
+- insert:
+    - id: zelemate-web-fixture
+      name: '@zelemate/dsh-web-fixture'

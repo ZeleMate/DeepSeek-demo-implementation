@@ -27,7 +27,7 @@ pre-commit:
       # Offline here (no token needed); CI runs zizmor online with a pinned version.
       run: actionlint && zizmor --no-progress --offline .github/
     shell:
-      glob: "{bin/*,bin/lib/*.sh,scripts/**/*.sh}"
+      glob: "{bin/*,bin/lib/*.sh,scripts/**/*.sh,eval/*.sh}"
       run: shellcheck {staged_files}
     launchers:
       glob: "{bin/*,bin/lib/*.sh,scripts/checks/launchers.sh,.shellcheckrc}"
@@ -35,6 +35,10 @@ pre-commit:
     upgrade-check:
       glob: "{scripts/upgrade-check/**,scripts/checks/upgrade-check.sh}"
       run: scripts/checks/upgrade-check.sh
+    eval:
+      # The Promptfoo harness's type check and model-free tests (#57). No model runs here.
+      glob: "{eval/**,package.json,pnpm-lock.yaml}"
+      run: pnpm run check:eval
     plugins:
       # Our plugins' model-free tests (node:test, no dependencies).
       glob: "plugins/**"

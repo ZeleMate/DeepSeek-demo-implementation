@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "type": "module",
+  "description": "Promptfoo harness for the red-team profile (ADR 0011, #57). Not a workspace package."
+}

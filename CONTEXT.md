@@ -123,8 +123,12 @@ One run of one attack from the attack set; each attack is attempted several time
 _Avoid_: trial, sample
 
 **Attack success rate**:
-The share of attack attempts that achieve their goal, judged by deterministic checks only; measured before and after each defence.
+The share of attack attempts that achieve their goal, judged by deterministic checks only, leaving out harness errors; measured before and after each defence.
 _Avoid_: ASR (in prose), pass rate
+
+**Harness error**:
+An attempt that produced nothing to judge: the run ended without a final answer, timed out, or its deterministic check could not run. Counted apart, never as a hit or a block.
+_Avoid_: crash, flake, error rate
 
 **Benign set**:
 The frozen collection of benign tasks the hardened harness should complete; scored apart from the attack set to show what the defences block wrongly.

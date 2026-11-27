@@ -24,6 +24,9 @@ allowBuilds:
   # Pulled in by pi-ai; their scripts are no-ops dsh also denies.
   '@google/genai': false
   protobufjs: false
+  # Pulled in by promptfoo (#57). Its script only checks the platform binary, which pnpm
+  # installs as an optional @esbuild/<platform> package anyway.
+  esbuild: false
 
 # dsh patches an O(n²) streaming bug in pi-ai 1.3.0 in its own workspace, but the
 # published dsh-llm-pi-ai asks for ^1.3.0, so an npm install gets a newer pi-ai unpatched.

@@ -11,5 +11,8 @@
     "bundle": {
       "patch": "./bundle.patch.yml"
     }
+  },
+  "dependencies": {
+    "@zelemate/dsh-web-fixture": "workspace:*"
   }
 }

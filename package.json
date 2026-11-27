@@ -9,7 +9,8 @@
   },
   "scripts": {
     "dsh": "dsh",
-    "check:upgrade": "scripts/upgrade-check/check.sh"
+    "check:upgrade": "scripts/upgrade-check/check.sh",
+    "check:plugins": "node --test plugins/"
   },
   "devDependencies": {
     "@deepseek-ai/dsh": "0.2.2-rc.3"

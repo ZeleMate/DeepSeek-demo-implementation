@@ -35,6 +35,10 @@ pre-commit:
     upgrade-check:
       glob: "{scripts/upgrade-check/**,scripts/checks/upgrade-check.sh}"
       run: scripts/checks/upgrade-check.sh
+    plugins:
+      # Our plugins' model-free tests (node:test, no dependencies).
+      glob: "plugins/**"
+      run: pnpm run check:plugins
 
 commit-msg:
   commands:

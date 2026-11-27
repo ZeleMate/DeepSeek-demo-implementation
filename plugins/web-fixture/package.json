@@ -1,0 +1,12 @@
+{
+  "name": "@zelemate/dsh-web-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Fixture fetch provider: web_fetch in red-team runs serves only our fixture pages, with no network I/O (#47, ADR 0008)",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  }
+}

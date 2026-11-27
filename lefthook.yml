@@ -39,6 +39,10 @@ pre-commit:
       # The Promptfoo harness's type check and model-free tests (#57). No model runs here.
       glob: "{eval/**,package.json,pnpm-lock.yaml}"
       run: pnpm run check:eval
+    plugins:
+      # Our plugins' model-free tests (node:test, no dependencies).
+      glob: "plugins/**"
+      run: pnpm run check:plugins
 
 commit-msg:
   commands:

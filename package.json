@@ -11,7 +11,8 @@
     "dsh": "dsh",
     "check:upgrade": "scripts/upgrade-check/check.sh",
     "check:eval": "tsc -p eval && vitest run --root eval",
-    "eval:redteam": "eval/run.sh"
+    "eval:redteam": "eval/run.sh",
+    "check:plugins": "node --test 'plugins/*/test/*.test.js'"
   },
   "devDependencies": {
     "@deepseek-ai/dsh": "0.2.2-rc.3",

@@ -166,6 +166,10 @@ _Avoid_: honeytoken, dummy key
 The model under attack in red-team runs: a local model, or one behind an API whose terms allow testing your own app; never one reached through OpenRouter without its approval.
 _Avoid_: target model
 
+**Fixture page**:
+A web page the red-team profile's fixture search and fetch providers serve from disk, under a host reserved for examples or tests (such as `docs.example.com`). Every other URL answers 404 with no network access. Indirect-injection attacks plant their instructions in fixture pages.
+_Avoid_: attack page, lab site, mock page
+
 **Taint**:
 A per-session flag set once the agent has read content from an untrusted source or the injection filter has scored content as suspect; while it is set, outbound calls and changes to what a later scan sees need approval. No turn boundary clears it.
 _Avoid_: contamination, dirty flag

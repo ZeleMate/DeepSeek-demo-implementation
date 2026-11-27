@@ -42,9 +42,15 @@ importers:
         specifier: workspace:*
         version: link:../../plugins/hello
 
-  bundles/redteam: {}
+  bundles/redteam:
+    dependencies:
+      '@zelemate/dsh-web-fixture':
+        specifier: workspace:*
+        version: link:../../plugins/web-fixture
 
   plugins/hello: {}
+
+  plugins/web-fixture: {}
 
 packages:
 

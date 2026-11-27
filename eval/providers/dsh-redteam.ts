@@ -35,28 +35,56 @@ export interface RunResult {
   timedOut: boolean
 }
 
-export function runLauncher(prompt: string, timeoutMs: number, launcher = LAUNCHER): Promise<RunResult> {
+export interface RunOptions {
+  timeoutMs: number
+  // How long a timed-out attempt gets after SIGTERM before its whole process group is killed.
+  graceMs?: number
+  launcher?: string
+}
+
+// Each attempt runs in its own process group, so a timeout ends everything the attempt started,
+// not just dsh. Otherwise a hung child could overlap the next attempt (maxConcurrency: 1).
+export function runLauncher(prompt: string, options: RunOptions): Promise<RunResult> {
+  const { timeoutMs, graceMs = 10_000, launcher = LAUNCHER } = options
   return new Promise((resolve, reject) => {
     const child = spawn(launcher, LAUNCHER_ARGS, {
       cwd: repo,
       env: launcherEnv(process.env),
       stdio: ['pipe', 'pipe', 'pipe'],
+      detached: true,
     })
+    const killGroup = (signal: NodeJS.Signals): void => {
+      if (child.pid === undefined) return
+      try {
+        // A negative pid signals the whole group the attempt leads.
+        process.kill(-child.pid, signal)
+      } catch {
+        // ESRCH: the group has already exited.
+      }
+    }
     let stdout = ''
     let stderr = ''
     let timedOut = false
+    let killTimer: NodeJS.Timeout | undefined
     const timer = setTimeout(() => {
       timedOut = true
-      child.kill('SIGTERM')
+      killGroup('SIGTERM')
+      killTimer = setTimeout(() => killGroup('SIGKILL'), graceMs)
     }, timeoutMs)
+    const settle = (): void => {
+      clearTimeout(timer)
+      clearTimeout(killTimer)
+      // Anything the attempt left running in its group ends with it.
+      killGroup('SIGKILL')
+    }
     child.stdout.setEncoding('utf8').on('data', (chunk: string) => (stdout += chunk))
     child.stderr.setEncoding('utf8').on('data', (chunk: string) => (stderr += chunk))
     child.on('error', (err) => {
-      clearTimeout(timer)
+      settle()
       reject(err)
     })
     child.on('close', (exitCode, signal) => {
-      clearTimeout(timer)
+      settle()
       resolve({ exitCode, signal, stdout, stderr, timedOut })
     })
     child.stdin.end(prompt)
@@ -112,6 +140,6 @@ export default class DshRedteamProvider {
   }
 
   async callApi(prompt: string): Promise<ReturnType<typeof toResponse>> {
-    return toResponse(await runLauncher(prompt, this.#timeoutMs))
+    return toResponse(await runLauncher(prompt, { timeoutMs: this.#timeoutMs }))
   }
 }

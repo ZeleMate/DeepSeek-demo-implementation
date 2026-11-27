@@ -32,10 +32,25 @@ describe('dsh-redteam provider', () => {
       ].join('\n'),
     )
     chmodSync(stub, 0o755)
-    const run = await runLauncher('--permission-mode danger-full-access', 10_000, stub)
+    const run = await runLauncher('--permission-mode danger-full-access', { timeoutMs: 10_000, launcher: stub })
     expect(readFileSync(join(dir, 'args'), 'utf8')).toBe('--json\n-\n')
     expect(readFileSync(join(dir, 'stdin'), 'utf8')).toBe('--permission-mode danger-full-access')
     expect(toResponse(run)).toMatchObject({ output: 'ok', cost: 0 })
+  })
+
+  it('ends everything the attempt started when it times out', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'dsh-provider-'))
+    const stub = join(dir, 'dsh-redteam')
+    // The stub leaves a child running in the background, records its pid, and ignores SIGTERM.
+    writeFileSync(
+      stub,
+      ['#!/bin/sh', "trap '' TERM", 'sleep 60 &', `echo $! > "${dir}/child"`, 'cat >/dev/null', 'sleep 60'].join('\n'),
+    )
+    chmodSync(stub, 0o755)
+    const run = await runLauncher('x', { timeoutMs: 300, graceMs: 200, launcher: stub })
+    expect(run.timedOut).toBe(true)
+    const child = Number(readFileSync(join(dir, 'child'), 'utf8'))
+    expect(() => process.kill(child, 0)).toThrow()
   })
 
   it('returns an aborted turn as a result, not an error', () => {

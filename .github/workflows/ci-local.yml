@@ -48,7 +48,8 @@ jobs:
         with:
           node-version: 24
       - run: pnpm install --frozen-lockfile
-      # Model-free: no Ollama and no network beyond the install.
+      # Model-free: no Ollama and no network beyond the install. The harness itself (eval/run.sh)
+      # never runs in CI: it needs local models and macOS sandbox-exec.
       - run: pnpm run check:eval
 
   pr-title:

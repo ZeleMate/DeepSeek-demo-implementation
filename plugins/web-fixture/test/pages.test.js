@@ -1,6 +1,6 @@
 // Model-free tests for the fixture pages (#47). Run with `node --test plugins/`.
 import assert from 'node:assert/strict'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { after, describe, it } from 'node:test'
@@ -112,6 +112,22 @@ describe('loadPages', () => {
 
   it('refuses a file outside a host directory', () => {
     assert.throws(() => loadPages(fixtureRoot({ 'stray.html': 'x' })), /must sit in a host directory/)
+  })
+
+  it('skips dotfiles such as .DS_Store', () => {
+    const pages = loadPages(fixtureRoot({ '.DS_Store': 'x', 'docs.example.com/.DS_Store': 'x', 'docs.example.com/a.html': 'a' }))
+    assert.deepEqual([...pages.keys()], ['https://docs.example.com/a.html'])
+  })
+
+  it('refuses a host directory with a port or a trailing dot', () => {
+    assert.throws(() => loadPages(fixtureRoot({ 'lab.test:8080/a.html': 'x' })), /plain host name/)
+    assert.throws(() => loadPages(fixtureRoot({ 'lab.test./a.html': 'x' })), /plain host name/)
+  })
+
+  it('refuses a symlinked page', () => {
+    const root = fixtureRoot({ 'docs.example.com/a.html': 'a' })
+    symlinkSync(join(root, 'docs.example.com/a.html'), join(root, 'docs.example.com/b.html'))
+    assert.throws(() => loadPages(root), /is a symlink/)
   })
 
   it('loads the pages shipped with the plugin', () => {

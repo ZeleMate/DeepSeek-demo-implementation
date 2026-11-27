@@ -35,11 +35,18 @@ export function loadPages(root) {
   /** @type {Map<string, { kind: 'html' | 'text', content: string }>} */
   const pages = new Map()
   for (const entry of readdirSync(dir, { recursive: true, withFileTypes: true })) {
-    if (!entry.isFile()) continue
     const file = join(entry.parentPath, entry.name)
+    // OS litter such as macOS's .DS_Store would otherwise stop the plugin loading.
+    if (relative(dir, file).split(sep).some(part => part.startsWith('.'))) continue
+    if (entry.isSymbolicLink()) throw new Error(`web-fixture: ${file} is a symlink; fixture pages must be plain files`)
+    if (!entry.isFile()) continue
     const [host, ...path] = relative(dir, file).split(sep)
     if (host === undefined || path.length === 0) {
       throw new Error(`web-fixture: ${file} must sit in a host directory`)
+    }
+    // A port or a trailing dot would load a page no request can reach.
+    if (host.includes(':') || host.endsWith('.')) {
+      throw new Error(`web-fixture: ${host} must be a plain host name, with no port or trailing dot`)
     }
     if (!isReservedHost(host.toLowerCase())) {
       throw new Error(`web-fixture: ${host} is not a reserved host (use example.com/.net/.org or a .test, .example or .invalid name)`)

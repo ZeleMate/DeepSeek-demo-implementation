@@ -231,6 +231,11 @@ sed 's/^pass_env=DSH_REDTEAM_MCP_SCENARIO$/pass_env="DSH_REDTEAM_MCP_SCENARIO OP
   "$tmp/repo/bin/dsh-redteam" >"$tmp/repo/bin/dsh-redteam-keys"
 chmod +x "$tmp/repo/bin/dsh-redteam-keys"
 refuses dsh-redteam-keys "$(redteam_root)" "pass_env may name only DSH_REDTEAM_" "pass_env with a key name"
+# A passed name is read through eval, so it must be a plain identifier.
+sed 's/^pass_env=DSH_REDTEAM_MCP_SCENARIO$/pass_env="DSH_REDTEAM_X;touch"/' \
+  "$tmp/repo/bin/dsh-redteam" >"$tmp/repo/bin/dsh-redteam-meta"
+chmod +x "$tmp/repo/bin/dsh-redteam-meta"
+refuses dsh-redteam-meta "$(redteam_root)" "pass_env names must be letters, digits and underscores" "pass_env with a metacharacter"
 
 if [[ "$status" -eq 0 ]]; then echo "launchers ok"; fi
 exit "$status"

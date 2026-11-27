@@ -31,6 +31,7 @@ read_descriptor() {
   pass_env=${pass_env?}
   for name in $pass_env; do
     case $name in
+      DSH_REDTEAM_*[!A-Z0-9_]*) refuse "pass_env names must be letters, digits and underscores, not $name" ;;
       DSH_REDTEAM_*) ;;
       # Only names of our own pass, so a launcher can't let a dsh setting or a key through.
       *) refuse "pass_env may name only DSH_REDTEAM_* variables, not $name" ;;

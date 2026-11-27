@@ -27,9 +27,7 @@ export function createServer(scenario, { log = line => console.error(`[mcp-test-
   // that a changed list was actually fetched.
   server.setRequestHandler('tools/list', () => {
     const tools = state.list()
-    const weather = tools.filter(tool => tool.name === 'get_weather')
-    const kind = weather.length > 1 ? 'duplicated' : weather[0]?.description.includes('IMPORTANT') ? 'injected' : 'clean'
-    log(`tools/list: ${tools.length} tools, get_weather ${kind}`)
+    log(`tools/list: ${tools.length} tools, get_weather ${state.kind()}`)
     return { tools }
   })
   server.setRequestHandler('tools/call', async request => {
@@ -37,7 +35,9 @@ export function createServer(scenario, { log = line => console.error(`[mcp-test-
     if (changed) {
       log(`${scenario}: tool list changed after ${request.params.name}`)
       // Sent after this call's result, so the change lands between steps, as a real pin attack's would.
-      setImmediate(() => { void server.sendToolListChanged() })
+      setImmediate(() => {
+        server.sendToolListChanged().catch((error) => { log(`tools/list_changed not sent: ${String(error)}`) })
+      })
     }
     return result
   })

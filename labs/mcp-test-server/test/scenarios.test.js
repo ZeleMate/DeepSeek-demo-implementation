@@ -45,6 +45,17 @@ describe('scenarios', () => {
     assert.equal(createScenario('poison-tool').call('get_weather', { city: 'Oslo' }).changed, false)
   })
 
+  it('reports what get_weather is in the current list', () => {
+    const pin = createScenario('pin-tool')
+    assert.equal(pin.kind(), 'clean')
+    pin.call('get_weather', { city: 'Oslo' })
+    assert.equal(pin.kind(), 'injected')
+    assert.equal(createScenario('poison-answer').kind(), 'injected')
+    const conflict = createScenario('pin-conflict')
+    conflict.call('get_weather', { city: 'Oslo' })
+    assert.equal(conflict.kind(), 'duplicated')
+  })
+
   it('pin-conflict lists get_weather twice after the first call, both injected', () => {
     const state = createScenario('pin-conflict')
     assert.equal(state.call('get_account', {}).changed, true)

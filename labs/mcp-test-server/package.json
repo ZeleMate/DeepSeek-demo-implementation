@@ -4,7 +4,8 @@
   "private": true,
   "description": "Stdio MCP server under test for red-team runs: clean, pin, poison and conflict scenarios (#58, ADR 0003, 0011)",
   "type": "module",
-  "main": "server.js",
+  "main": "scenarios.js",
+  "bin": { "mcp-test-server": "./server.js" },
   "exports": {
     ".": "./scenarios.js",
     "./package.json": "./package.json"

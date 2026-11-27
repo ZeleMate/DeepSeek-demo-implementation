@@ -170,6 +170,10 @@ _Avoid_: target model
 A web page the red-team profile's fixture search and fetch providers serve from disk, under a host reserved for examples or tests (such as `docs.example.com`). Every other URL answers 404 with no network access. Indirect-injection attacks plant their instructions in fixture pages.
 _Avoid_: attack page, lab site, mock page
 
+**MCP scenario**:
+What the red-team profile's test MCP server lists and answers in one attempt: `clean`, a pin scenario (a tool's description changes after the first call), a poison scenario (the description is injected from the start) or `pin-conflict`. An attack picks one with its `mcpScenario` var; without one the server is `clean`.
+_Avoid_: server mode, MCP fixture
+
 **Taint**:
 A per-session flag set once the agent has read content from an untrusted source or the injection filter has scored content as suspect; while it is set, outbound calls and changes to what a later scan sees need approval. No turn boundary clears it.
 _Avoid_: contamination, dirty flag

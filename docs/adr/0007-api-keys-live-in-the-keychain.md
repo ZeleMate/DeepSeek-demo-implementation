@@ -1,5 +1,5 @@
 ---
-status: accepted; both launchers clear the environment and refuse key files 2026-11-08 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/132); launchers share one launcher module 2026-11-22 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/159)
+status: accepted; both launchers clear the environment and refuse key files 2026-11-08 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/132); launchers share one launcher module 2026-11-22 (https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/159); one per-attack variable passes the red-team launcher, launchers export the repo path 2026-11-27 (https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/58)
 ---
 
 # API keys live in the macOS Keychain and reach dsh only through a launcher
@@ -38,3 +38,5 @@ dsh looks for a key in `$DSH_HOME/.credentials.yaml`, then the environment it wa
 Decided in [Config and secrets: where do API keys and profile settings live?](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/37). Research: research/config-secrets.md.
 
 _Amended 2026-11-22 ([#159](https://github.com/ZeleMate/DeepSeek-demo-implementation/pull/159)):_ both launchers share one implementation, `bin/lib/launcher.sh`. Each `bin/dsh-<profile>` is still the committed per-profile launcher, and states only its profile, its `DSH_HOME`, its Keychain key names and its local models. Every guard above lives once in the library, so a fix reaches every profile. `DSH_DEMO_NO_KEYS` is allowlisted only for a profile that has keys, and the re-run marker is one name, `DSH_LAUNCHER_CLEAN_ENV`.
+
+_Amended 2026-11-27 ([#58](https://github.com/ZeleMate/DeepSeek-demo-implementation/issues/58)):_ a launcher may now let named variables through its clean environment, listed in its `pass_env`. Only `DSH_REDTEAM_*` names are allowed, so no key or dsh setting can pass, and each value must be a plain word (letters, digits, dots, dashes, underscores). The re-run checks the value again, so a forged `DSH_LAUNCHER_CLEAN_ENV` can't carry a bad one. The job launcher passes nothing. The red-team launcher passes only `DSH_REDTEAM_MCP_SCENARIO`, which picks the test MCP server's scenario for one attempt. Both launchers also export `DSH_DEMO_REPO`, the repo path, so a bundle row can start our own programs. It is a path, not a secret.

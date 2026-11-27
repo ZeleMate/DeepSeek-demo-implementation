@@ -1,0 +1,10 @@
+; sandbox-exec profile for red-team eval runs (ADR 0002, 0005, #57). Everything is allowed except
+; outbound network: only loopback (Ollama on 127.0.0.1) and local Unix sockets may be reached.
+; It covers Promptfoo and every process it starts, dsh included. Promptfoo posts a "telemetry
+; disabled" event to r.promptfoo.app even with PROMPTFOO_DISABLE_TELEMETRY set, so the flags alone
+; don't keep a run local.
+(version 1)
+(allow default)
+(deny network-outbound)
+(allow network-outbound (remote ip "localhost:*"))
+(allow network-outbound (remote unix-socket))

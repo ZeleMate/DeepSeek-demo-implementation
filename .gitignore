@@ -21,6 +21,10 @@ cordis.patch.yml
 # Unfixed upstream bugs stay off git until disclosure (ADR 0015)
 eval/embargoed/
 
+# Promptfoo output and its local store live under the demo root; only eval/results/ is committed.
+# A dummy run's summary is a smoke test, not a score.
+eval/results/dummy*.json
+
 # Prototype run output (session logs, raw requests)
 prototypes/*/out/
 

@@ -30,7 +30,27 @@ jobs:
       - run: scripts/checks/launchers.sh
       - run: scripts/checks/upgrade-check.sh
       - name: shellcheck
-        run: git ls-files -z 'bin/*' 'scripts/**.sh' | xargs -0 --no-run-if-empty shellcheck
+        run: git ls-files -z 'bin/*' 'scripts/**.sh' 'eval/*.sh' | xargs -0 --no-run-if-empty shellcheck
+
+  eval:
+    name: eval harness (types and tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Reads the pnpm version from packageManager in package.json.
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - run: pnpm install --frozen-lockfile
+      # Model-free: no Ollama and no network beyond the install. The harness itself (eval/run.sh)
+      # never runs in CI: it needs local models and macOS sandbox-exec.
+      - run: pnpm run check:eval
 
   node-tests:
     name: plugin and lab tests

@@ -40,6 +40,14 @@ bin/dsh-redteam "what is 17+25?"
 
 API keys are Keychain items, never files; see [.env.example](.env.example) and ADR 0007. CI ([ci.yml](.github/workflows/ci.yml)) runs the same checks as the hooks.
 
+## Scoring the red-team profile
+
+```bash
+eval/run.sh v0.2   # writes eval/results/v0.2.json
+```
+
+[eval/run.sh](eval/run.sh) runs the attack set in [eval/promptfooconfig.yaml](eval/promptfooconfig.yaml) through Promptfoo, 3 attempts per attack (ADR 0011). Each attempt is one `bin/dsh-redteam` launch with the prompt on stdin. The run is fully local: Promptfoo and everything it starts run under `sandbox-exec` with outbound network allowed only to loopback ([eval/loopback.sb](eval/loopback.sb)), because Promptfoo's telemetry flag doesn't stop all of its telemetry. Deterministic checks alone decide each hit. The local grader's verdict is reported beside the score, and harness errors are counted apart from it. Promptfoo's store and the raw output stay under `~/.dsh-demo`, and only the summary in [eval/results/](eval/results/) is committed. `pnpm run check:eval` type-checks the harness and runs its model-free tests.
+
 ## Licence
 
 MIT. See [LICENSE](LICENSE). [REUSE.toml](REUSE.toml) marks the files that also carry third-party copyright.

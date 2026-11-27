@@ -46,7 +46,7 @@ jobs:
         with:
           node-version: 24
       # node:test with no dependencies, so no install and no model.
-      - run: node --test plugins/
+      - run: node --test 'plugins/*/test/*.test.js'
 
   pr-title:
     name: PR title (conventional commit)

@@ -10,7 +10,7 @@
   "scripts": {
     "dsh": "dsh",
     "check:upgrade": "scripts/upgrade-check/check.sh",
-    "check:plugins": "node --test plugins/"
+    "check:plugins": "node --test 'plugins/*/test/*.test.js'"
   },
   "devDependencies": {
     "@deepseek-ai/dsh": "0.2.2-rc.3"

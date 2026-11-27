@@ -1,4 +1,4 @@
-// Model-free tests for the fixture pages (#47). Run with `node --test plugins/`.
+// Model-free tests for the fixture pages (#47). Run with `pnpm run check:plugins`.
 import assert from 'node:assert/strict'
 import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'

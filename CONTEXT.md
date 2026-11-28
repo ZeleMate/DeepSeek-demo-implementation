@@ -252,6 +252,18 @@ _Avoid_: judge, grader, reranker
 One run of one fixture task under one harness.
 _Avoid_: rollout, trial
 
+**Trajectory**:
+The model-free rendering of one probe's session log that the improver reads: the task, each tool call and result, the model's visible text and reasoning, and the delivered answer, without the harness or anything a checker produced.
+_Avoid_: transcript, rollout log
+
+**Evidence**:
+The files an improver stage may read in its run directory.
+_Avoid_: context, inputs
+
+**Evidence budget**:
+How many characters of evidence one improver session may read before further reads are refused.
+_Avoid_: context budget, token budget
+
 **Kept base**:
 A stage whose valid proposal leaves the harness unchanged.
 _Avoid_: no-op

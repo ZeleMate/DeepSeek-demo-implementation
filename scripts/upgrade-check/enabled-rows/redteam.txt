@@ -22,8 +22,9 @@ image-offload '@deepseek-ai/dsh-compaction-image-offload'
 llm '@deepseek-ai/dsh-llm'
 llm-pi-ai '@deepseek-ai/dsh-llm-pi-ai'
 llm-retry '@deepseek-ai/dsh-llm-retry'
+mcp-dvmcp '@deepseek-ai/dsh-mcp-client' (disabled: !!js process.env.DSH_REDTEAM_DVMCP_CHALLENGE === undefined)
 mcp-resources '@deepseek-ai/dsh-mcp-resources'
-mcp-test '@deepseek-ai/dsh-mcp-client'
+mcp-test '@deepseek-ai/dsh-mcp-client' (disabled: !!js process.env.DSH_REDTEAM_DVMCP_CHALLENGE !== undefined)
 otel '@deepseek-ai/dsh-otel'
 permission '@deepseek-ai/dsh-permission-presets'
 plan-mode '@deepseek-ai/dsh-plan-mode'

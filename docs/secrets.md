@@ -10,7 +10,7 @@ Following the OWASP Secrets Management Cheat Sheet: centralise, prefer short-liv
 | `TEMPLATE_READ_TOKEN` (only if the template repo is private) | GitHub Actions secret | `template-update.yml` | fine-grained PAT, contents:read on the template repo, ≤ 1 year |
 | Model API keys | macOS Keychain, exported by the launchers in `bin/` | dsh, through `apiKeyEnv` | 90 days |
 
-The machine-readable list is `.github/secret-requirements.json`; the GitHub audit reads it.
+The machine-readable list is `.github/secret-requirements.json`; `scripts/bootstrap-github.sh` reads it, and with `--check` reports a needed secret that isn't set.
 
 No package is published, so there are no registry tokens.
 

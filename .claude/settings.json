@@ -15,6 +15,7 @@
       "Bash(git push --force *)",
       "Bash(git push -f *)",
       "Bash(gh release create *)",
+      "Bash(gh release upload *)",
       "Bash(gh secret *)",
       "Bash(gh api -X DELETE *)",
       "Read(~/.ssh/**)",

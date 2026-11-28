@@ -38,6 +38,7 @@ while [ "$#" -gt 0 ]; do
     --dump-config-schema) cat "$fixtures/config-schema.json"; exit 0 ;;
     --dump-config) cat "$fixtures/job.yml"; exit 0 ;;
     --permission-mode) mode=permission ;;
+    */inactive-row.patch.yml) mode=inactive ;;
     --session-id) mode=resume; session_id=$2 ;;
   esac
   shift
@@ -48,6 +49,20 @@ case $mode in
       accept) echo '{"type":"final","text":"OK"}'; exit 0 ;;
       other) echo 'dsh: something else went wrong' >&2; exit 1 ;;
       *) echo 'dsh: permission: unknown preset "danger-full-access" (known: read-only)' >&2; exit 1 ;;
+    esac ;;
+  inactive)
+    case ${STUB_INACTIVE:-} in
+      start) echo '{"type":"final","text":"OK"}'; exit 0 ;;
+      other) echo 'dsh: something else went wrong' >&2; exit 1 ;;
+      reworded)
+        echo 'dsh: warning: 1 plugin failed' >&2
+        echo 'dsh-job: a bundle row did not activate; refusing to start an undefended job run (ADR 0003)' >&2
+        exit 1 ;;
+      *)
+        echo 'dsh: warning: 1 entry did not activate' >&2
+        echo 'upgrade-check-missing (@zelemate/dsh-upgrade-check-missing): failed to import: nope' >&2
+        echo 'dsh-job: a bundle row did not activate; refusing to start an undefended job run (ADR 0003)' >&2
+        exit 1 ;;
     esac ;;
   resume)
     log=$(find "$sessions" -path "*/$session_id/session.v4.jsonl" | head -n 1)
@@ -172,6 +187,12 @@ the smoke turn left no sessions folder to resume into" STUB_SMOKE=nosession
 expect_fail "wider permission accepted" : "--permission-mode danger-full-access was accepted" STUB_PERMISSION=accept
 expect_fail "permission fails otherwise" : \
   "--permission-mode danger-full-access failed, but not as an unknown preset" STUB_PERMISSION=other
+
+expect_fail "inactive row started" : "a launch with an inactive row started" STUB_INACTIVE=start
+expect_fail "inactive row fails otherwise" : \
+  "a launch with an inactive row failed, but not at the startup check" STUB_INACTIVE=other
+expect_fail "warning reworded" : \
+  "dsh's did-not-activate warning changed its text; update bin/lib/launcher.sh and eval/lib/activation.ts" STUB_INACTIVE=reworded
 
 expect_fail "no resume fixture" "rm -r scripts/upgrade-check/resume/*" \
   "resume/ must hold exactly one session fixture, from the pin being left"

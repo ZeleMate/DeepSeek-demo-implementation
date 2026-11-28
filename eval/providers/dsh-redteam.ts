@@ -8,6 +8,7 @@
 import { spawn } from 'node:child_process'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { inactiveRows } from '../lib/activation.ts'
 import { parseStream, type Attempt } from '../lib/dsh-stream.ts'
 import { dvmcpEnv, parseDvmcpLog, type DvmcpLog } from '../lib/dvmcp.ts'
 import { parseMcpLog, scenarioEnv, type McpLog } from '../lib/mcp.ts'
@@ -106,11 +107,15 @@ export interface AttemptMetadata {
   mcp: McpLog
   // Which DVMCP challenges started, read from the whole stderr (#59).
   dvmcp: DvmcpLog
+  // The bundle rows dsh said did not activate; any at all voids the attempt (ADR 0003).
+  inactiveRows: string[]
 }
 
 // What Promptfoo gets back. A turn that ends, completed or aborted, is a result: a defence that
-// stops the turn is an outcome to score. Only a harness failure, a stream with no `final` event,
-// is an error, and errors are counted apart from the attack success rate.
+// stops the turn is an outcome to score. Only a harness failure is an error, and errors are
+// counted apart from the attack success rate. A harness failure is a stream with no `final`
+// event, or a bundle row that did not activate: dsh still runs the turn then, so its answer
+// comes from a harness with a defence missing and must not be scored (ADR 0003).
 export function toResponse(run: RunResult): {
   output?: string
   error?: string
@@ -119,9 +124,24 @@ export function toResponse(run: RunResult): {
   cost: number
 } {
   const attempt = parseStream(run.stdout)
-  const metadata: AttemptMetadata = { attempt, exitCode: run.exitCode, stderrTail: run.stderr.slice(-2000), mcp: parseMcpLog(run.stderr), dvmcp: parseDvmcpLog(run.stderr) }
+  const inactive = inactiveRows(run.stderr)
+  const metadata: AttemptMetadata = {
+    attempt,
+    exitCode: run.exitCode,
+    stderrTail: run.stderr.slice(-2000),
+    mcp: parseMcpLog(run.stderr),
+    dvmcp: parseDvmcpLog(run.stderr),
+    inactiveRows: inactive?.rows ?? [],
+  }
   // Local models only, so every attempt costs nothing (ADR 0005).
   const common = { metadata, tokenUsage: { ...attempt.tokens, numRequests: 1 }, cost: 0 }
+  if (inactive !== undefined) {
+    const count = inactive.count ?? inactive.rows.length
+    const what = inactive.rows.length > 0
+      ? `${String(count)} bundle ${count === 1 ? 'row' : 'rows'} did not activate (${inactive.rows.join(', ')})`
+      : `a bundle row did not activate (${inactive.header.trim().slice(0, 200)})`
+    return { ...common, error: `dsh-redteam: ${what}; the attempt ran undefended and is not scored` }
+  }
   if (run.timedOut) return { ...common, error: 'dsh-redteam timed out' }
   if (attempt.output === undefined) {
     const why = attempt.errors.at(-1) ?? run.stderr.trim().split('\n').at(-1) ?? 'no output'

@@ -12,7 +12,26 @@ mkdir -p "$tmp/repo/bin/lib" "$tmp/repo/bundles/redteam" "$tmp/repo/node_modules
 cp "$repo/bin/dsh-job" "$repo/bin/dsh-redteam" "$tmp/repo/bin/"
 cp "$repo/bin/lib/launcher.sh" "$tmp/repo/bin/lib/"
 cp "$repo"/bundles/redteam/*.Modelfile "$tmp/repo/bundles/redteam/"
-printf '#!/bin/sh\nenv\n' >"$tmp/repo/node_modules/.bin/dsh"
+# The launcher's startup check runs dsh with `--json -` and an empty stdin first. The stub answers
+# it as headless does, refusing the empty task, and logs its arguments to stubs/rows-args.
+# stubs/inactive adds dsh's did-not-activate warning; stubs/no-runner makes the boot stop short.
+printf '#!/bin/sh\nstubs=%s\n' "$tmp/stubs" >"$tmp/repo/node_modules/.bin/dsh"
+cat >>"$tmp/repo/node_modules/.bin/dsh" <<'EOF'
+for arg; do before=${last-}; last=$arg; done
+if [ "${before-} ${last-}" = "--json -" ]; then
+  printf '%s\n' "$*" >>"$stubs/rows-args"
+  [ -e "$stubs/no-runner" ] && { echo 'dsh: plugin tree failed to load' >&2; exit 1; }
+  if [ -e "$stubs/inactive" ]; then
+    echo 'dsh: warning: 1 entry did not activate' >&2
+    echo 'zelemate-web-fixture (@zelemate/dsh-web-fixture): failed to import: Error: nope' >&2
+    echo '    at packageResolve (node:internal/modules/esm/resolve:751:25)' >&2
+  fi
+  echo '{"type":"error","message":"a task is required, for example: dsh --profile headless \"run the tests\""}'
+  echo 'dsh: a task is required, for example: dsh --profile headless "run the tests"' >&2
+  exit 1
+fi
+env
+EOF
 # The stub ollama has every model except the ones named in stubs/missing, one per line.
 : >"$tmp/stubs/missing"
 # shellcheck disable=SC2016 # $1 and $2 are the stub's own arguments
@@ -32,22 +51,19 @@ fresh_root() {
 }
 
 # Starts a launcher with a shell full of things that must not reach dsh, plus any extra
-# NAME=value assignments given after the root, exported in a subshell. Words after a -- are the
-# launcher's own arguments.
+# NAME=value assignments given after the root, exported in a subshell. The launcher's own
+# arguments come from the launch_args array, empty unless a check sets it.
+launch_args=()
 launch() {
   local launcher=$1 root=$2
   shift 2
   (
-    while [[ $# -gt 0 && "$1" != -- ]]; do
-      export "${1?}"
-      shift
-    done
-    if [[ $# -gt 0 ]]; then shift; fi
+    for assignment in "$@"; do export "${assignment?}"; done
     PATH="$tmp/stubs:$PATH" DSH_DEMO_ROOT="$root" DSH_DEMO_NO_KEYS=1 \
       AUDIT_PLAIN=leak OPENROUTER_API_KEY=leak OPENAI_API_KEY=leak DEEPSEEK_API_KEY=leak \
       DEEPSEEK_BASE_URL=leak \
       DSH_PERMISSION_MODE=danger-full-access DSH_TOOLS_MODE=leak DSH_TELEMETRY_OTLP_URL=leak \
-      HTTPS_PROXY=leak NODE_OPTIONS=leak "$tmp/repo/bin/$launcher" "$@"
+      HTTPS_PROXY=leak NODE_OPTIONS=leak "$tmp/repo/bin/$launcher" ${launch_args[@]+"${launch_args[@]}"}
   )
 }
 
@@ -135,15 +151,55 @@ check() {
   root=$(fresh_root "$profile" "$home" "not-our-bundle")
   refuses "$launcher" "$root" "refusing to start" "no bundle"
 
-  # dsh's template flag replaces the profile with a shipped one, plain headless with no bundle of
+  # dsh's template flag replaces the profile with a shipped one, such as plain headless, with no bundle of
   # ours, after every check above has passed on the old one. So the launcher refuses it in both
   # forms, wherever it sits (ADR 0001, 0003). The quotes keep forbidden-patterns.sh from flagging
   # this file for naming it.
   local template_flag=--from-default-profil'e'
   root=$(fresh_root "$profile" "$home" "$bundle")
-  refuses "$launcher" "$root" "template flag" "$template_flag headless" -- "$template_flag" headless "a task"
-  refuses "$launcher" "$root" "template flag" "$template_flag=headless" -- "$template_flag=headless" "a task"
-  refuses "$launcher" "$root" "template flag" "$template_flag after the task" -- "a task" "$template_flag" headless
+  launch_args=("$template_flag" headless "a task")
+  refuses "$launcher" "$root" "template flag" "$template_flag headless"
+  launch_args=("$template_flag=headless" "a task")
+  refuses "$launcher" "$root" "template flag" "$template_flag=headless"
+  launch_args=("a task" "$template_flag" headless)
+  refuses "$launcher" "$root" "template flag" "$template_flag after the task"
+  launch_args=()
+
+  # dsh only warns about a row that did not activate, then runs the session, so the launcher's
+  # startup check stops it (ADR 0003, #104).
+  : >"$tmp/stubs/inactive"
+  root=$(fresh_root "$profile" "$home" "$bundle")
+  refuses "$launcher" "$root" "a bundle row did not activate; refusing to start" "an inactive row"
+  out=$(launch "$launcher" "$root" 2>&1) || true
+  grep -q '^zelemate-web-fixture (@zelemate/dsh-web-fixture): failed to import' <<<"$out" ||
+    fail "$launcher refused an inactive row without naming it: $out"
+  if grep -q '^    at \|a task is required' <<<"$out"; then
+    fail "$launcher printed stack frames or the empty-task refusal with an inactive row: $out"
+  fi
+  # The --dump-* flags only print config, so they skip the check and still work to diagnose it.
+  launch_args=(--dump-config)
+  out=$(launch "$launcher" "$root" 2>&1) || fail "$launcher --dump-config ran the startup check: $out"
+  launch_args=()
+  rm "$tmp/stubs/inactive"
+
+  # A boot that never reaches the headless runner proves nothing, so it stops the launch too.
+  : >"$tmp/stubs/no-runner"
+  root=$(fresh_root "$profile" "$home" "$bundle")
+  refuses "$launcher" "$root" "did not reach the headless runner" "a boot that stopped short"
+  rm "$tmp/stubs/no-runner"
+
+  # The check boots with the run's --patch overlays and nothing else from its arguments.
+  root=$(fresh_root "$profile" "$home" "$bundle")
+  : >"$tmp/stubs/rows-args"
+  launch_args=(--patch /a.yml --json --patch=/b.yml "a task")
+  out=$(launch "$launcher" "$root" 2>&1) || fail "$launcher did not start with --patch overlays: $out"
+  launch_args=()
+  if [[ "$(cat "$tmp/stubs/rows-args")" != "--profile $profile --patch /a.yml --patch=/b.yml --json -" ]]; then
+    fail "$launcher's startup check did not boot with the run's overlays alone: $(cat "$tmp/stubs/rows-args")"
+  fi
+  if compgen -G "$root/$profile/rows.*" >/dev/null; then
+    fail "$launcher left its startup check's stderr file behind"
+  fi
 }
 
 check dsh-job job home @zelemate/dsh-bundle-job workspace/job true ""
@@ -175,6 +231,13 @@ mkdir -p "$root/redteam/agents-home/skills"
 launch dsh-redteam "$root" >/dev/null 2>&1 && fail "dsh-redteam started with a non-empty agents home"
 if compgen -G "$root/workspace/redteam/run.*" >/dev/null; then
   fail "a refused dsh-redteam launch left a run directory behind"
+fi
+root=$(fresh_root redteam redteam/home @zelemate/dsh-bundle-redteam)
+: >"$tmp/stubs/inactive"
+launch dsh-redteam "$root" >/dev/null 2>&1 && fail "dsh-redteam started with an inactive row"
+rm "$tmp/stubs/inactive"
+if compgen -G "$root/workspace/redteam/run.*" >/dev/null; then
+  fail "a dsh-redteam launch refused for an inactive row left a run directory behind"
 fi
 
 # A launcher that sets fresh_workspace to anything else stops before dsh starts.

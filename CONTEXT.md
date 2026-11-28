@@ -255,3 +255,11 @@ _Avoid_: no-op
 **Fell back**:
 A stage that produced no valid proposal after its retry, so the base harness is probed in its place. Distinct from kept base.
 _Avoid_: failed stage, reverted
+
+**Harnessing step**:
+One Propose–Probe–Compose pass for one fixture task: its improver stages, its probes and the reflection. Never just "step", which is one model request.
+_Avoid_: iteration, round
+
+**Aborted**:
+A harnessing step stopped by its cost cap before it finished. Its probes are never scored. Distinct from fell back and kept base.
+_Avoid_: timed out, failed step

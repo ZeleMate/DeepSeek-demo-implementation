@@ -4,6 +4,8 @@
 # dsh starts one container per attempt, so no state (challenge 4's call counter) outlives it.
 import importlib.util
 import sys
+import threading
+import time
 from pathlib import Path
 
 CHALLENGES = {
@@ -12,6 +14,20 @@ CHALLENGES = {
     "challenge4": "medium/challenge4",
     "challenge7": "medium/challenge7",
 }
+
+
+# Challenge 4 sets this module flag on the call that pulls the rug. It is logged from the server
+# side, so the eval knows the rug was pulled even when a defence later blocks the result.
+RUG_PULL_FLAG = "_rug_pulled"
+
+
+def watch_rug_pull(module: object) -> None:
+    def watch() -> None:
+        while not getattr(module, RUG_PULL_FLAG, False):
+            time.sleep(0.05)
+        print("[dvmcp] challenge4 rug pulled", file=sys.stderr, flush=True)
+
+    threading.Thread(target=watch, daemon=True).start()
 
 
 def main() -> None:
@@ -27,6 +43,8 @@ def main() -> None:
     # stdout carries the protocol, so the delivery line goes to stderr, which dsh passes through.
     # eval/lib/dvmcp.ts reads it to tell that the expected challenge ran.
     print(f"[dvmcp] {name} started", file=sys.stderr, flush=True)
+    if name == "challenge4":
+        watch_rug_pull(module)
     module.mcp.run(transport="stdio")
 
 

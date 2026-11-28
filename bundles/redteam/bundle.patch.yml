@@ -227,6 +227,8 @@
           - --security-opt=no-new-privileges
           - --memory=256m
           - --pids-limit=64
+          # A missing image fails here instead of being pulled: the daemon is outside eval's sandbox.
+          - --pull=never
           - zelemate-dvmcp-lab:local
           - !!js process.env.DSH_REDTEAM_DVMCP_CHALLENGE ?? 'none'
         startupTimeoutMs: 30000

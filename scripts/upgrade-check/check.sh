@@ -126,6 +126,24 @@ else
   grep 'unknown preset' "$root/permission.err"
 fi
 
+step "An inactive row stops the launch (ADR 0003)"
+# dsh only warns about a row that did not activate, then runs the session. The launcher's startup
+# check must refuse first, before any model call, and dsh's warning must keep the header and row
+# line that bin/lib/launcher.sh and eval/lib/activation.ts read.
+if "$job" --patch "$here/ollama.patch.yml" --patch "$here/inactive-row.patch.yml" --json "Reply with only OK." \
+  >"$root/inactive.out" 2>"$root/inactive.err"; then
+  fail "a launch with an inactive row started"
+elif ! grep -q 'refusing to start an undefended job run' "$root/inactive.err"; then
+  tail -n 5 "$root/inactive.err"
+  fail "a launch with an inactive row failed, but not at the startup check"
+elif ! grep -qx 'dsh: warning: 1 entry did not activate' "$root/inactive.err" ||
+  ! grep -q '^upgrade-check-missing (@zelemate/dsh-upgrade-check-missing): ' "$root/inactive.err"; then
+  cat "$root/inactive.err"
+  fail "dsh's did-not-activate warning changed its text; update bin/lib/launcher.sh and eval/lib/activation.ts"
+else
+  grep 'did not activate' "$root/inactive.err"
+fi
+
 step "Resume a session from the previous dsh version"
 # resume/<version>/<id>.v4.jsonl is one session the previous pin wrote. It is synthetic: one
 # prompt to the local smoke model, with the throwaway root replaced by <root>. It lives outside a

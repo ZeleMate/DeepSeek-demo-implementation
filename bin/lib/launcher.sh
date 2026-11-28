@@ -201,6 +201,58 @@ export_keys() {
   unset value
 }
 
+# dsh stops at startup only for its own required rows. A bundle row that fails to import, throws
+# or waits on a missing service gets `dsh: warning: N entries did not activate`, and the session
+# runs anyway, so a missing defence would pass as a defended run (ADR 0003, #104). There is no
+# setting to make that warning fatal. So the launcher boots the profile once first with an empty
+# task: headless refuses an empty task after the startup audit and before any model call. Any row
+# that did not activate stops the launch, and so does a boot that never reached that refusal.
+# The boot takes the same --patch overlays as the real run, and is skipped for the --dump-* flags,
+# which only print config. eval/lib/activation.ts matches the same text in each attempt's stderr,
+# which also catches a row that activated here but not in the real run.
+check_rows() {
+  for arg; do
+    case $arg in
+      --dump-config | --dump-config-schema | --dump-default-config) return 0 ;;
+    esac
+  done
+  # Keeps only the --patch overlays in this function's own arguments, in order.
+  left=$#
+  while [ "$left" -gt 0 ]; do
+    arg=$1
+    shift
+    left=$((left - 1))
+    case $arg in
+      --patch)
+        if [ "$left" -gt 0 ]; then
+          set -- "$@" --patch "$1"
+          shift
+          left=$((left - 1))
+        fi
+        ;;
+      --patch=*) set -- "$@" "$arg" ;;
+    esac
+  done
+  rows_err=$(mktemp "$root/$profile/rows.XXXXXX") || refuse "could not create a file for the startup check"
+  # Exits 1 by design: the empty task is refused.
+  rows_out=$("$dsh" --profile "$profile" "$@" --json - </dev/null 2>"$rows_err") || :
+  if grep -q 'did not activate' "$rows_err"; then
+    # From the warning on, without stack frames or the empty-task refusal: the row lines say which
+    # row and why.
+    sed -n '/did not activate/,$p' "$rows_err" | grep -v -e '^    at ' -e 'a task is required' >&2
+    rm -f "$rows_err"
+    refuse "a bundle row did not activate; refusing to start an undefended $profile run (ADR 0003)"
+  fi
+  case $rows_out in
+    *'"type":"error"'*'a task is required'*) rm -f "$rows_err" ;;
+    *)
+      tail -n 5 "$rows_err" >&2
+      rm -f "$rows_err"
+      refuse "the startup check did not reach the headless runner; refusing to start (ADR 0003)"
+      ;;
+  esac
+}
+
 launch() {
   read_descriptor
   root=${DSH_DEMO_ROOT:-$HOME/.dsh-demo}
@@ -236,6 +288,7 @@ launch() {
 
   ensure_profile
   export_keys
+  check_rows "$@"
 
   # The run directory is made last, after every check that can refuse, so each one left behind
   # is a launch that reached dsh. Run directories are kept, not deleted, as an attempt's evidence.

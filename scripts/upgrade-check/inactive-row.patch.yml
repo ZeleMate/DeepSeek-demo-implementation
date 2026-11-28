@@ -1,0 +1,6 @@
+# Upgrade-check overlay: adds one row whose package does not exist, so it fails to import.
+# dsh only warns about such a row and runs the session anyway; bin/lib/launcher.sh must refuse to
+# start, and the warning must keep the text eval/lib/activation.ts reads (ADR 0003).
+- insert:
+    - id: upgrade-check-missing
+      name: '@zelemate/dsh-upgrade-check-missing'

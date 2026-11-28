@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@deepseek-ai/dsh": "0.2.2-rc.3",
-    "@types/node": "24.19.2",
+    "@types/node": "26.6.6",
     "promptfoo": "0.126.0",
     "typescript": "7.0.2",
     "vitest": "5.1.1",

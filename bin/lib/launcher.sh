@@ -39,6 +39,21 @@ read_descriptor() {
   done
 }
 
+# dsh's template flag deletes the profile and boots a fresh copy of a shipped template in its
+# place, such as plain headless: no bundle of ours, so DeepSeek's API, search and fetch are on. Every
+# check here looks at the profile on disk, so the flag would pass them all and then swap the
+# profile out (ADR 0001, 0003). It is refused wherever it sits, before anything else runs. The [i]
+# keeps forbidden-patterns.sh, which bans the flag outside docs, from flagging this refusal.
+check_args() {
+  for arg in "$@"; do
+    case $arg in
+      --from-default-prof[i]le | --from-default-prof[i]le=*)
+        refuse "dsh's template flag replaces the $profile profile with one that has no bundle of ours; refusing to start (ADR 0001, 0003)"
+        ;;
+    esac
+  done
+}
+
 is_passed() {
   for passed in $pass_env; do [ "$passed" = "$1" ] && return 0; done
   return 1
@@ -203,6 +218,7 @@ export_keys() {
 
 launch() {
   read_descriptor
+  check_args "$@"
   root=${DSH_DEMO_ROOT:-$HOME/.dsh-demo}
   clean_env "$@"
 

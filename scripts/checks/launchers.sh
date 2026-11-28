@@ -32,17 +32,22 @@ fresh_root() {
 }
 
 # Starts a launcher with a shell full of things that must not reach dsh, plus any extra
-# NAME=value assignments given after the root, exported in a subshell.
+# NAME=value assignments given after the root, exported in a subshell. Words after a -- are the
+# launcher's own arguments.
 launch() {
   local launcher=$1 root=$2
   shift 2
   (
-    for assignment in "$@"; do export "${assignment?}"; done
+    while [[ $# -gt 0 && "$1" != -- ]]; do
+      export "${1?}"
+      shift
+    done
+    if [[ $# -gt 0 ]]; then shift; fi
     PATH="$tmp/stubs:$PATH" DSH_DEMO_ROOT="$root" DSH_DEMO_NO_KEYS=1 \
       AUDIT_PLAIN=leak OPENROUTER_API_KEY=leak OPENAI_API_KEY=leak DEEPSEEK_API_KEY=leak \
       DEEPSEEK_BASE_URL=leak \
       DSH_PERMISSION_MODE=danger-full-access DSH_TOOLS_MODE=leak DSH_TELEMETRY_OTLP_URL=leak \
-      HTTPS_PROXY=leak NODE_OPTIONS=leak "$tmp/repo/bin/$launcher"
+      HTTPS_PROXY=leak NODE_OPTIONS=leak "$tmp/repo/bin/$launcher" "$@"
   )
 }
 
@@ -129,6 +134,16 @@ check() {
 
   root=$(fresh_root "$profile" "$home" "not-our-bundle")
   refuses "$launcher" "$root" "refusing to start" "no bundle"
+
+  # dsh's template flag replaces the profile with a shipped one, plain headless with no bundle of
+  # ours, after every check above has passed on the old one. So the launcher refuses it in both
+  # forms, wherever it sits (ADR 0001, 0003). The quotes keep forbidden-patterns.sh from flagging
+  # this file for naming it.
+  local template_flag=--from-default-profil'e'
+  root=$(fresh_root "$profile" "$home" "$bundle")
+  refuses "$launcher" "$root" "template flag" "$template_flag headless" -- "$template_flag" headless "a task"
+  refuses "$launcher" "$root" "template flag" "$template_flag=headless" -- "$template_flag=headless" "a task"
+  refuses "$launcher" "$root" "template flag" "$template_flag after the task" -- "a task" "$template_flag" headless
 }
 
 check dsh-job job home @zelemate/dsh-bundle-job workspace/job true ""

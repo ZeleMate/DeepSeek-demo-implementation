@@ -1,0 +1,16 @@
+# The Python side of DVMCP's four challenges in our attack set (#59), locked with hashes in
+# uv.lock next to this file. Upstream ships an unpinned requirements.txt; this replaces it.
+# Only `mcp` is needed: challenges 2, 3, 4 and 7 import nothing else from PyPI.
+# Upstream's comment holds at 1.x: mcp 2.x removes mcp.server.fastmcp, which every challenge uses.
+[project]
+name = "dvmcp-lab"
+version = "0"
+requires-python = "==3.13.*"
+dependencies = [
+    "mcp>=1.20,<2",
+]
+
+[tool.uv]
+package = false
+# Same 7-day supply-chain cooldown as the app's dependencies.
+exclude-newer = "7 days"

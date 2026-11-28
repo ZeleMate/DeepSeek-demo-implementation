@@ -227,12 +227,12 @@ elif ! grep -q "DSH_REDTEAM_MCP_SCENARIO must be letters" <<<"$out"; then
 fi
 
 # A launcher can pass only our own DSH_REDTEAM_* names, never a key or a dsh setting.
-sed 's/^pass_env=DSH_REDTEAM_MCP_SCENARIO$/pass_env="DSH_REDTEAM_MCP_SCENARIO OPENAI_API_KEY"/' \
+sed 's/^pass_env=.*/pass_env="DSH_REDTEAM_MCP_SCENARIO OPENAI_API_KEY"/' \
   "$tmp/repo/bin/dsh-redteam" >"$tmp/repo/bin/dsh-redteam-keys"
 chmod +x "$tmp/repo/bin/dsh-redteam-keys"
 refuses dsh-redteam-keys "$(redteam_root)" "pass_env may name only DSH_REDTEAM_" "pass_env with a key name"
 # A passed name is read through eval, so it must be a plain identifier.
-sed 's/^pass_env=DSH_REDTEAM_MCP_SCENARIO$/pass_env="DSH_REDTEAM_X;touch"/' \
+sed 's/^pass_env=.*/pass_env="DSH_REDTEAM_X;touch"/' \
   "$tmp/repo/bin/dsh-redteam" >"$tmp/repo/bin/dsh-redteam-meta"
 chmod +x "$tmp/repo/bin/dsh-redteam-meta"
 refuses dsh-redteam-meta "$(redteam_root)" "pass_env names must be letters, digits and underscores" "pass_env with a metacharacter"

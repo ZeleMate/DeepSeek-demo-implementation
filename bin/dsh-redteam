@@ -18,8 +18,8 @@ models="victim:redteam-qwen3.5-4b-16k:required grader:redteam-granite4.2-3b-16k:
 fresh_workspace=true
 
 # The test MCP server's scenario for this attempt, set per attack by the eval provider (#58).
-# Unset means the clean scenario.
-pass_env=DSH_REDTEAM_MCP_SCENARIO
+# Unset means the clean scenario. The DVMCP challenge for a DVMCP attack (#59); unset loads no DVMCP.
+pass_env="DSH_REDTEAM_MCP_SCENARIO DSH_REDTEAM_DVMCP_CHALLENGE"
 
 # shellcheck source=lib/launcher.sh
 . "$(dirname "$0")/lib/launcher.sh"

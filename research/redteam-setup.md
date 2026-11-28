@@ -310,6 +310,7 @@ Rules for the fixture:
 
 - `agent-security.md` says "`exec: dsh --profile headless …` is a valid zero-code target". **That is only partly true:** Promptfoo appends options and context JSON as extra argv, and dsh joins them into the task (section 3e). Use a wrapper or a custom provider.
 - `security-targets.md` lists DVMCP under "maps directly onto dsh's MCP plugin". **It doesn't, out of the box:** the transports don't match (SSE vs stdio / Streamable HTTP).
+- Section 4 describes DVMCP at `79734c1`, which served legacy SSE. **Upstream v2 (`cdc4c6b`, 2026-11-01) serves Streamable HTTP**, and it still has no LICENSE file. #59 pins v2 and serves 4 of its challenges over stdio instead of porting the old transport (ADR 0011, amended).
 - `agent-security.md` lists remote-only strategies but misses **`best-of-n`** and **`authoritative-markup-injection`**, which also refuse to run without remote generation. It also misses that the **default strategy set is remote-only**.
 
 ## Sources

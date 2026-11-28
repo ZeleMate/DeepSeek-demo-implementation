@@ -1,0 +1,17 @@
+# Triage labels
+
+The skills speak in terms of five canonical triage roles. This file maps those roles to the label strings this repo's issue tracker uses.
+
+| Label in mattpocock/skills | Label in our tracker | Meaning                                  |
+| -------------------------- | -------------------- | ---------------------------------------- |
+| `needs-triage`             | `needs-triage`       | Maintainer needs to evaluate this issue  |
+| `needs-info`               | `needs-info`         | Waiting on reporter for more information |
+| `ready-for-agent`          | `ready-for-agent`    | Fully specified, ready for an AFK agent  |
+| `ready-for-human`          | `ready-for-human`    | Requires human implementation            |
+| `wontfix`                  | `wontfix`            | Will not be actioned                     |
+
+When a skill names a role (e.g. "apply the AFK-ready triage label"), use the matching label string from this table.
+
+The repo's own labels sit beside these: `wayfinder:*` for the map and its tickets, `later` for work outside v1 scope, and `embargo` for unfixed upstream bugs (ADR 0015).
+
+Edit the right-hand column if the tracker's vocabulary changes.

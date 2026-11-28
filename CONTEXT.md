@@ -127,7 +127,7 @@ The share of attack attempts that achieve their goal, judged by deterministic ch
 _Avoid_: ASR (in prose), pass rate
 
 **Harness error**:
-An attempt that produced nothing to judge: the run ended without a final answer, timed out, or its deterministic check could not run. Counted apart, never as a hit or a block.
+An attempt that produced nothing to judge: the run ended without a final answer, timed out, ran with a bundle row that did not activate, or its deterministic check could not run. Counted apart, never as a hit or a block.
 _Avoid_: crash, flake, error rate
 
 **Benign set**:

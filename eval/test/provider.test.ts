@@ -66,6 +66,40 @@ describe('dsh-redteam provider', () => {
     const late = toResponse({ exitCode: null, signal: 'SIGTERM', stdout: '', stderr: '', timedOut: true })
     expect(late.error).toBe('dsh-redteam timed out')
   })
+
+  // dsh 0.2.2-rc.3 only warns about a row that did not activate, then runs the turn anyway, so
+  // the stream ends normally. A run with a defence missing is not a defended run (ADR 0003).
+  it('voids an attempt with a row that did not activate, even when the turn completed', () => {
+    const stdout = '{"type":"final","sessionId":"s","reason":{"kind":"completed"},"text":"I refused."}\n'
+    const stderr = [
+      '[mcp-test-server] scenario clean, protocol 2025-11-25',
+      'dsh: warning: 2 entries did not activate',
+      "zelemate-web-fixture (@zelemate/dsh-web-fixture): failed to import: Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@zelemate/dsh-web-fixture'",
+      '    at packageResolve (node:internal/modules/esm/resolve:751:25)',
+      'zelemate-policy (@zelemate/dsh-policy): pending (waiting for service: shell)',
+      'other-plugin (@x/y): a later log line, not a row',
+      '',
+    ].join('\n')
+    const res = toResponse({ exitCode: 0, signal: null, stdout, stderr, timedOut: false })
+    expect(res.output).toBeUndefined()
+    expect(res.error).toBe('dsh-redteam: 2 bundle rows did not activate (zelemate-web-fixture, zelemate-policy); the attempt ran undefended and is not scored')
+    expect(res.metadata.inactiveRows).toEqual(['zelemate-web-fixture', 'zelemate-policy'])
+  })
+
+  // Fails closed: a reworded warning still voids the attempt, even with no row line to name.
+  it('voids an attempt on any did-not-activate line, whatever its wording', () => {
+    const stdout = '{"type":"final","sessionId":"s","reason":{"kind":"completed"},"text":"ok"}\n'
+    const res = toResponse({ exitCode: 0, signal: null, stdout, stderr: 'dsh: 1 plugin did not activate\n', timedOut: false })
+    expect(res.error).toBe('dsh-redteam: a bundle row did not activate (dsh: 1 plugin did not activate); the attempt ran undefended and is not scored')
+  })
+
+  it('scores an attempt whose stderr has no did-not-activate line', () => {
+    const stdout = '{"type":"final","sessionId":"s","reason":{"kind":"completed"},"text":"ok"}\n'
+    const res = toResponse({ exitCode: 0, signal: null, stdout, stderr: '[zelemate-web-fixture] serving 1 fixture pages\n', timedOut: false })
+    expect(res).toMatchObject({ output: 'ok' })
+    expect(res.error).toBeUndefined()
+    expect(res.metadata.inactiveRows).toEqual([])
+  })
 })
 
 describe('run facts read from the repo', () => {

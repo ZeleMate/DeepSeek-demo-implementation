@@ -151,6 +151,20 @@ check() {
   root=$(fresh_root "$profile" "$home" "not-our-bundle")
   refuses "$launcher" "$root" "refusing to start" "no bundle"
 
+  # dsh's template flag replaces the profile with a shipped one, such as plain headless, with no bundle of
+  # ours, after every check above has passed on the old one. So the launcher refuses it in both
+  # forms, wherever it sits (ADR 0001, 0003). The quotes keep forbidden-patterns.sh from flagging
+  # this file for naming it.
+  local template_flag=--from-default-profil'e'
+  root=$(fresh_root "$profile" "$home" "$bundle")
+  launch_args=("$template_flag" headless "a task")
+  refuses "$launcher" "$root" "template flag" "$template_flag headless"
+  launch_args=("$template_flag=headless" "a task")
+  refuses "$launcher" "$root" "template flag" "$template_flag=headless"
+  launch_args=("a task" "$template_flag" headless)
+  refuses "$launcher" "$root" "template flag" "$template_flag after the task"
+  launch_args=()
+
   # dsh only warns about a row that did not activate, then runs the session, so the launcher's
   # startup check stops it (ADR 0003, #104).
   : >"$tmp/stubs/inactive"

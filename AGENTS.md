@@ -37,7 +37,7 @@ These are the rules the checks cannot fully catch.
 - **Model output is untrusted.** Validate it against a schema before it reaches a shell, a file path or a tool call. See [docs/agent-policy.md](docs/agent-policy.md) and [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
 - **Dependencies.** Check that a package is real and maintained before adding it. Use `pnpm add`, never edit the lockfile by hand, and don't bypass the 7-day cooldown.
 - **Don't weaken CI.** No removed checks, no `continue-on-error`, no unpinned actions, no `pull_request_target`.
-- **Template updates.** `.copier-answers.yml` records the template version. Take updates with `uvx copier update` and merge them file by file, keeping the choices ADR 0016 lists.
+- **Template updates.** `.copier-answers.yml` records the template version. Take updates with `uv run --no-build --project .github/tools copier update --trust` (the Copier version locked there) and merge them file by file, keeping the choices ADR 0016 lists.
 
 ## Writing
 

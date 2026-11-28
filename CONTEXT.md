@@ -241,8 +241,12 @@ The harness a valid proposal produces from the base harness, before it is probed
 _Avoid_: variant, version
 
 **Improver**:
-The model session that proposes, composes or reflects on harness candidates; it reads evidence and submits proposals, and never runs a probe.
+The model session that proposes, composes, selects or reflects during a harnessing step; it reads evidence and submits structured tool calls, and never runs a probe.
 _Avoid_: optimizer, meta-agent
+
+**Selector**:
+The harnessing-profile session that compares anonymised deliverables from the base and composed probes without seeing harnesses or trajectories, and chooses whether to adopt the composed harness or abstain.
+_Avoid_: judge, grader, reranker
 
 **Probe**:
 One run of one fixture task under one harness.
@@ -263,3 +267,7 @@ _Avoid_: iteration, round
 **Aborted**:
 A harnessing step stopped by its cost cap before it finished. Its probes are never scored. Distinct from fell back and kept base.
 _Avoid_: timed out, failed step
+
+**Abstained**:
+A harnessing step whose final delivered choice is the base harness rather than the composed harness, so nothing enters the experience library. Distinct from kept base (one stage's valid empty proposal) and fell back (one stage's error fallback).
+_Avoid_: rejected, skipped, reverted

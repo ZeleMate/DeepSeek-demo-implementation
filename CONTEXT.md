@@ -253,7 +253,7 @@ One run of one fixture task under one harness.
 _Avoid_: rollout, trial
 
 **Trajectory**:
-The model-free rendering of one probe's session log that the improver reads: the task, each tool call and result, and the delivered answer, without the harness or anything a checker produced. "Trace" stays the general word for any run record.
+The model-free rendering of one probe's session log that the improver reads: the task, each tool call and result, the model's visible text and reasoning, and the delivered answer, without the harness or anything a checker produced.
 _Avoid_: transcript, rollout log
 
 **Evidence**:

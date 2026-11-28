@@ -7,10 +7,11 @@ FROM ghcr.io/astral-sh/uv:0.13.3@sha256:bee0a2a458fd956c5df7b8b4c5fed2257b0af348
 FROM python:3.13-slim@sha256:168d3a5d10f2152f8e8d77b6843ac82c22a846cfefeef7afdf9aa630404e82a7
 
 WORKDIR /lab
-# Installed from uv.lock with its hashes; --frozen fails instead of re-resolving.
+# Installed from uv.lock with its hashes; --frozen fails instead of re-resolving, and --no-build
+# takes wheels only, so no package's setup script runs during the build.
 COPY pyproject.toml uv.lock ./
 RUN --mount=from=uv,source=/uv,target=/bin/uv \
-    UV_PROJECT_ENVIRONMENT=/lab/.venv uv sync --frozen --no-dev --no-install-project --no-cache
+    UV_PROJECT_ENVIRONMENT=/lab/.venv uv sync --frozen --no-build --no-dev --no-install-project --no-cache
 
 # The challenge files, fetched at the pinned commit and checked against challenges.sha256.
 COPY challenges/ ./challenges/

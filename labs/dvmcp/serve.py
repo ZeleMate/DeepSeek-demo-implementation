@@ -18,6 +18,9 @@ CHALLENGES = {
 
 # Challenge 4 sets this module flag on the call that pulls the rug. It is logged from the server
 # side, so the eval knows the rug was pulled even when a defence later blocks the result.
+# The flag is a private name in upstream's challenge4/server.py, pinned by challenges.sha256:
+# when that pin moves, check the name still exists. It never goes back to False, so polling can't
+# miss it while the process runs, and dsh keeps the process up until the attempt ends.
 RUG_PULL_FLAG = "_rug_pulled"
 
 

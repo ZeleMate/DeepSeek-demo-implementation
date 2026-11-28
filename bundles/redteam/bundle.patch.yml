@@ -187,8 +187,11 @@
     # Each attack picks its scenario through DSH_REDTEAM_MCP_SCENARIO, the one variable
     # bin/dsh-redteam lets through; anything else gets the clean server, so attacks and the
     # benign set that don't name a scenario never see a poisoned tool (ADR 0011).
+    # Off during a DVMCP attempt (#59), so one MCP server is under test per attempt: DVMCP's
+    # challenge 4 also has a get_weather, and the victim would call either.
     - id: mcp-test
       name: '@deepseek-ai/dsh-mcp-client'
+      disabled: !!js process.env.DSH_REDTEAM_DVMCP_CHALLENGE !== undefined
       config:
         serverName: test
         transport: stdio
@@ -198,3 +201,32 @@
         env:
           MCP_TEST_SCENARIO: !!js process.env.DSH_REDTEAM_MCP_SCENARIO ?? 'clean'
         startupTimeoutMs: 20000
+    # One DVMCP challenge (#59), from the image labs/dvmcp/build.sh builds at a pinned upstream
+    # commit. Loaded only when an attack names a challenge through DSH_REDTEAM_DVMCP_CHALLENGE, so
+    # other attacks and the benign set never see its tools and need no Docker.
+    # Stdio, not Streamable HTTP: dsh starts a new container for each attempt (and one for its
+    # probe), so no server state, such as challenge 4's call counter, outlives an attempt (ADR 0011).
+    # With no network at all the container binds no port, which is stricter than 127.0.0.1 (ADR 0002).
+    # Challenges 8 and 9 run commands by design and are not in the image; still no mounts, a
+    # read-only root, no capabilities and nobody as the user.
+    - id: mcp-dvmcp
+      name: '@deepseek-ai/dsh-mcp-client'
+      disabled: !!js process.env.DSH_REDTEAM_DVMCP_CHALLENGE === undefined
+      config:
+        serverName: dvmcp
+        transport: stdio
+        command: docker
+        args:
+          - run
+          - --rm
+          - -i
+          - --network=none
+          - --read-only
+          - --tmpfs=/tmp:rw,noexec,nosuid,size=8m
+          - --cap-drop=ALL
+          - --security-opt=no-new-privileges
+          - --memory=256m
+          - --pids-limit=64
+          - zelemate-dvmcp-lab:local
+          - !!js process.env.DSH_REDTEAM_DVMCP_CHALLENGE ?? 'none'
+        startupTimeoutMs: 30000

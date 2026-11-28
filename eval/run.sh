@@ -26,6 +26,9 @@ results=$repo/eval/results/$tag.json
 [[ -x /usr/bin/sandbox-exec ]] || refuse "/usr/bin/sandbox-exec is missing; refusing to run without the network sandbox"
 promptfoo=$repo/node_modules/.bin/promptfoo
 [[ -x "$promptfoo" ]] || refuse "run 'pnpm install --frozen-lockfile' in $repo first"
+# The DVMCP attacks start the lab image; a missing or stale one would make them all check errors
+# (#59). The build needs the network, so it is never run from here.
+"$repo/labs/dvmcp/build.sh" --check || refuse "the DVMCP attacks need a current lab image"
 
 if [[ "${DSH_EVAL_CLEAN_ENV:-}" != 1 ]]; then
   exec env -i HOME="$HOME" USER="${USER:-}" PATH="$PATH" LANG="${LANG:-en_US.UTF-8}" \

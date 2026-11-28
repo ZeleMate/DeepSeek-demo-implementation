@@ -52,3 +52,24 @@ updates:
         update-types: [minor, patch]
     commit-message:
       prefix: build
+
+  # The DVMCP lab image (#59): its Python lock and its two base-image digests.
+  - package-ecosystem: uv
+    directory: /labs/dvmcp
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      dvmcp-lab:
+        patterns: ["*"]
+    commit-message:
+      prefix: build
+  - package-ecosystem: docker
+    directory: /labs/dvmcp
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: build

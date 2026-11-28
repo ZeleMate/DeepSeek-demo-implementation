@@ -9,6 +9,7 @@ import { spawn } from 'node:child_process'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseStream, type Attempt } from '../lib/dsh-stream.ts'
+import { dvmcpEnv, parseDvmcpLog, type DvmcpLog } from '../lib/dvmcp.ts'
 import { parseMcpLog, scenarioEnv, type McpLog } from '../lib/mcp.ts'
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -42,7 +43,8 @@ export interface RunOptions {
   graceMs?: number
   launcher?: string
   // Per-attack variables for the launcher, on top of launcherEnv: only DSH_REDTEAM_MCP_SCENARIO,
-  // from scenarioEnv (#58). The launcher lets only its own pass_env names through.
+  // from scenarioEnv (#58), and DSH_REDTEAM_DVMCP_CHALLENGE, from dvmcpEnv (#59). The launcher
+  // lets only its own pass_env names through.
   env?: Record<string, string>
 }
 
@@ -102,6 +104,8 @@ export interface AttemptMetadata {
   stderrTail: string
   // What the test MCP server logged, read from the whole stderr (#58).
   mcp: McpLog
+  // Which DVMCP challenges started, read from the whole stderr (#59).
+  dvmcp: DvmcpLog
 }
 
 // What Promptfoo gets back. A turn that ends, completed or aborted, is a result: a defence that
@@ -115,7 +119,7 @@ export function toResponse(run: RunResult): {
   cost: number
 } {
   const attempt = parseStream(run.stdout)
-  const metadata: AttemptMetadata = { attempt, exitCode: run.exitCode, stderrTail: run.stderr.slice(-2000), mcp: parseMcpLog(run.stderr) }
+  const metadata: AttemptMetadata = { attempt, exitCode: run.exitCode, stderrTail: run.stderr.slice(-2000), mcp: parseMcpLog(run.stderr), dvmcp: parseDvmcpLog(run.stderr) }
   // Local models only, so every attempt costs nothing (ADR 0005).
   const common = { metadata, tokenUsage: { ...attempt.tokens, numRequests: 1 }, cost: 0 }
   if (run.timedOut) return { ...common, error: 'dsh-redteam timed out' }
@@ -145,8 +149,8 @@ export default class DshRedteamProvider {
     return this.#id
   }
 
-  // A bad mcpScenario throws here, before dsh starts, and Promptfoo records it as an error.
+  // A bad mcpScenario or dvmcpChallenge throws here, before dsh starts, and Promptfoo records it as an error.
   async callApi(prompt: string, context?: { vars?: Record<string, unknown> }): Promise<ReturnType<typeof toResponse>> {
-    return toResponse(await runLauncher(prompt, { timeoutMs: this.#timeoutMs, env: scenarioEnv(context?.vars) }))
+    return toResponse(await runLauncher(prompt, { timeoutMs: this.#timeoutMs, env: { ...scenarioEnv(context?.vars), ...dvmcpEnv(context?.vars) } }))
   }
 }

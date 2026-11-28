@@ -1,0 +1,5 @@
+# PROTOTYPE (#104). The improver's model for the prototype only: local, so an injected trace
+# never reaches a remote provider. The real improver model is decided in #105.
+# bin/dsh-harnessing creates it as harnessing-qwen3.5-4b-16k.
+FROM qwen3.5:4b
+PARAMETER num_ctx 16384

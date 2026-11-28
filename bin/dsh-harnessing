@@ -1,0 +1,16 @@
+#!/bin/sh
+# PROTOTYPE (#104). Starts the improver's harnessing profile with its own DSH_HOME.
+# Usage: bin/dsh-harnessing --json - <prompt, or bin/dsh-harnessing --dump-config
+set -eu
+
+profile=harnessing
+home=harnessing/home
+# No keys in the prototype: the improver model is local. The real profile names its one key here.
+keys=
+models="improver:harnessing-qwen3.5-4b-16k:required"
+fresh_workspace=true
+pass_env=
+
+# shellcheck source=lib/launcher.sh
+. "$(dirname "$0")/lib/launcher.sh"
+launch "$@"

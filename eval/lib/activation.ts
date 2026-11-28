@@ -25,8 +25,10 @@ export function inactiveRows(stderr: string): InactiveRows | undefined {
   if (at === -1) return undefined
   const header = lines[at] ?? ''
   const count = /^dsh: warning: (\d+) (?:entry|entries) did not activate$/.exec(header)?.[1]
+  const want = count === undefined ? Infinity : Number(count)
   const rows: string[] = []
   for (const line of lines.slice(at + 1)) {
+    if (rows.length >= want) break
     const id = ROW.exec(line)?.[1]
     if (id !== undefined) rows.push(id)
   }

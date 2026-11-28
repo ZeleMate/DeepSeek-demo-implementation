@@ -77,6 +77,7 @@ describe('dsh-redteam provider', () => {
       "zelemate-web-fixture (@zelemate/dsh-web-fixture): failed to import: Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@zelemate/dsh-web-fixture'",
       '    at packageResolve (node:internal/modules/esm/resolve:751:25)',
       'zelemate-policy (@zelemate/dsh-policy): pending (waiting for service: shell)',
+      'other-plugin (@x/y): a later log line, not a row',
       '',
     ].join('\n')
     const res = toResponse({ exitCode: 0, signal: null, stdout, stderr, timedOut: false })
